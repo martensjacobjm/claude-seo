@@ -5,6 +5,62 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+Evidence pass (2026-09-24): every added claim cites a primary source (Google Search Central,
+Bing, schema.org, Chrome for Developers, arXiv, court records). Unsourced statistics were removed.
+
+### Added
+- **CrUX on BigQuery**: `scripts/crux_bigquery.py`, which gives monthly origin-level Core Web Vitals from the public CrUX dataset (`metrics_summary` / `device_summary`) and a competitor benchmark (`--compare`, up to 10 origins, competition ranking with a `tied` flag). Origins go in as query parameters, and every origin is checked with `validate_url()`. Also adds `--dry-run`, `--print-sql`, a `--max-bytes-billed` cap and the optional `bigquery_project_id` config key. New commands: `/seo google crux-bq` and `/seo google crux-benchmark`. New reference: `skills/seo-google/references/crux-bigquery.md`. `requirements.txt` adds `google-cloud-bigquery>=3.40.0,<4.0.0`; per PyPI, 3.42+ requires Python >= 3.10. `auth-setup.md` gets a BigQuery section. Source: https://developer.chrome.com/docs/crux/guides/bigquery
+- **Search Console Generative AI report**: `skills/seo-google/references/gsc-generative-ai-report.md` and `/seo google gen-ai-report`. The report shows impressions for AI Overviews and AI Mode by page, country, device and date. It has no query dimension or click metric, and the "Web: multimodal" filter was added 2026-09-24. It has to be exported by hand: the Search Analytics API `type` enum has no generative-AI value (API reference as of 2026-08-11). Sources: https://developers.google.com/search/blog/2026/06/gen-ai-performance-reports (2026-06-03; all sites since 2026-08-31), https://support.google.com/webmasters/answer/16984139
+- **Bing AI Performance export parser**: `python scripts/bing_webmaster.py ai-performance [<url>] --file <export>` and `/seo backlinks ai-performance`. It parses CSV and Excel exports offline (citations, cited pages, sampled grounding queries, trend, compare), and needs no API key and no network access. Bing has no API for this report. The export column names are not documented, so the parser matches headers loosely and reports any columns it does not recognise. Sources: https://blogs.bing.com/webmaster/February-2026/Introducing-AI-Performance-in-Bing-Webmaster-Tools-Public-Preview, https://blogs.bing.com/search/June-2026/New-AI-Visibility-Insights-in-Bing-Webmaster-Tools-Intents-Topics-Citation-Share-Compare, https://www.bing.com/webmasters/help/ai-performance-9f8e7d6c ("Exports are available in CSV and Excel formats"; "AI Performance data is sampled")
+- **Ranking signals reference**: `skills/seo/references/ranking-signals.md` is an evidence-graded map from Google systems disclosed in *United States v. Google LLC* (liability opinion, Doc 1033; remedies opinion, Doc 1436; exhibits PXR0356 and PXR0171) to audit checks. It covers NavBoost, Glue, RankEmbed, DeepRank and the top-level quality and popularity signals, plus 2024 Content Warehouse API leak attributes (hexdocs v0.4.0). It is for context only: the leak shows that attributes exist, not their weights. seo-content, seo-technical, seo-page and seo-backlinks now point to it. Sources: https://storage.courtlistener.com/recap/gov.uscourts.dcd.223205/gov.uscourts.dcd.223205.1033.0.pdf, https://storage.courtlistener.com/recap/gov.uscourts.dcd.223205/gov.uscourts.dcd.223205.1436.0.pdf, https://hexdocs.pm/google_api_content_warehouse/0.4.0/api-reference.html, https://developers.google.com/search/docs/appearance/ranking-systems-guide
+- **GEO evidence register**: `skills/seo-geo/references/geo-evidence.md` defines the evidence levels ([V] vendor, [R] research, [H] heuristic) and lists the vendor and research sources. It also keeps a "Removed claims" list so unsourced statistics are not added back.
+- **Schema**: the Recipe, QAPage, Quiz, MathSolver, EmployerAggregateRating, VacationRental and Movie rows; tables of recent Google changes and schema.org 29.4/30.0/30.1 additions; and a `ProductCategory` (`CategoryCode`) template. Sources: https://developers.google.com/search/docs/appearance/structured-data/search-gallery, https://schema.org/docs/releases.html
+
+### Changed
+- **seo-geo rewritten around Google's "Guide to Optimizing for Generative AI Features on Google Search"** (https://developers.google.com/search/docs/fundamentals/ai-optimization-guide, last updated 2026-07-10):
+  - llms.txt is now an informational status check only, never scored or recommended. Google's changelog of 2026-06-15 says llms.txt files are not needed for Google Search.
+  - Removed: the 134-167 word passage rule, advice to rewrite or chunk content for AI, the "citability" score and the unsourced statistics (Ahrefs correlations, 92%/47%, 527%, and similar).
+  - New scoring: Crawler Access & Eligibility, Content Uniqueness, Structure & Semantic HTML, Rich Media, and Entity/Trust/Freshness. The weights are marked as heuristic.
+  - New Measurement section covering the Search Console Generative AI report and Bing AI Performance.
+  - Research caveats: the original GEO paper (arXiv 2311.09735, KDD 2024) measured its gains in a fixed context. The 2026 survey preprint (arXiv 2607.14035) finds citation-oriented rewrites can impair retrieval.
+- **AI crawler tokens corrected against vendor docs** (seo-geo, seo-technical): OAI-SearchBot (ChatGPT search) vs GPTBot (training) vs ChatGPT-User; Claude-SearchBot and Claude-User vs ClaudeBot; PerplexityBot (search) vs Perplexity-User; Google-Extended; Applebot-Extended. The unsourced "~3-5%" robots.txt figure was replaced with HTTP Archive Web Almanac 2025 data (https://almanac.httparchive.org/en/2025/seo).
+- **seo-content / seo-page**: "AI citation readiness" is now "AI search visibility" and follows Google's AI optimization guide. The 1-3% keyword density targets were removed; Google has no density target. seo-page and the seo-plan generic template no longer describe FAQPage as "gov/health only" (no site gets the FAQ rich result since 2026-05-07).
+- **seo-local / seo-plan / seo-audit**: wording aligned with seo-geo, and unsourced local AI statistics and AI-visibility factor rankings removed (see the geo-evidence.md register). The GBP and Bing Places statements now use vendor wording.
+- **seo-schema**: updated to schema.org 30.1 (2026-09-16) and Google's changelog (https://developers.google.com/search/updates):
+  - FAQ rich result: no longer shown since 2026-05-07, and its docs were removed 2026-06-15. FAQPage is now Info priority only.
+  - Practice problem docs removed 2026-01-06.
+  - ClaimReview is phasing out; Fact Check Explorer still supports it.
+  - Dataset is used by Dataset Search only.
+  - VideoObject has `creator` and supported `interactionStatistic` types (2026-09-24).
+  - Review snippet has a new guideline against fake or undisclosed incentivized reviews (2026-07-24).
+  - WebSite markup is used for site names; the sitelinks search box was removed 2024-11-29.
+  - `returnPolicyCountry`: Google's 2025-03-14 changelog called it required, but the current return-policy doc lists it as recommended (see the 1.1.0 entry below).
+- **Leftover unsourced claims removed** outside the five skills: the YouTube "0.737" correlation (seo-dataforseo and its extension mirror, `youtube_search.py` docstring), "Powers ChatGPT, Copilot, Alexa. 900M queries/day" (local-seo-signals.md), FAQ "gov/health" status (pdf/google-seo-reference.md). CI now syntax-checks `crux_bigquery.py`, the backlink scripts and the schema hook; PRIVACY.md lists `crux_bigquery.py`.
+- **Orchestrator** (`skills/seo/SKILL.md`): FAQ, llms.txt and HowTo/MathSolver quality-gate rules; the new reference files; the `crux-bq`, `crux-benchmark`, `gen-ai-report` and `ai-performance` routing; and the updated seo-geo subagent description.
+- **cwv-thresholds.md**: pass rates replaced with the CrUX August 2026 and Web Almanac 2025 figures. Removed the unverified "December 2025 core update" line. The Lighthouse 13 note now says the 2025-10-10 release changed audits to Insights and made no scoring changes.
+- **free-backlink-sources.md / seo-backlinks**: removed unsourced coverage figures ("~15% of web", "45.5T links") and the "only free competitor comparison" claim. Bing `compare` works only for sites verified in the user's account.
+
+### Fixed
+- **`bing_webmaster.py`**: `links`, `counts` and `compare` called the undocumented `GetLinkDetails` method (HTTP 404).
+  - They now use the documented `GetLinkCounts` and `GetUrlLinks`, with a new `--detail-pages` flag.
+  - The output of `links` and `counts` has changed. `links` returns `target_pages` and `links[{source_url, target_url, anchor_text}]`; `date_discovered` was removed because the API does not provide it.
+  - `compare` now returns status `error` with null gap fields when either lookup fails.
+  - Source: https://learn.microsoft.com/en-us/dotnet/api/microsoft.bing.webmaster.api.interfaces.iwebmasterapi?view=bing-webmaster-dotnet
+- **Schema hook**: `hooks.json` passed `$FILE_PATH`, which Claude Code never sets, so the hook did nothing in real sessions.
+  - `validate-schema.py` now reads `tool_input.file_path` from the hook event on stdin and writes findings to stderr, so exit 2 reaches Claude. Exit 2 on PostToolUse cannot undo the edit (https://code.claude.com/docs/en/hooks).
+  - It now detects nested and compact-IRI `@type` values and `@graph` members.
+  - ClaimReview and FAQPage are warnings, not blocking.
+  - HowTo in the same block as a MathSolver is a warning.
+  - Placeholders are matched only as bracketed tokens, so "replacement battery" is no longer flagged.
+  - `--json` always prints JSON.
+- **Unsourced claims removed**:
+  - the YouTube "0.737" AI-visibility correlation, from the seo-google skill only. It is still in seo-dataforseo and `scripts/youtube_search.py`.
+  - the "December 2025 core update weighted mobile CWV" line.
+  - the misattributed "December 2025 JS SEO guidance" note.
+  - the "~2.5x more likely in AI answers" schema claim.
+
 ## [1.8.1] - 2026-04-06
 
 ### Added

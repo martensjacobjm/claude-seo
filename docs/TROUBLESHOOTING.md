@@ -150,14 +150,20 @@ cp /path/to/claude-seo/agents/*.md ~/.claude/agents/
 
 ### Schema Validation False Positives
 
-**Symptom:** Hook blocks valid schema
+**Symptom:** The schema hook reports errors on valid schema
+
+The hook runs on PostToolUse: it cannot undo an edit. Exit code 2 shows its
+findings (stderr) to Claude after the edit; exit code 1 is a warning.
+It reads the edited file path from the hook event JSON on stdin.
 
 **Check:**
 
-1. Ensure placeholders are replaced
-2. Verify @context is `https://schema.org`
-3. Check for deprecated types (HowTo, SpecialAnnouncement)
-4. Validate at [Google's Rich Results Test](https://search.google.com/test/rich-results)
+1. Ensure bracketed placeholders (e.g. `[Business Name]`, `[City]`) and `REPLACE_ME` are replaced
+2. Verify @context is `https://schema.org` (trailing slash accepted)
+3. Check for deprecated types (HowTo, SpecialAnnouncement, and the Sep 2025 removed features). HowTo in the same block as a MathSolver is only a warning
+4. FAQPage and ClaimReview are warnings, not errors: the FAQ rich result is no longer shown (since May 7, 2026) and ClaimReview is phasing out
+5. Run it manually: `python3 hooks/validate-schema.py page.html --json`
+6. Validate at [Google's Rich Results Test](https://search.google.com/test/rich-results)
 
 ---
 

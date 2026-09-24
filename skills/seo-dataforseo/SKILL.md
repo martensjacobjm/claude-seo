@@ -92,7 +92,7 @@ Fetch live Google organic search results.
 
 ### `/seo dataforseo serp-youtube <keyword>`
 
-Fetch YouTube search results. Valuable for GEO. YouTube mentions correlate most strongly with AI citations.
+Fetch YouTube search results for video-rich queries.
 
 **MCP tools:** `serp_youtube_organic_live_advanced`
 
@@ -100,7 +100,7 @@ Fetch YouTube search results. Valuable for GEO. YouTube mentions correlate most 
 
 ### `/seo dataforseo youtube <video_id>`
 
-Deep analysis of a specific YouTube video: info, comments, and subtitles. YouTube mentions have the strongest correlation (0.737) with AI visibility, making this critical for GEO analysis.
+Deep analysis of a specific YouTube video: info, comments, and subtitles.
 
 **MCP tools:** `serp_youtube_video_info_live_advanced`, `serp_youtube_video_comments_live_advanced`, `serp_youtube_video_subtitles_live_advanced`
 

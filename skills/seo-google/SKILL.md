@@ -8,7 +8,8 @@ description: >
   user says "search console", "GSC", "PageSpeed", "CrUX", "field data",
   "indexing API", "GA4 organic", "URL inspection", "google api setup",
   "real CWV data", "impressions", "clicks", "CTR", "position data",
-  "LCP", "INP", "CLS", "FCP", "TTFB", or "Lighthouse scores".
+  "LCP", "INP", "CLS", "FCP", "TTFB", "Lighthouse scores", "CrUX BigQuery",
+  "competitor CWV benchmark", "AI Overviews impressions", or "AI Mode report".
 user-invokable: true
 argument-hint: "[command] [url|property]"
 license: MIT
@@ -40,7 +41,8 @@ Config file: `~/.config/claude-seo/google-api.json`
   "service_account_path": "/path/to/service_account.json",
   "api_key": "AIzaSy...",
   "default_property": "sc-domain:example.com",
-  "ga4_property_id": "properties/123456789"
+  "ga4_property_id": "properties/123456789",
+  "bigquery_project_id": "my-gcp-billing-project"
 }
 ```
 
@@ -55,6 +57,10 @@ If missing, read `references/auth-setup.md` and walk the user through setup.
 | **2** (Full) | + `ga4_property_id` configured | Tier 1 + `ga4`, `ga4-pages` |
 | **3** (Ads) | + `ads_developer_token` + `ads_customer_id` | Tier 2 + `keywords`, `volume` |
 
+**BigQuery (BQ)** is independent of Tiers 0-3: it needs a service account or
+Application Default Credentials plus a billing project (`bigquery_project_id`).
+The OAuth token cannot run BigQuery jobs (no BigQuery scope).
+
 Always communicate the detected tier before running commands.
 
 ## Quick Reference
@@ -65,10 +71,13 @@ Always communicate the detected tier before running commands.
 | `/seo google pagespeed <url>` | PSI Lighthouse + CrUX field data | 0 |
 | `/seo google crux <url>` | CrUX field data only (p75 metrics) | 0 |
 | `/seo google crux-history <url>` | 25-week CWV trend analysis | 0 |
+| `/seo google crux-bq <origin> [--device phone\|desktop] [--months N]` | Monthly CrUX history from BigQuery | BQ |
+| `/seo google crux-benchmark <origin> <competitor...>` | CWV benchmark vs competitor origins (BigQuery) | BQ |
 | `/seo google gsc <property>` | Search Console: clicks, impressions, CTR, position | 1 |
 | `/seo google inspect <url>` | URL Inspection: index status, canonical, crawl info | 1 |
 | `/seo google inspect-batch <file>` | Batch URL Inspection from file | 1 |
 | `/seo google sitemaps <property>` | GSC sitemap status | 1 |
+| `/seo google gen-ai-report` | GSC Generative AI report (AI Overviews / AI Mode impressions) from user export | -- |
 | `/seo google index <url>` | Submit URL to Indexing API | 1 |
 | `/seo google index-batch <file>` | Batch submit up to 200 URLs | 1 |
 | `/seo google ga4 [property-id]` | GA4 organic traffic report | 2 |
@@ -113,6 +122,19 @@ CrUX field data only (no Lighthouse run). Faster.
 
 Output includes per-metric trend direction, percentage change, and weekly p75 values.
 
+### `/seo google crux-bq <origin>` / `crux-benchmark <origin> <competitor...>`
+
+Monthly origin-level CWV from the public CrUX BigQuery dataset (materialized tables):
+p75 LCP/INP/CLS plus good/NI/poor shares, up to 60 months, per device.
+
+**Script:** `python scripts/crux_bigquery.py <origin> [--device phone|desktop|--both-devices] [--months N] --json`
+**Benchmark:** `python scripts/crux_bigquery.py <origin> --compare <c1> <c2> --json` (max 10)
+**Reference:** `references/crux-bigquery.md`
+
+Queries bill to the user's project (1 TiB/month free, then on-demand pricing).
+**Always run `--dry-run --json` first and report `total_gib` before the real query.**
+New data lands on the second Tuesday of the following month.
+
 ---
 
 ## Search Console
@@ -147,6 +169,19 @@ Batch inspection from a file (one URL per line). Rate limited to 2,000/day per s
 List submitted sitemaps with status, errors, warnings.
 
 **Script:** `python scripts/gsc_query.py sitemaps --property <property> --json`
+
+### `/seo google gen-ai-report`
+
+Search Console **Generative AI** performance report: impressions in AI Overviews and
+AI Mode by page, country, device and date (separate Discover report).
+**Reference:** `references/gsc-generative-ai-report.md`
+
+Not available in the Search Console API. Workflow:
+1. Ask the user to export Performance > Generative AI (CSV or Sheets) for a date range.
+2. Same range, total Web impressions: `python scripts/gsc_query.py --property <p> --dimensions page --start-date <d1> --end-date <d2> --json`.
+3. Report AI impression share per page, top AI-cited pages, device/country gaps.
+Impressions only: no clicks, CTR, position or queries. An empty report may mean the
+site is excluded under Settings > Search generative AI.
 
 ---
 
@@ -190,7 +225,7 @@ Top organic landing pages ranked by sessions.
 
 ## YouTube (Video SEO)
 
-YouTube mentions have the strongest AI visibility correlation (0.737). Free, API key only.
+Video presence for video-rich queries. Free, API key only.
 
 ### `/seo google youtube <query>`
 
@@ -306,15 +341,16 @@ Generate a professional PDF report with charts and analytics.
 | GSC URL Inspection | 600 QPM | 2,000 QPD/site | Service Account |
 | Indexing API | 380 RPM | 200 publish/day | Service Account |
 | GA4 Data API | 10 concurrent | ~25K tokens/day | Service Account |
+| CrUX BigQuery | -- | 1 TiB/month free, then billed | SA or ADC + billing project |
 
 ## Cross-Skill Integration
 
 - **seo-audit**: Spawns `seo-google` agent for live CWV + indexation data (conditional)
 - **seo-technical**: Uses pagespeed_check.py for real CWV field data
-- **seo-performance**: CrUX field data supplements Lighthouse lab data
+- **seo-performance**: CrUX field data supplements Lighthouse lab data; `crux_bigquery.py` adds monthly history and competitor benchmarks
 - **seo-sitemap**: GSC sitemap status shows real crawl/index coverage
 - **seo-content**: GSC query data informs keyword targeting
-- **seo-geo**: GSC search appearance data includes AI Overview references
+- **seo-geo**: Generative AI performance report (manual export) gives AI Overviews / AI Mode impressions
 
 ## Output Format
 
@@ -332,6 +368,9 @@ Generate a professional PDF report with charts and analytics.
 - Search Analytics data has 2-3 day lag.
 - `round_trip_time` replaced `effectiveConnectionType` in CrUX (Feb 2025).
 - Custom Search JSON API is closed to new customers (2025).
+- CrUX BigQuery is monthly (released 2nd Tuesday of the next month), origin-level only.
+- Gen AI performance report is UI-only; never claim API access. Its impressions are
+  already included in overall Performance totals: never add them together.
 
 ## Error Handling
 
@@ -340,6 +379,8 @@ Generate a professional PDF report with charts and analytics.
 | No credentials configured | Run `/seo google setup`. List Tier 0 commands that work with just an API key. |
 | Service account lacks GSC access | Report error. Instruct: add `client_email` to GSC > Settings > Users > Add. |
 | CrUX data unavailable (404) | Report insufficient Chrome traffic. Suggest PSI lab data as fallback. |
+| BigQuery: no billing project / 403 | Ask for `bigquery_project_id`; identity needs `roles/bigquery.jobUser`. |
+| BigQuery: origin has no rows | Not in CrUX, or wrong variant (www vs apex, http vs https). |
 | GA4 property not found | Report error. Show how to find property ID in GA4 Admin > Property Details. |
 | Indexing API quota exceeded | Report 200/day limit. Suggest prioritizing most important URLs. |
 | Rate limit (429) | Wait and retry with exponential backoff. Report which API hit the limit. |

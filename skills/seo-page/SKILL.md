@@ -20,19 +20,21 @@ metadata:
 
 ### On-Page SEO
 - Title tag: 50-60 characters, includes primary keyword, unique
+- Title/snippet match query intent and the page delivers on it: SERP click satisfaction feeds NavBoost (DOJ v. Google). Never recommend click manipulation
 - Meta description: 150-160 characters, compelling, includes keyword
 - H1: exactly one, matches page intent, includes keyword
 - H2-H6: logical hierarchy (no skipped levels), descriptive
 - URL: short, descriptive, hyphenated, no parameters
 - Internal links: sufficient, relevant anchor text, no orphan pages
 - External links: to authoritative sources, reasonable count
+- Salient terms/entities for the target query appear prominently (title, H1, early body), not by density (QBST, trial testimony)
 
 ### Content Quality
 - Word count vs page type minimums (see quality-gates.md)
 - Readability: Flesch Reading Ease score, grade level
-- Keyword density: natural (1-3%), semantic variations present
+- Natural wording with semantic variations; no keyword-density target (1-3% style ranges have no Google source)
 - E-E-A-T signals: author bio, credentials, first-hand experience markers
-- Content freshness: publication date, last updated date
+- Content freshness: publication date, last updated date; visible dates consistent with schema `datePublished`/`dateModified`. See `skills/seo/references/ranking-signals.md`
 
 ### Technical Elements
 - Canonical tag: present, self-referencing or correct
@@ -45,7 +47,7 @@ metadata:
 - Detect all types (JSON-LD preferred)
 - Validate required properties
 - Identify missing opportunities
-- NEVER recommend HowTo (deprecated) or FAQ (restricted to gov/health)
+- NEVER recommend HowTo (deprecated; MathSolver exception, see seo-schema) or adding FAQPage (FAQ rich result no longer shown in Google since May 7, 2026)
 
 ### Images
 - Alt text: present, descriptive, includes keywords where natural

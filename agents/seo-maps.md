@@ -43,7 +43,7 @@ You are a Maps Intelligence specialist. When delegated tasks during an SEO audit
 | Review Health | 20% | DataForSEO Reviews (Tier 1) or visible review signals (Tier 0) |
 | Cross-Platform Presence | 15% | WebFetch checks for Bing, Apple, OSM listings |
 | Competitor Position | 10% | Overpass/DataForSEO competitor count and relative rating |
-| Schema & AI Readiness | 10% | Schema detection + AI citation signal check |
+| Schema & AI Readiness | 10% | Schema detection + crawler access for AI search (see seo-geo) |
 
 **Tier 0 weight redistribution:** When geo-grid is unavailable, redistribute its 25% across GBP (+10%), Review Health (+10%), Cross-Platform (+5%).
 

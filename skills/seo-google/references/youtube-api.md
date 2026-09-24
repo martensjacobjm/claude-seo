@@ -1,6 +1,6 @@
 # YouTube Data API v3 Reference
 
-YouTube mentions have the strongest correlation with AI visibility (0.737 per GEO research). This API provides authoritative YouTube data directly from Google.
+YouTube Data API v3: video metadata and statistics for video-rich queries, served directly by Google.
 
 ## Endpoints Used
 

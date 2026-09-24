@@ -33,6 +33,9 @@ When configured with Google API credentials, these scripts transmit data to Goog
 | `indexing_notify.py` | Indexing API | URLs to submit for indexing |
 | `ga4_report.py` | Analytics Data | Authenticated query for your GA4 properties |
 | `crux_history.py` | CrUX History | URL or origin to query |
+| `crux_bigquery.py` | BigQuery (public CrUX dataset) | Origins embedded in the SQL query, billed to your own Google Cloud project |
+
+`bing_webmaster.py ai-performance` only parses a CSV/XLSX file you exported from Bing Webmaster Tools. It runs locally and sends nothing.
 
 Google API usage is governed by [Google's Privacy Policy](https://policies.google.com/privacy) and the [Google API Terms of Service](https://developers.google.com/terms).
 

@@ -39,6 +39,7 @@ If no sources are configured beyond the always-available tier:
 | `/seo backlinks new <url>` | New and lost backlinks (DataForSEO only) |
 | `/seo backlinks verify <url> --links <file>` | Verify known backlinks still exist |
 | `/seo backlinks setup` | Show setup instructions for free backlink APIs |
+| `/seo backlinks ai-performance [<url>] --file <export.csv>` | Parse a Bing Webmaster Tools AI Performance export (citations in Copilot, Bing AI summaries and select partner integrations; grounding queries; cited pages). Not a backlink metric |
 
 ## Analysis Framework
 
@@ -67,7 +68,7 @@ Produce all 7 sections below. Each section lists data sources in preference orde
 
 **Moz API:** `python scripts/moz_api.py anchors <url> --json`
 
-**Bing Webmaster:** `python scripts/bing_webmaster.py links <url> --json` (extract anchor text from link details)
+**Bing Webmaster:** `python scripts/bing_webmaster.py links <url> --json` (anchor text from `GetUrlLinks` for the most-linked target pages; `--detail-pages N` expands more)
 
 **Healthy distribution benchmarks:**
 
@@ -136,7 +137,7 @@ Find:
 
 **DataForSEO:** `dataforseo_backlinks_referring_domains` for both domains, then compare
 
-**Bing Webmaster (unique!):** `python scripts/bing_webmaster.py compare <url1> <url2> --json` — the only free tool with built-in competitor comparison
+**Bing Webmaster:** `python scripts/bing_webmaster.py compare <url1> <url2> --json` — only when both sites are verified in the user's Bing Webmaster account (the API has no competitor-comparison method and returns link data only for verified sites). Otherwise it returns status `error` with no gap computed; use DataForSEO or Moz for real competitor gap analysis
 
 **Moz API:** Compare DA/PA between domains via `python scripts/moz_api.py metrics <url> --json` for each
 
@@ -159,6 +160,36 @@ Output:
 - Sudden loss of many links (site penalty or content removal)
 - Declining velocity over 3+ months (content not attracting links)
 
+### Bing AI Performance (AI citations, optional)
+
+Not a backlink section. Run it only when the user supplies an export, and report it
+separately under the label **"Bing AI Performance export (user-supplied)"**.
+
+- **No API:** AI Performance (public preview since Feb 2026; Intents, Topics, Citation
+  Share and Compare previews added June 2026) is UI-only. The Bing Webmaster API method
+  list has no citation or grounding-query method.
+- **Surfaces:** Microsoft Copilot, AI-generated summaries in Bing and select partner AI
+  integrations ([Bing help](https://www.bing.com/webmasters/help/ai-performance-9f8e7d6c)).
+- **Export:** grounding-query, page-level and time-series data export "in CSV and Excel
+  formats", and "exports reflect the currently applied filter" (same help page). Ask for
+  unfiltered exports of the Grounding Queries view, the Pages view and the citation trend
+  (XLSX needs `openpyxl`). Never sum filtered exports as site totals.
+- **Command:** `python scripts/bing_webmaster.py ai-performance <url> --file queries.csv --file pages.csv --file trend.csv [--top 20] --json`
+  (offline, no API key; `<url>` is only a label).
+- **Output:** `totals` (total citations = sum of daily trend citations, avg cited pages =
+  mean of daily cited pages; assumed to match the UI cards, not documented by Bing),
+  `top_cited_pages`, `top_grounding_queries` (with Citation Share %), `intent_breakdown`,
+  `topic_breakdown`, `trend`, `trend_summary`, `compare`, `warnings`. A page or query that
+  appears in several `--file` exports is kept from the first file, not summed.
+- **Caveats (Bing help):** all AI Performance data is sampled; totals may differ across
+  views (pages, grounding queries, time series), which may be sampled over slightly
+  different time windows. Citations do not indicate ranking, authority or a page's role in
+  an answer. Never feed this data into the Backlink Health Score. Hand interpretation to `seo-geo`.
+- The export column names are not publicly documented, so headers are matched tolerantly
+  (an unverified assumption). Unrecognized columns are listed in `source_files[].columns_unmapped`.
+  Compare is documented only as a chart overlay; the `compare` output is filled only if an
+  export happens to contain current/previous citation columns.
+
 ## Backlink Health Score
 
 Calculate a 0-100 score. When mixing sources, apply confidence weighting:
@@ -170,8 +201,8 @@ Calculate a 0-100 score. When mixing sources, apply confidence weighting:
 | Anchor text naturalness | 15% | DataForSEO > Moz > Bing anchors | 1.0 / 0.85 / 0.70 |
 | Toxic link ratio | 20% | DataForSEO > Moz spam score | 1.0 / 0.85 |
 | Link velocity trend | 10% | DataForSEO only | 1.0 |
-| Follow/nofollow ratio | 5% | DataForSEO > Bing details | 1.0 / 0.70 |
-| Geographic relevance | 10% | DataForSEO > Bing country | 1.0 / 0.70 |
+| Follow/nofollow ratio | 5% | DataForSEO only (Bing `LinkDetail` has only AnchorText and Url) | 1.0 |
+| Geographic relevance | 10% | DataForSEO only (no country data in the Bing link API) | 1.0 |
 
 **Data sufficiency gate:** Count how many of the 7 factors have at least one data source available.
 - **4+ factors with data:** Produce a numeric 0-100 score (redistribute missing weights proportionally)
@@ -214,11 +245,12 @@ the reality is we simply lack data.
 | CC download timeout | Large graph file, slow connection | Use `--timeout 180` flag |
 | DataForSEO unavailable | Extension not installed | Run `./extensions/dataforseo/install.sh` |
 | No backlink data returned | Domain too new or very small | Note: small sites may have <10 backlinks |
+| AI Performance export not recognized | Unexpected header row or file type | Script lists unmapped columns in `source_files`; ask the user for the raw header row or a CSV download |
 
 **Fallback cascade:**
 1. DataForSEO available? → Use as primary (confidence: 1.0)
 2. Moz configured? → Use for DA/PA/spam/anchors (confidence: 0.85)
-3. Bing configured? → Use for links/competitor comparison (confidence: 0.70)
+3. Bing configured? → Use for inbound links and anchors of verified sites (confidence: 0.70)
 4. Always: Common Crawl for domain-level metrics (confidence: 0.50)
 5. Always: Verification crawler for known link checks (confidence: 0.95)
 6. Nothing works? → "Run `/seo backlinks setup` to configure free APIs"
@@ -262,3 +294,4 @@ After completing any backlink analysis command, always offer:
 Load on demand (do NOT load at startup):
 - `skills/seo/references/backlink-quality.md` -- Detailed toxic link patterns and scoring methodology (shared reference, load when analyzing toxic links or spam scores)
 - `skills/seo/references/free-backlink-sources.md` -- Source comparison, confidence weighting, setup guides (shared reference, load when configuring free backlink APIs)
+- `skills/seo/references/ranking-signals.md` -- Evidence-graded map of link-related signals from DOJ v. Google and the 2024 Content Warehouse API leak (PageRank as a quality input, anchor counts, `anchorMismatchDemotion`, `spamrank`). Context only: the leak shows attributes exist, not weights; never use it for scoring

@@ -1,4 +1,4 @@
-<!-- Updated: 2026-02-07 -->
+<!-- Updated: 2026-09-24 -->
 # Local Service Business SEO Strategy Template
 
 ## Industry Characteristics
@@ -102,7 +102,7 @@
 
 - **Video verification** is now standard: postcard verification has been largely phased out. Prepare for a short video verification process showing the business location or service area.
 - **WhatsApp integration** replaced Google Business Chat (deprecated). Businesses can connect WhatsApp as their primary messaging channel.
-- **Q&A removed from Maps**: replaced by AI-generated answers. Ensure your GBP description, services, and website FAQ are comprehensive, as Google AI uses them to answer queries.
+- **Q&A removed from Maps**: replaced by AI-generated answers (unverified third-party report). Keep your GBP description, services, and website FAQ complete and accurate for customers.
 - **Business hours are a top-5 ranking factor**: "Business is open at time of search" ranked as a top individual factor for the first time (Whitespark 2026 Local Search Ranking Factors Report). Keep hours accurate; consider extended hours if feasible.
 - **Review "Stories" format**: Google Maps now shows review snippets in a swipeable Stories format on mobile. Encourage detailed, descriptive reviews with photos.
 
@@ -112,10 +112,10 @@ Google updated SAB guidelines to **disallow entire states or countries** as serv
 
 ### AI Visibility for Local Businesses
 
-AI Overviews appear for only ~0.14% of local keywords (March 2025 data), local SEO faces significantly less AI disruption than other verticals. However, ChatGPT and Perplexity are increasingly used for local recommendations.
+Google says Google Business Profiles and Merchant Center feeds can help businesses be visible in AI responses; Bing says Bing Places for Business keeps business details eligible for inclusion in its AI-generated responses.
 
 To optimize for AI local visibility:
-- Ensure presence on expert-curated "best of" lists (ranked #1 AI visibility factor in Whitespark 2026 report)
+- Keep Google Business Profile and Bing Places for Business complete and accurate
 - Maintain consistent NAP (Name, Address, Phone) across all platforms
 - Build genuine review volume and quality
 - Use LocalBusiness schema with complete properties (geo, openingHours, priceRange, areaServed)
@@ -151,10 +151,10 @@ To optimize for AI local visibility:
 
 ## Generative Engine Optimization (GEO) for Local
 
-- [ ] Include clear, quotable service descriptions and pricing ranges
+- [ ] Include clear service descriptions and pricing ranges
 - [ ] Use LocalBusiness schema with complete geo, openingHours, and areaServed
 - [ ] Build presence on curated "best of" and local directory lists
 - [ ] Maintain consistent NAP across all platforms (Google, Yelp, Apple Maps)
 - [ ] Include original photos of work, team, and location
 - [ ] Structure FAQ content for common local service questions
-- [ ] Monitor AI citation in ChatGPT and Perplexity local recommendations
+- [ ] Measure AI visibility with the Search Console Generative AI performance report (impressions by page/country/device; manual export) and the Bing Webmaster Tools AI Performance report (citations, grounding queries); third-party sampling of ChatGPT/Perplexity is optional

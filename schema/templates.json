@@ -2,7 +2,7 @@
   "templates": [
     {
       "type": "VideoObject",
-      "description": "Video content pages with thumbnails, duration, and playback URLs. Enables video rich results in Google Search.",
+      "description": "Video content pages with thumbnails, duration, and playback URLs. Enables video rich results in Google Search. Required: name, thumbnailUrl, uploadDate. creator (or author) and interactionStatistic (WatchAction, LikeAction, CommentAction, ShareAction) documented by Google on 2026-09-24 (https://developers.google.com/search/docs/appearance/structured-data/video).",
       "template": {
         "@context": "https://schema.org",
         "@type": "VideoObject",
@@ -13,6 +13,18 @@
         "duration": "[ISO 8601 Duration, e.g. PT1H30M]",
         "contentUrl": "[Direct Video File URL]",
         "embedUrl": "[Embed Player URL]",
+        "creator": {
+          "@type": "Person",
+          "name": "[Creator Name]",
+          "url": "[Creator Profile URL]"
+        },
+        "interactionStatistic": {
+          "@type": "InteractionCounter",
+          "interactionType": {
+            "@type": "WatchAction"
+          },
+          "userInteractionCount": "[View Count (integer)]"
+        },
         "publisher": {
           "@type": "Organization",
           "name": "[Publisher Name]",
@@ -157,24 +169,25 @@
     },
     {
       "type": "Certification",
-      "description": "Product certifications (Energy Star, safety, organic, etc.). Replaced EnergyConsumptionDetails in April 2025.",
+      "description": "Product certifications for Google merchant listings: EU energy label (name EPREL, issuedBy EC/European_Commission) or vehicle CO2 class (Vehicle_CO2_Class / Vehicle_CO2_Class_Discharged_Battery, issuedBy ADEME or BMWK). issuedBy and name are required; certificationIdentification is required for EU energy labels. Replaced EnergyConsumptionDetails in April 2025 (https://developers.google.com/search/docs/appearance/structured-data/merchant-listing). schema.org 30.1 adds EnvironmentalProductDeclaration and DeclarationOfConformity subtypes (no Google feature documented).",
       "template": {
         "@context": "https://schema.org",
         "@type": "Product",
         "name": "[Product Name]",
         "hasCertification": {
           "@type": "Certification",
-          "certificationIdentification": "[Certification Name, e.g. Energy Star]",
+          "name": "EPREL",
           "issuedBy": {
             "@type": "Organization",
-            "name": "[Issuing Organization, e.g. EPA]"
-          }
+            "name": "European_Commission"
+          },
+          "certificationIdentification": "[EPREL registration code]"
         }
       }
     },
     {
       "type": "OfferShippingDetails",
-      "description": "Shipping and delivery information for e-commerce products. Includes shipping rate, handling time, and transit time.",
+      "description": "Shipping and delivery information for e-commerce products. Google requires shippingRate, shippingDestination (DefinedRegion with addressCountry) and deliveryTime (https://developers.google.com/search/docs/appearance/structured-data/merchant-listing).",
       "template": {
         "@context": "https://schema.org",
         "@type": "Product",
@@ -189,6 +202,10 @@
               "@type": "MonetaryAmount",
               "value": "[0]",
               "currency": "USD"
+            },
+            "shippingDestination": {
+              "@type": "DefinedRegion",
+              "addressCountry": "US"
             },
             "deliveryTime": {
               "@type": "ShippingDeliveryTime",
@@ -207,6 +224,23 @@
             }
           }
         }
+      }
+    },
+    {
+      "type": "ProductCategory",
+      "description": "Product.category with both a Google Product Category (CategoryCode) and a merchant-defined text category. Documented by Google on 2026-07-07 (https://developers.google.com/search/docs/appearance/structured-data/merchant-listing).",
+      "template": {
+        "@context": "https://schema.org",
+        "@type": "Product",
+        "name": "[Product Name]",
+        "category": [
+          {
+            "@type": "CategoryCode",
+            "inCodeSet": "https://www.google.com/basepages/producttype/taxonomy-with-ids.en-US.txt",
+            "codeValue": "[Google Product Category ID]"
+          },
+          "[Merchant category, e.g. Home > Kitchen > Coffee Makers]"
+        ]
       }
     }
   ]

@@ -27,6 +27,8 @@ Current thresholds (as of 2026):
 
 See the AI Crawler Management section in `seo-technical` skill for crawler tokens and robots.txt guidance.
 
+For how crawl frequency, internal link prominence, duplicates, CWV and HTTPS map to disclosed Google signals (DOJ trial record, 2024 API leak), see `skills/seo/references/ranking-signals.md`. Use it for context only; do not score leaked attributes directly.
+
 ## Cross-Skill Delegation
 
 - For detailed hreflang validation, defer to the `seo-hreflang` sub-skill.

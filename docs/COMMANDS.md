@@ -84,7 +84,7 @@ E-E-A-T and content quality analysis.
 - Expertise (author credentials)
 - Authoritativeness (external recognition)
 - Trustworthiness (transparency, security)
-- AI citation readiness
+- AI search visibility (per Google's AI optimization guide)
 - Content freshness
 
 ---
@@ -108,7 +108,7 @@ Schema markup detection, validation, and generation.
 
 ### `/seo geo <url>`
 
-AI Overviews / Generative Engine Optimization.
+AI search visibility for Google AI Overviews / AI Mode, ChatGPT search, Perplexity and Bing Copilot.
 
 **Example:**
 ```
@@ -116,11 +116,13 @@ AI Overviews / Generative Engine Optimization.
 ```
 
 **What it analyzes:**
-- Citability score (quotable facts, statistics)
-- Structural readability (headings, lists, tables)
-- Entity clarity (definitions, context)
-- Authority signals (credentials, sources)
-- Structured data support
+- Crawler access & eligibility (robots.txt per vendor token: search vs training vs user-initiated; noindex/nosnippet/max-snippet)
+- Content uniqueness (non-commodity content)
+- Structure & semantic HTML
+- Rich media (images, video)
+- Entity, trust & freshness (GBP, Merchant Center, Bing Places, IndexNow)
+- Measurement: Search Console Generative AI report (`/seo google gen-ai-report`) and Bing AI Performance (`/seo backlinks ai-performance --file <export>`), both from manual exports
+- llms.txt and RSL are reported as informational only, never scored (Google does not use llms.txt)
 
 ---
 
@@ -260,6 +262,32 @@ Programmatic SEO analysis and planning for pages generated at scale.
 
 ---
 
+### `/seo google crux-bq`, `crux-benchmark`, `gen-ai-report`
+
+New `/seo google` subcommands (see `skills/seo-google/SKILL.md`).
+
+```
+/seo google crux-bq example.com
+/seo google crux-benchmark example.com competitor1.com competitor2.com
+/seo google gen-ai-report
+```
+
+- `crux-bq`: monthly origin-level CrUX history from the public CrUX BigQuery dataset (`scripts/crux_bigquery.py`). Needs a billing project (`bigquery_project_id` or `--project`) and a service account or Application Default Credentials; run `--dry-run` first to see bytes processed.
+- `crux-benchmark`: the same data for up to 10 competitor origins, ranked per metric (ties share a rank).
+- `gen-ai-report`: reads a manual export of the Search Console Generative AI performance report (AI Overviews / AI Mode impressions by page, country, device, date). The report is not available in the Search Console API.
+
+---
+
+### `/seo backlinks ai-performance [<url>] --file <export>`
+
+Parses a Bing Webmaster Tools AI Performance export (CSV or Excel) offline: citations, cited pages and sampled grounding queries across Microsoft Copilot, AI summaries in Bing and select partner integrations. No API exists for this report. Citations are not rankings and are not used in the Backlink Health Score.
+
+```
+python scripts/bing_webmaster.py ai-performance https://example.com --file queries.csv --file pages.csv --json
+```
+
+---
+
 ### `/seo dataforseo [command]`
 
 Live SEO data via DataForSEO MCP server (extension). 22 commands across 9 API modules.
@@ -364,3 +392,7 @@ AI image generation for SEO assets (extension). Powered by Gemini via nanobanana
 | `/seo sitemap generate` | Create new sitemap |
 | `/seo technical <url>` | Technical SEO check |
 | `/seo dataforseo [command]` | Live SEO data (extension) |
+| `/seo google crux-bq <origin>` | Monthly CrUX history (BigQuery) |
+| `/seo google crux-benchmark <origin> <competitors...>` | CWV competitor benchmark (BigQuery) |
+| `/seo google gen-ai-report` | Search Console Generative AI report (manual export) |
+| `/seo backlinks ai-performance --file <export>` | Bing AI Performance export parser |
