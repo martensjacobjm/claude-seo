@@ -89,6 +89,8 @@ llms.txt; Anthropic's crawler page does not mention it.
 ## 5. Removed Claims (no primary source found, 2026-09-24)
 
 Do not re-introduce these without a fetched primary source:
+(Local SEO and E-E-A-T removals are listed in `skills/seo/references/local-eeat-evidence.md`.)
+
 
 - "Optimal passage length: 134-167 words" (contradicted by Google: no ideal length, no chunking requirement)
 - "Direct answer in first 40-60 words" / "definition in first 60 words" / "X is..." patterns / question-based headings

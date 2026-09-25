@@ -33,6 +33,7 @@ varje bygge från repots kanoniska filer:
 | `references/cwv-thresholds.md` | `skills/seo/references/cwv-thresholds.md` |
 | `references/local-schema-types.md` | `skills/seo/references/local-schema-types.md` |
 | `references/eeat-framework.md` | `skills/seo/references/eeat-framework.md` |
+| `references/local-eeat-evidence.md` | `skills/seo/references/local-eeat-evidence.md` |
 | `scripts/validate_schema.py` | `hooks/validate-schema.py` |
 
 Handskrivet i `hemsida/` är bara `SKILL.md` och `references/rapportmall.md`. Ändras en

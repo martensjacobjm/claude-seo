@@ -22,7 +22,7 @@ claude-seo/
   skills/                            # 19 skills (auto-discovered)
     seo/                           # Main orchestrator skill
       SKILL.md                     # Entry point, routing table, core rules
-      references/                  # On-demand knowledge files (13 files, incl. ranking-signals.md)
+      references/                  # On-demand knowledge files (14 files, incl. ranking-signals.md, local-eeat-evidence.md)
     seo-audit/SKILL.md            # Full site audit with parallel agents
     seo-page/SKILL.md            # Deep single-page analysis
     seo-technical/SKILL.md       # Technical SEO (9 categories)

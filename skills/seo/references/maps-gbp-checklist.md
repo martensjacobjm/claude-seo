@@ -26,13 +26,13 @@ Total possible: 50 points. Normalize to 0-100 scale: `(score / 50) * 100`
 | # | Field | Points | Optimized Criteria |
 |---|-------|--------|-------------------|
 | 1 | **Primary category** | 2 | Most specific subtype for industry (e.g., "Cosmetic Dentist" not "Dentist") |
-| 2 | **Additional categories** | 2 | 3-5 relevant categories (optimal: 4 additional per BrightLocal) |
+| 2 | **Additional categories** | 2 | Relevant categories only (no Google-documented optimal number) |
 | 3 | **Business name** | 2 | Matches real-world name exactly (no keyword stuffing) |
 | 4 | **Physical address** | 2 | Complete, matches website NAP |
 | 5 | **Phone number** | 2 | Local number (not toll-free), matches website |
-| 6 | **Website URL** | 2 | Points to correct page (not strongest page -- Diversity Update risk) |
-| 7 | **Business hours** | 2 | Complete with special/holiday hours. Open-at-search-time = factor #5 |
-| 8 | **Verified status** | 2 | Google Verified badge active |
+| 6 | **Website URL** | 2 | Points to the page that best represents this location |
+| 7 | **Business hours** | 2 | Complete with special/holiday hours (Google-recommended). Open-at-search-time = #5 in Whitespark 2026 practitioner survey |
+| 8 | **Verified status** | 2 | Profile verified (Google: verification makes the business "more likely to show up") |
 
 **Subtotal: 16 points (8 fields)**
 

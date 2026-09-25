@@ -131,7 +131,7 @@ Cross-platform review analysis: velocity, sentiment, rating distribution, fake d
 
 1. Fetch Google reviews via DataForSEO Reviews API (sort by newest)
 2. Calculate review velocity: reviews per month over last 6 months
-3. Check 18-day rule (Sterling Sky): any 3-week gap = ranking risk
+3. Note gaps in review recency (heuristic; Google documents no review cadence, see `references/local-eeat-evidence.md`)
 4. Analyze rating distribution: healthy = bell curve skewed to 5-star
 5. Calculate owner response rate: responses / total reviews
 6. Fetch Tripadvisor and Trustpilot reviews (if available)
@@ -198,10 +198,10 @@ Generate LocalBusiness JSON-LD markup from collected data.
 ### Workflow
 
 1. Determine most specific schema subtype for the industry
-2. Populate required properties: `@type`, `name`, `address`, `image`
+2. Populate Google-required properties: `name`, `address` (plus `@type`; `image` is valid schema.org but not in Google's LocalBusiness list)
 3. Add recommended properties: `telephone`, `url`, `geo`, `openingHoursSpecification`, `priceRange`
-4. Add strategic properties for multi-location: `branchOf`, `areaServed`, `sameAs`
-5. Add `aggregateRating` if review data available
+4. Add strategic properties for multi-location: `parentOrganization` (supersedes `branchOf`), `areaServed`, `sameAs`
+5. Add `aggregateRating` only when the site reviews other businesses: self-serving review markup is not eligible for star snippets
 6. Output valid JSON-LD block ready for implementation
 
 **Do NOT generate self-serving review markup** -- Google ignores LocalBusiness review markup from the business itself. Only mark up third-party reviews visible on the page.
@@ -255,5 +255,5 @@ Generate `MAPS-ANALYSIS-{domain}.md` with:
 | Business not found in Maps SERP | Try My Business Info with keyword. If still not found, report "Business not found in Google Maps for this location." |
 | Geocoding fails (Nominatim) | Ask user to provide coordinates or a more specific address. |
 | API rate limit hit | Report the limit. Suggest waiting or using standard (queued) method instead of live. |
-| No reviews found | Report zero review state. Recommend review generation strategy with 18-day cadence target. |
+| No reviews found | Report zero review state. Recommend asking every customer for a review on a steady schedule (no gating, no incentives). |
 | Multi-location detected | Ask user which location to analyze, or offer batch mode with per-location cost estimate. |

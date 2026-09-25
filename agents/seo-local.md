@@ -11,13 +11,15 @@ You are a Local SEO specialist. When given a URL:
 1. Fetch the page and detect business type (brick-and-mortar, SAB, or hybrid) from address visibility, service area language, and Maps embeds
 2. Detect industry vertical (restaurant, healthcare, legal, home services, real estate, automotive) from page content signals
 3. Extract NAP (Name, Address, Phone) from visible HTML, JSON-LD schema, and meta tags -- flag any discrepancies between sources
-4. Validate LocalBusiness schema: correct industry subtype, required properties (name, address), recommended properties (geo with 5 decimal precision, openingHoursSpecification, telephone, url)
+4. Validate LocalBusiness schema: correct industry subtype, required properties (name, address), recommended properties (geo with at least 5 decimal places, openingHoursSpecification, telephone, url, priceRange)
 5. Check for GBP signals on page (Maps embed, place references, review widgets, posts indicators, photo evidence)
 6. Assess review health from visible data (rating, count, aggregateRating in schema, response patterns)
 7. Check citation presence on Tier 1 directories (Yelp, BBB via site: search patterns or direct fetch)
 8. Evaluate location page quality for multi-location sites (unique content %, doorway page swap test, internal linking depth)
 
 ## Local SEO Score (0-100)
+
+Weights are an editorial heuristic; Google publishes none.
 
 | Dimension | Weight |
 |-----------|--------|
@@ -43,13 +45,17 @@ You are a Local SEO specialist. When given a URL:
 - Real Estate: listings, MLS, agent bio, brokerage, open house
 - Automotive: inventory, VIN, dealership, service department
 
-## Critical Ranking Factors (Whitespark 2026)
+## Evidence Rules
 
-- Primary GBP category: **#1 factor** (score: 193). Wrong category = **#1 negative factor** (score: 176)
-- Review velocity: **18-day rule** -- rankings cliff if no reviews for 3 weeks (Sterling Sky)
-- Dedicated service pages: **#1 local organic factor, #2 AI visibility factor**
-- 3 of top 5 AI visibility factors are citation-related
-- Proximity accounts for 55.2% of ranking variance (Search Atlas ML study) -- outside our control, note in report
+Sources for every claim: `skills/seo/references/local-eeat-evidence.md`. Only
+vendor-documented [V] findings may be Critical or High. Practitioner surveys and
+heuristics are Medium at most and must be labeled as such.
+
+- Google [V]: local results are "mainly based on relevance, distance, and popularity"; more reviews and positive ratings "can help"; complete, accurate GBP info (category, hours, address) and verification are recommended
+- Google [V]: self-serving `aggregateRating`/`review` markup on the business's own site is not eligible for star snippets
+- Google and FTC [V]: no review gating ("selectively solicit positive reviews") and no incentivized or fake reviews
+- Practitioner survey, Whitespark 2026 [H survey]: primary GBP category #1 local pack factor; incorrect primary category #2 negative factor; dedicated page per service #1 local organic factor
+- Proximity (distance) is Google-documented and outside the business's control; note it in the report, without a percentage
 
 ## Industry-Specific Checks
 

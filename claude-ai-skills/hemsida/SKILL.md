@@ -35,13 +35,15 @@ Regler som alltid gäller:
 
 1. Ett fynd får klassas **Kritisk** eller **Hög** bara om det bärs av [V].
 2. [H]-fynd skrivs ut med ordet "tumregel" och får högst **Medel**.
-3. Citera aldrig en statistiksiffra som inte står i `references/geo-evidence.md`.
-   Avsnitt 5 där listar påståenden som strukits för att de saknar primärkälla.
+3. Citera aldrig en statistiksiffra som inte står i `references/geo-evidence.md` eller
+   `references/local-eeat-evidence.md`. Båda har en lista över påståenden som strukits för
+   att de saknar primärkälla.
 4. `references/ranking-signals.md` förklarar varför en kontroll spelar roll. Den visar
    att signaler finns, inte hur mycket de väger. Använd den aldrig för att lova rankning.
-5. `references/eeat-framework.md` och `references/local-schema-types.md` är äldre
-   praktikerfiler. Använd deras checklistor och typlistor, men citera inga siffror
-   därifrån. Vid krock gäller `geo-evidence.md` och `schema-types.md`.
+5. `references/eeat-framework.md` och `references/local-schema-types.md` är
+   evidensgranskade (2026-09-25) och märkta med [V] och [H]. Checklistor, vikter och
+   kataloglistor där är tumregler [H]. Källorna står i `references/local-eeat-evidence.md`.
+   Vid krock gäller `geo-evidence.md` och `schema-types.md`.
 
 ## Rekommendera aldrig
 
@@ -207,7 +209,7 @@ validator.schema.org, som skriptet inte ersätter.
   hjälpa företag att synas i AI-svar och andra sökresultat [V].
 - **Bing Places for Business**: gör anspråk. Bing anger att det håller adress, öppettider
   och kontaktuppgifter aktuella och möjliga att ta med i AI-genererade svar [V].
-- **Apple Business Connect**: gör anspråk för Apple Kartor och Siri [H].
+- **Apple Business** (tidigare Apple Business Connect): gör anspråk för Apple Kartor [V].
 - **LocalBusiness-markup**: mest specifika undertyp (till exempel `Plumber`, `Dentist`,
   `Restaurant`), `name`, `address` som PostalAddress, `telephone`, `url`,
   `openingHoursSpecification`, `geo` med fem decimaler, `image`, `@id` per plats.
@@ -315,5 +317,6 @@ gäller det repot; de finns inte här.
 | `references/schema-types.md` | Du väljer eller granskar schema-typer och egenskaper |
 | `references/cwv-thresholds.md` | Prestanda, LCP-delar, vanliga orsaker |
 | `references/ranking-signals.md` | Du förklarar varför en kontroll spelar roll |
-| `references/eeat-framework.md` | Innehålls- och förtroendechecklistor (siffrorna där är inte belagda) |
-| `references/local-schema-types.md` | LocalBusiness-undertyper per bransch (siffrorna där är inte belagda) |
+| `references/eeat-framework.md` | Innehålls- och förtroendechecklistor, belagt mot kvalitetsriktlinjerna 2025-09-11 |
+| `references/local-schema-types.md` | LocalBusiness-undertyper per bransch, Googles egenskapslista, egna recensioner utan stjärnor |
+| `references/local-eeat-evidence.md` | Du behöver källan till ett lokalt påstående eller ett E-E-A-T-påstående, eller listan över strukna påståenden |
