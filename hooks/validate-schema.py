@@ -100,6 +100,17 @@ PLACEHOLDER_PATTERNS = [
     re.compile(r"\bREPLACE(?:_ME)?\b"),
 ]
 
+# Likely dummy data that is not bracketed (non-blocking warnings): long zero
+# runs in phone numbers, "example"/"exempel" street names or domains, lorem
+# ipsum. Warnings only, since real data can occasionally match.
+DUMMY_PATTERNS = [
+    (re.compile(r"\+?\d[\d\s-]*0{6,}\d*"), "phone number with a long run of zeros"),
+    (re.compile(r"\b(?:Example|Exempel)(?:vägen|gatan|\s+(?:Street|Road|Avenue|Ave|St))\b\s*\d*", re.I),
+     "example/exempel street address"),
+    (re.compile(r"\bexample\.(?:com|org|net|se)\b", re.I), "example domain"),
+    (re.compile(r"\blorem ipsum\b", re.I), "lorem ipsum text"),
+]
+
 Finding = Tuple[str, str]  # (severity, message)
 
 
@@ -203,6 +214,11 @@ def _validate_schema_object(obj: dict, block_num: int, has_mathsolver: bool = Fa
             if m.group(0) not in seen:
                 seen.add(m.group(0))
                 findings.append((BLOCKING, f"{prefix}: Contains placeholder text: {m.group(0)}"))
+    for pat, label in DUMMY_PATTERNS:
+        m = pat.search(text)
+        if m and m.group(0).strip() not in seen:
+            seen.add(m.group(0).strip())
+            findings.append((WARNING, f"{prefix}: Possible dummy data ({label}): {m.group(0).strip()}"))
 
     return findings
 

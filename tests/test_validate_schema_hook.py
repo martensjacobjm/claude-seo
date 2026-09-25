@@ -34,3 +34,12 @@ def test_nested_types_are_found():
     content = open(os.path.join(SCHEMA, "deprecated-howto.html"), encoding="utf-8").read()
     messages = " ".join(str(f) for f in hook.validate_jsonld(content))
     assert "HowTo" in messages
+
+
+def test_dummy_data_is_a_warning_not_a_block():
+    proc = _run(args=(os.path.join(SCHEMA, "dummy-localbusiness.html"), "--json"))
+    out = json.loads(proc.stdout)
+    assert proc.returncode == 1
+    warnings = " ".join(out["warnings"])
+    assert "0000000" in warnings and "Exempelvägen" in warnings
+    assert out["errors"] == []
