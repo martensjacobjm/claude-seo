@@ -207,6 +207,8 @@ If DataForSEO MCP tools are available, use `ai_optimization_chat_gpt_scraper` to
 
 ## Output
 
+Worked examples (robots.txt, finding phrasing, sample report, measurement readout): `references/geo-examples.md`.
+
 Generate `GEO-ANALYSIS.md` with:
 
 1. **GEO Readiness Score: XX/100** (heuristic)

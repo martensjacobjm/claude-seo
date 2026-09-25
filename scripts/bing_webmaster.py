@@ -500,8 +500,11 @@ def _read_table(path: str) -> tuple:
     if ext == ".xls":
         return [], "Legacy .xls is not supported; save the export as .csv or .xlsx."
 
-    with open(path, "rb") as fh:
-        text = _decode(fh.read())
+    try:
+        with open(path, "rb") as fh:
+            text = _decode(fh.read())
+    except OSError as e:
+        return [], f"Could not read {path}: {e}"
     # Pick the delimiter whose header row maps the most columns (tolerates preamble lines
     # that confuse csv.Sniffer); default ',' (or tab for .tsv).
     best_rows, best_score = None, -1

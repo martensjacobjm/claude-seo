@@ -43,3 +43,8 @@ jobs:
           python3 -m py_compile scripts/verify_backlinks.py
           python3 -m py_compile hooks/validate-schema.py
           echo "All scripts passed syntax check"
+
+      - name: Run unit tests
+        run: |
+          python3 -m pip install --quiet pytest
+          python3 -m pytest tests -q
