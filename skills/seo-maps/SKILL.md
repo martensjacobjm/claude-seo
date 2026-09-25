@@ -25,6 +25,12 @@ metadata:
 Maps platform analysis for local businesses. Works with external APIs to assess
 how a business appears on Google Maps, Bing Places, Apple Maps, and OpenStreetMap.
 
+**Evidence rule:** every API, limit, price and Google claim here traces to a row in
+`references/local-eeat-evidence.md` (section "Maps APIs" and the GBP sources). Add a row there
+before adding a new fact. Only [V] (vendor-documented) findings may be Critical or High.
+Scores, weights, SoLV bands, velocity and fake-review rules are heuristics [H]: label them
+"heuristic" in output and cap them at Medium.
+
 **Boundary with seo-local:** This skill analyzes the business on maps PLATFORMS
 (via APIs). seo-local analyzes local SEO signals on the WEBSITE (via HTML fetch).
 Do not duplicate seo-local on-page analysis. Recommend `/seo local <url>` for
@@ -51,19 +57,19 @@ website-level checks.
 Before any analysis, detect the available capability tier:
 
 ### Tier 0 (Free)
-**Detection:** DataForSEO MCP tools NOT available.
-**Capabilities:** Overpass API competitor discovery, Geoapify POI search, Nominatim geocoding, static GBP checklist, schema generation, cross-platform NAP guidance.
+**Detection:** No DataForSEO MCP tools available.
+**Capabilities:** Overpass API competitor discovery, Geoapify POI search, Nominatim geocoding (one-off lookups; show the user https://operations.osmfoundation.org/policies/nominatim/ as its policy requires), static GBP checklist, schema generation, cross-platform NAP guidance.
 **Load:** `references/maps-free-apis.md`
 
 ### Tier 1 (DataForSEO)
-**Detection:** `business_data_business_listings_search` MCP tool IS available.
-**Capabilities:** Everything in Tier 0 PLUS geo-grid rank tracking, live GBP profile audit, review intelligence (velocity, sentiment, distribution), GBP post activity, Q&A data, Tripadvisor/Trustpilot reviews.
+**Detection:** a DataForSEO MCP tool is available: `api_request` (dataforseo-mcp-server 3.x, the version `extensions/dataforseo/install.sh` now installs) or `business_data_business_listings_search` (deprecated v2 server). With v3, call endpoints by path, e.g. `/v3/serp/google/maps/live/advanced`.
+**Capabilities:** Everything in Tier 0 PLUS geo-grid rank tracking, live GBP profile audit, review intelligence (velocity, sentiment, distribution), GBP post activity, Q&A data (Google's own Q&A API was discontinued 2025-11-03; treat empty results as no data), Tripadvisor/Trustpilot reviews.
 **Load:** `references/maps-api-endpoints.md`
 
 ### Tier 2 (DataForSEO + Google Maps Platform)
 **Detection:** Tier 1 available AND Google Maps API key in environment.
-**Capabilities:** Everything in Tier 1 PLUS Google Places details, real-time business status, AI-powered place summaries, photo analysis.
-**Note:** Google ToS restricts storage to `place_id` only. Lat/lng cached 30 days max.
+**Capabilities:** Everything in Tier 1 PLUS Places API (New) Place Details, `businessStatus` (OPERATIONAL, CLOSED_TEMPORARILY, CLOSED_PERMANENTLY), AI-powered place summaries (100-character overviews, only for some place types, languages and regions), photos.
+**Note:** Google Maps Platform terms: `place_id` may be cached indefinitely; latitude/longitude from the Places API for up to 30 consecutive calendar days; other Places content may not be cached or stored except as the terms allow.
 
 **Always communicate the detected tier to the user** at the start of analysis.
 
@@ -80,11 +86,11 @@ variation across a geographic area. Requires DataForSEO.
 ### Workflow
 
 1. Geocode business address to get center lat/lng
-2. Generate grid points (default: 7x7, 5km radius) using Haversine offset formula
+2. Generate grid points (default: 7x7, 5km radius, heuristic) with the offset formula in `maps-geo-grid.md`
 3. **Display cost estimate and ask for confirmation before proceeding**
-4. Fire DataForSEO Maps SERP API calls with `location_coordinate` per grid point
-5. Find target business rank at each point
-6. Calculate SoLV: `(top_3_count / total_points) * 100`
+4. Send one Maps SERP task per grid point with `location_coordinate` (live: one task per call; standard `task_post`: up to 100 tasks per call)
+5. Find target business rank (`rank_group` among `maps_search` items, matched on `cid`/`place_id`) at each point
+6. Calculate SoLV (Local Falcon's definition: share of points in the top 3): `(top_3_count / total_points) * 100`
 7. Render ASCII heatmap in output
 
 ### Cost Warning (REQUIRED)
@@ -100,15 +106,15 @@ DataForSEO credits will be consumed. Proceed?
 
 ## GBP Profile Audit (Tier 1 preferred, Tier 0 manual)
 
-Audits the 25 fields that affect Google Business Profile quality and ranking.
+Audits 24 profile fields. Google says complete, accurate info makes a business "more likely to show up"; it publishes no per-field weights, so the score is a heuristic [H].
 
 **Load:** `references/maps-gbp-checklist.md` for full checklist and scoring.
 
 ### Tier 1 Workflow
 
 1. Fetch business profile via DataForSEO My Business Info API (keyword or CID)
-2. Map API response fields to 25-field checklist
-3. Score each field: Present + Optimized = 2pts, Present = 1pt, Missing = 0pts
+2. Map API response fields to the 24-field checklist (`is_claimed` gives verification status)
+3. Score each field: Present + Optimized = 2pts, Present = 1pt, Missing = 0pts (max 48)
 4. Apply industry-specific weight multipliers
 5. Normalize to 0-100 scale
 
@@ -130,22 +136,29 @@ Cross-platform review analysis: velocity, sentiment, rating distribution, fake d
 ### Workflow
 
 1. Fetch Google reviews via DataForSEO Reviews API (sort by newest)
-2. Calculate review velocity: reviews per month over last 6 months
+2. Calculate review velocity: reviews per month over last 6 months [H]
 3. Note gaps in review recency (heuristic; Google documents no review cadence, see `references/local-eeat-evidence.md`)
-4. Analyze rating distribution: healthy = bell curve skewed to 5-star
-5. Calculate owner response rate: responses / total reviews
+4. Report the rating distribution (`rating_distribution`); no "healthy" shape is documented, so describe it rather than grade it
+5. Calculate owner response rate: reviews with `owner_answer` / reviews fetched. Google recommends replying to reviews [V]; no target rate is documented
 6. Fetch Tripadvisor and Trustpilot reviews (if available)
 7. Cross-platform comparison table
 
-### Fake Review Detection Signals
+### Possible Review Manipulation Signals [H]
+
+Google's policy removes "Content exhibiting unusual volumes or patterns of review
+contributions that are indicative of efforts to manipulate a place's rating" and content
+posted "from multiple accounts by or at the request of one person" [V, fake engagement
+policy 7400114]. It publishes no detection thresholds. The patterns below are heuristics:
+report "possible pattern, not proof", cap at Medium, never accuse, and point to Google's
+review reporting flow.
 
 Flag reviews matching 2+ of these patterns:
 - Uniform timing (multiple reviews same day/hour)
-- Reviewer accounts with limited history or single review
-- Geographic inconsistencies (reviewer location vs business location)
-- Exclusively 5-star velocity spike (vs historical baseline)
+- Reviewer accounts with a single review (`reviews_count` = 1) or no profile history
+- Exclusively 5-star volume spike vs the business's own 6-month baseline
 - Identical or near-identical text across reviews
-- Sudden volume spike without corresponding marketing activity
+- Sudden volume spike without corresponding marketing activity (ask the user)
+- Reviewer location vs business location: manual check only (the Reviews API returns no reviewer location)
 
 ---
 
@@ -167,7 +180,7 @@ Identify and analyze competitors within a defined radius.
 1. Use Maps SERP API with business keyword + location
 2. Extract top 20 competitors with full profile data
 3. Compare: rating, review count, categories, photos, attributes
-4. Calculate competitive density score: competitors per km^2
+4. Calculate competitive density: competitors per km^2 (descriptive, heuristic)
 
 ---
 
@@ -180,11 +193,11 @@ Check business listing consistency across Google, Bing Places, Apple, and OSM.
 1. Search for business name on each platform:
    - Google: infer from GBP data or Maps SERP result
    - Bing: `WebFetch https://www.bing.com/maps?q=BUSINESS+NAME+LOCATION`
-   - Apple: manual check (no public API -- recommend Apple Business Connect at businessconnect.apple.com)
-   - OSM: Overpass or Nominatim search
+   - Apple: manual check (the Apple Maps Server API needs an Apple Developer Maps key and is not integrated here; businesses manage listings in Apple Business at business.apple.com, where businessconnect.apple.com now redirects)
+   - OSM: Overpass search (Nominatim only for a single address lookup)
 2. Extract NAP (Name, Address, Phone) from each source
 3. Compare for consistency: exact match, partial match, missing, or conflicting
-4. Flag discrepancies as Critical (name mismatch), High (address mismatch), Medium (phone mismatch)
+4. Flag discrepancies as Medium (name or address mismatch) or Low (phone mismatch), labeled heuristic: Google documents no cross-platform consistency rule. A GBP name that breaks Google's name guideline (3038177) is a separate [V] finding
 5. Recommend claiming unclaimed profiles
 
 ---
@@ -214,7 +227,8 @@ Load on-demand as needed (do NOT load all at startup):
 - `references/maps-api-endpoints.md`: DataForSEO endpoint details, params, costs
 - `references/maps-free-apis.md`: Overpass, Geoapify, Nominatim query templates
 - `references/maps-geo-grid.md`: Grid algorithm, SoLV formula, heatmap rendering
-- `references/maps-gbp-checklist.md`: 25-field GBP audit with industry weights
+- `references/maps-gbp-checklist.md`: 24-field GBP audit with industry weights
+- `references/local-eeat-evidence.md`: Evidence register (sources, removed claims)
 - `references/local-seo-signals.md`: Ranking factors, review benchmarks (shared)
 - `references/local-schema-types.md`: LocalBusiness subtypes by industry (shared)
 
@@ -235,6 +249,15 @@ Generate `MAPS-ANALYSIS-{domain}.md` with:
 9. **Top 10 prioritized actions** (Critical > High > Medium > Low)
 10. **Cost report**: DataForSEO credits consumed during analysis (Tier 1 only)
 11. **Limitations disclaimer**: what could not be assessed at current tier
+
+### Finding Phrasing (invented example data)
+
+| Situation | Wrong | Right |
+|-----------|-------|-------|
+| SoLV 18% | "Critical: nearly invisible" | "Medium (heuristic): in the top 3 at 9 of 49 points (18%); competitor X leads at 31 points" |
+| 55% owner replies | "High: below 80% target" | "Medium (heuristic): 55% of the last 100 reviews have a reply. Google recommends replying to reviews [V]; no target rate is documented" |
+| 6 five-star reviews on one day | "Critical: fake reviews detected" | "Medium (heuristic): possible review pattern, not proof: 6 five-star reviews on 2026-05-02 from single-review accounts. Report via Google if you suspect abuse" |
+| `is_claimed: false` | "Low: claim profile" | "High [V]: profile not verified; Google says verified businesses are more likely to show up" |
 
 ---
 

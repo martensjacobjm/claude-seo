@@ -2,7 +2,8 @@
 # Local SEO and E-E-A-T Evidence Register
 
 Every factual claim in `eeat-framework.md`, `local-schema-types.md`, `local-seo-signals.md`,
-`skills/seo-local/SKILL.md` and `agents/seo-local.md` must trace to a row here. Add a source
+the four `maps-*.md` references, `skills/seo-local/SKILL.md`, `skills/seo-maps/SKILL.md` and
+their agents must trace to a row here. Add a source
 only after fetching the primary document. AI search claims live in
 `skills/seo-geo/references/geo-evidence.md`. All sources fetched 2026-09-25 unless noted.
 
@@ -39,9 +40,10 @@ articles are used only to locate primary sources.
 
 | Source | Date | Claim used |
 |--------|------|------------|
-| [Tips to improve your local ranking (7091)](https://support.google.com/business/answer/7091) | Fetched 2026-09-25 | "mainly based on relevance, distance, and popularity"; prominence from links and reviews; "no way to request or pay"; recommended actions. No mention of directories (inference from absence; the earlier wording was not re-fetched) |
-| [Guidelines for representing your business (3038177)](https://support.google.com/business/answer/3038177) | Fetched 2026-09-25 | Real-world name; unnecessary info in name "isn't permitted"; SAB hides address; "about 2 hours of driving time"; departments; individual practitioners; "[brand/company]: [practitioner name]" |
-| [Fake engagement policy (7400114)](https://support.google.com/contributionpolicy/answer/7400114) | Fetched 2026-09-25 | No incentives; do not "Discourage or prohibit negative reviews, or selectively solicit positive reviews from customers" |
+| [Tips to improve your local ranking (7091)](https://support.google.com/business/answer/7091) | Fetched 2026-09-25 | "mainly based on relevance, distance, and popularity"; prominence from links and reviews; "no way to request or pay"; recommended actions: verify ("more likely to show up in search results"), complete info incl. special hours and attributes ("parking or Wi-Fi"), respond to reviews ("shows that you value their feedback"), add photos and videos. No mention of directories (inference from absence) |
+| [Guidelines for representing your business (3038177)](https://support.google.com/business/answer/3038177) | Fetched 2026-09-25 | Real-world name; unnecessary info in name "isn't permitted"; SAB hides address; "about 2 hours of driving time"; departments; individual practitioners; "[brand/company]: [practitioner name]"; "Use a local phone number instead of a central call center helpline number whenever possible" |
+| [Edit profile (3039617)](https://support.google.com/business/answer/3039617), [Service areas (9157481)](https://support.google.com/business/answer/9157481), [Posts (7342169)](https://support.google.com/business/answer/7342169), [Social links (13580646)](https://support.google.com/business/answer/13580646) | Fetched 2026-09-25 | Description "Do not exceed 750 characters"; "up to 20 service areas"; post types updates, offers, events; social links "available in select regions" |
+| [Fake engagement policy (7400114)](https://support.google.com/contributionpolicy/answer/7400114) | Fetched 2026-09-25 | No incentives; do not "Discourage or prohibit negative reviews, or selectively solicit positive reviews from customers"; removes "Content exhibiting unusual volumes or patterns of review contributions" and content "posted from multiple accounts by or at the request of one person" (no thresholds published) |
 | [Chat and call history (14919056)](https://support.google.com/business/answer/14919056) | Fetched 2026-09-25 | Both removed as of 2024-07-31 |
 | [GBP API sunset dates](https://developers.google.com/my-business/content/sunset-dates) | Last updated 2026-08-28 | Q&A API support ended 2025-09-15, discontinued 2025-11-03; Business Calls API deprecated 2023-05-30 |
 | [About Google Verified badge (16498018)](https://support.google.com/localservices/answer/16498018) | Fetched 2026-09-25 | Single LSA badge for all advertisers; Money Back Guarantee discontinued (claims before 2025-12-07) |
@@ -62,6 +64,23 @@ articles are used only to locate primary sources.
 | [FTC: Soliciting and paying for online reviews](https://www.ftc.gov/business-guidance/resources/soliciting-paying-online-reviews-guide-marketers) | 2022 | "Don't ask for reviews only from customers you think will leave positive ones" (read via WebFetch; direct fetch returned 403) |
 | [HHS OCR: Manasa Health Center](https://www.hhs.gov/hipaa/for-professionals/compliance-enforcement/agreements/manasa/index.html) | 2023-06-05 | $30,000; PHI disclosed in responses to negative online reviews |
 
+### Maps APIs (seo-maps; prices change, re-check before quoting)
+
+| Source | Date | Claim used |
+|--------|------|------------|
+| [DataForSEO docs: Maps SERP live](https://docs.dataforseo.com/v3/serp/google/maps/live/advanced/), [task_post](https://docs.dataforseo.com/v3/serp/google/maps/task_post/) | Fetched 2026-09-25 | 2,000 calls/min; live = one task per call; task_post max 100 tasks (error 40006); `location_coordinate` "latitude,longitude,zoom", 7 decimals, 3z-21z, default 17z; depth default 100, max 700; mobile 20 results; `maps_search` item fields; `maps_paid_item` |
+| DataForSEO docs: [My Business Info live](https://docs.dataforseo.com/v3/business_data/google/my_business_info/live/), [Reviews](https://docs.dataforseo.com/v3/business_data/google/reviews/task_post/), [Extended Reviews](https://docs.dataforseo.com/v3/business_data/google/extended_reviews/task_post/), [Q&A live](https://docs.dataforseo.com/v3/business_data/google/questions_and_answers/live/), [Listings search](https://docs.dataforseo.com/v3/business_data/business_listings/search/live/), [Tripadvisor](https://docs.dataforseo.com/v3/business_data/tripadvisor/reviews/task_post/), [Trustpilot](https://docs.dataforseo.com/v3/business_data/trustpilot/reviews/task_post/) | Fetched 2026-09-25 | `cid:`/`place_id:` in `keyword`; `is_claimed` "verified by its owner"; `total_photos`, `logo`, `work_time.work_hours`; reviews `sort_by` newest/highest_rating/lowest_rating/relevant, depth max 4490; Extended Reviews 3x (keyword), 2x (cid/place_id); live max 30 simultaneous; listings limit max 1000; Tripadvisor 110/min, Trustpilot 30/min |
+| DataForSEO pricing: [Maps SERP](https://dataforseo.com/pricing/serp/google-maps-serp-api) (updated 2026-07-03), [Business Info/Updates](https://dataforseo.com/pricing/business-data/business-data-api), [Reviews](https://dataforseo.com/pricing/business-data/google-reviews-api) (2026-06-22), [Q&A](https://dataforseo.com/pricing/business-data/google-questions-and-answers-api-pricing), [Tripadvisor](https://dataforseo.com/pricing/business-data/business-data-api-tripadvisor-pricing), [Trustpilot](https://dataforseo.com/pricing/business-data/business-data-api-trustpilot-reviews-pricing) | Fetched 2026-09-25 | Maps SERP $0.0006/$0.0012/$0.002; operators x5, depth per 100; Info $0.0015/$0.003/$0.0054; Updates $0.0015 + $0.00075 per 10; Reviews $0.00075 per 10; Extended $0.00075 + keyword $0.0015 or cid/place_id $0.00075 per 20; Q&A live $0.0025 per 20; Tripadvisor $0.00075 per 10; Trustpilot $0.00075 per 20 |
+| [DataForSEO MCP server page](https://dataforseo.com/seo-mcp-server) and [npm dataforseo-mcp-server](https://www.npmjs.com/package/dataforseo-mcp-server) | Fetched 2026-09-25 | $1 free credit, $50 minimum top-up, credits never expire; v3 (latest 3.1.1, 2026-08-25) tools `api_request`, `docs_search`, `docs_index`, `docs_list_sections`; v2 deprecated |
+| [Places API policies](https://developers.google.com/maps/documentation/places/web-service/policies) (updated 2026-09-24), [Service Specific Terms](https://cloud.google.com/maps-platform/terms/maps-service-terms) (modified 2026-06-10) | Fetched 2026-09-25 | place_id "exempt from caching restrictions"; Places API lat/lng cache "up to 30 consecutive calendar days" (14.3) |
+| [Place summaries](https://developers.google.com/maps/documentation/places/web-service/place-summaries) (updated 2026-09-17), [Place reference](https://developers.google.com/maps/documentation/places/web-service/reference/rest/v1/places) | Fetched 2026-09-25 | "100-character overviews", limited place types, languages and regions; `businessStatus` values |
+| [Apple Maps Server API](https://developer.apple.com/documentation/applemapsserverapi) | Fetched 2026-09-25 | Exists (search, places); needs a Maps identifier and private key |
+| [Nominatim usage policy](https://operations.osmfoundation.org/policies/nominatim/) | Fetched 2026-09-25 | "absolute maximum of 1 request per second"; identifying User-Agent; no auto-complete, no "reverse queries in a grid"; bulk "not encouraged", 4 req/min for long or scheduled scripts; LLM clause; cache results |
+| [Overpass API wiki](https://wiki.openstreetmap.org/wiki/Overpass_API), [Overpass manual: Commons](https://dev.overpass-api.de/overpass-doc/en/preface/commons.html), [/api/status](https://overpass-api.de/api/status) | Fetched 2026-09-25 | ~10,000 queries and ~1 GB/day (one-off), divide by 100 for regular use; User-Agent; no parallel scripts; 30 s pause on 429/406; defaults 180 s and 512 MiB; slots vary (4 on 2026-09-25) |
+| [OSM copyright](https://www.openstreetmap.org/copyright) | Fetched 2026-09-25 | Credit "OpenStreetMap and its contributors"; ODbL |
+| [Geoapify pricing](https://www.geoapify.com/pricing), [pricing details](https://www.geoapify.com/pricing-details), [Places docs](https://apidocs.geoapify.com/docs/places/) | Fetched 2026-09-25 | Free 3,000 credits/day, 5 req/s, no card, attribution; 1 credit per 20 places; OSM source; "Cache/store results with no limits"; categories and response properties |
+| [Local Falcon KB32: What is SoLV](https://www.localfalcon.com/knowledge-base/kb32-what-is-solv-how-to-interpret-and-use-the-metric) | Updated 2025-11-20 | SoLV® is Local Falcon's trademark: how often a business ranks in the top three positions; no bands published |
+
 ## 3. Practitioner Surveys [H survey]
 
 - **Whitespark, Local Search Ranking Factors 2026**
@@ -70,12 +89,14 @@ articles are used only to locate primary sources.
   internal workings of Google's local search algorithm." Group weights read from the chart
   image `ranking-factor-groups.png`. Scores used: Primary GBP Category 227, proximity 225,
   keywords in GBP title 223, open at search 189, Dedicated Page for Each Service 210 (organic),
-  Incorrect Primary Category 214 (negative #2). AI-visibility scores not used.
+  Incorrect Primary Category 214 (negative #2). Local pack ranks: Primary GBP Category #1,
+  Business is Open at Time of Search #5. AI-visibility scores not used.
 - **BrightLocal, Local Consumer Review Survey 2026**
   ([link](https://www.brightlocal.com/research/local-consumer-review-survey/)), published
   2026-02-11, 1,002 US adults (SurveyMonkey panel). Figures used: 41% "always" read (29% in
   2025), 31% 4.5+ stars (17%), 68% 4+ stars (55%), 74% last three months, 6 review sites, 42%
-  unlikely to use a business that never replies, Apple Maps 27% (14%).
+  unlikely to use a business that never replies, 80% likely to use a business that responds
+  to all reviews, 89% expect a response, 81% within a week, Apple Maps 27% (14%).
 
 ## 4. Removed Claims (2026-09-25)
 
@@ -104,6 +125,26 @@ Do not re-introduce these without a fetched primary source:
 - Aggregators and platforms: Foursquare "Powers Uber, Nextdoor, Yahoo, ChatGPT. 500M+ devices"; Neustar "80+ platform partnerships"; Data Axle "Google, Bing, Apple"; Apple "1B+ iPhone users"; Apple Business Connect "usage nearly doubled" (the survey measures Apple Maps use, not Business Connect)
 - seo-local: Chamber of Commerce "high Trust Flow, ~80% more consumer visits" (GlueUp); "Google uses BBB for business verification"; "5-10 quality local links/month"; "2-5 contextual internal links per 1,000 words"; HVAC "lost 80% rankings + 63% traffic"; "July 2025 documentation update removed directories" (date not verifiable)
 
+- seo-maps (2026-09-25): "Owner responses (target: 80%+ response rate)" (the survey's 80% is
+  consumers likely to use a business that answers all reviews, not a response rate);
+  "Whitespark/BrightLocal (Study)" as unlabeled sources; "Critical Fields (Direct Ranking
+  Impact)"; GBP post type "product"; "GBP Q&A deprecated Dec 2025 (replaced by Ask Maps
+  Gemini AI)"; Verified status "Not directly exposed" (`is_claimed` exposes it); SoLV "Metric
+  pioneered by Local Falcon"; SoLV band "Critical"; "healthy = bell curve skewed to 5-star";
+  NAP mismatch as Critical/High; Apple "no public API"; Places "storage to place_id only"
+- DataForSEO (2026-09-25): "2,000 API calls/minute across all endpoints"; batching 49 live
+  tasks in one request; reviews $0.003 per 10 (keyword), "place_id 4x cheaper"; Tripadvisor
+  "Billed per 30 reviews", "Standard method only"; My Business Info "$0.0015" as a live price;
+  "Up to 700+ results" (listings max 1000); `sort_by` "most_relevant"; response fields
+  `contact_info`, `photos_count`, `work_time` in Maps SERP; full audit "~$0.13"/"~$0.33";
+  location code "1026339 for Austin" (not checked)
+- OSM and Geoapify (2026-09-25): Overpass "~2 concurrent queries per IP", "exponential
+  backoff", attribution "Data from OpenStreetMap", data quality "excellent in Europe";
+  Nominatim "Bulk geocoding forbidden" (policy: not encouraged, small jobs allowed), field
+  `category` with `format=json`, "Best" geocoder; Geoapify "OSM + OpenAddresses + WhosOnFirst
+  + GeoNames" for Places, `phone`/`website` in Places results, categories
+  `service.financial.accounting`, `commercial.vehicle.car_dealer`; `User-Agent: claude-seo/1.7.0`
+
 ## 5. Heuristics Kept [H]
 
 | Heuristic | Rationale |
@@ -115,3 +156,9 @@ Do not re-introduce these without a fetched primary source:
 | NAP consistency across page, schema, GBP | Supports Google's "complete and accurate info"; no consistency metric documented |
 | Industry directory lists | Where customers look; no reach figures claimed |
 | `areaServed` with named cities; subdirectory location URLs | Clear, crawlable structure; not Google-documented for local |
+| Maps Health weights 25/20/20/15/10/10 (Tier 0: +10/+10/+5) | Editorial prioritization in `agents/seo-maps.md` |
+| GBP checklist: 2/1/0 points, 24 fields, 250+ chars, 10+ photos, 30/7-day recency, 1+ post/week, industry multipliers, score bands | Editorial; Google publishes no per-field weights |
+| Grid sizes, radii, 7x7 default; SoLV bands; Visibility Score | Editorial; Local Falcon publishes no bands |
+| Review velocity (6 months), rating distribution, response rate reported without a target | Descriptive; Google documents no cadence or rate |
+| Review manipulation patterns (2+ of list) | Operationalizes Google's "unusual volumes or patterns"; not proof |
+| NAP mismatch Medium (name/address), Low (phone) | No cross-platform consistency rule documented |
