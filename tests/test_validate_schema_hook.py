@@ -43,3 +43,12 @@ def test_dummy_data_is_a_warning_not_a_block():
     warnings = " ".join(out["warnings"])
     assert "0000000" in warnings and "Exempelvägen" in warnings
     assert out["errors"] == []
+
+
+def test_swedish_placeholders_block():
+    proc = _run(args=(os.path.join(SCHEMA, "swedish-placeholders.html"), "--json"))
+    out = json.loads(proc.stdout)
+    assert proc.returncode == 2
+    errors = " ".join(out["errors"])
+    assert "[FÖRETAGSNAMN]" in errors and "[Telefon]" in errors and "[Ditt område]" in errors
+    assert "[1]" not in errors

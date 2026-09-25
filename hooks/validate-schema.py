@@ -98,6 +98,12 @@ PLACEHOLDER_PATTERNS = [
         r"INSERT[^\]]*|Your [^\]]*)\]"
     ),
     re.compile(r"\bREPLACE(?:_ME)?\b"),
+    # Swedish template tokens, any case: [FÖRETAGSNAMN], [Telefon], [Ditt namn]
+    re.compile(
+        r"\[(?i:företagsnamn|företag|telefon(?:nummer)?|adress|gatuadress|postnummer|"
+        r"ort|stad|e-?post|webbadress|org\.?nr|organisationsnummer|"
+        r"(?:ditt|din|ert|er) [^\]]*|infoga[^\]]*|ersätt[^\]]*)\]"
+    ),
 ]
 
 # Likely dummy data that is not bracketed (non-blocking warnings): long zero

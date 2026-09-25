@@ -7,7 +7,7 @@ claude.ai och Claude Desktop. Källorna ligger här, de färdiga paketen i `dist
 
 | Paket | Vad det är |
 |-------|------------|
-| `dist/hemsida.skill` | Skapa och granska hemsida. Bygger nya sidor rätt från början och granskar befintliga sajter via URL, filer eller skärmdumpar. Evidensnivåer [V]/[R]/[H], crawlertabell och robots.txt, teknisk checklista med Core Web Vitals, strukturerad data, lokalt företag (NAP, Google Business Profile, Bing Places), innehåll, mätning (Search Console med rapporten för generativ AI, Bing AI Performance), byggchecklista och rapportmall. Innehåller ett litet schemavalideringsskript. |
+| `dist/hemsida.skill` | Skapa, renovera och granska hemsida. Leder ett nybygge i nio faser (0 brief och faktablad, 1 strategi, 2 innehåll, 3 bygge, 4 teknisk SEO och AI-sök, 5 lokalt, 6 konvertering och mätning, 7 QA-grind, 8 lansering och uppföljning), har ett renoveringsläge som jämför repo mot livesajt och letar efter läckta hemligheter, och ett granskningsläge med rapportmall. Evidensnivåer [V]/[R]/[H], crawlertabell och robots.txt, teknisk checklista med Core Web Vitals, strukturerad data, lokalt företag, innehåll och mätning. Innehåller ett litet schemavalideringsskript. |
 | `dist/skill-evidens.skill` | Byggs av en annan källmapp (`skill-evidens/`) och paketeras här när den mappen finns och har en giltig SKILL.md. |
 
 ## Varför inte repots egna skills direkt
@@ -18,6 +18,21 @@ och till varandras referensfiler med repo-sökvägar. Inget av det finns i claud
 ett direktpaket skulle ge instruktioner som inte går att följa. `hemsida` tar i stället
 in deras kunskap på svenska och bär med sig referensfilerna som kopior. Det enda skript
 som följer med är schemavalideringen, eftersom den bara använder Pythons standardbibliotek.
+
+## Hemsida som dirigent
+
+`hemsida` är byggd för att fungera ensam, men använder andra skills när de finns i miljön:
+claude-seo-pluginens `/seo`-kommandon i Claude Code (till exempel `/seo plan`, `/seo schema`,
+`/seo audit`, `/seo google`), marketingskills (till exempel `copywriting`, `site-architecture`,
+`form-cro`, `analytics-tracking`) och Jacobs claude.ai-skills (till exempel `astro`,
+`webapp-testing`, `theme-factory`). Kartan per fas, med reserv när en skill saknas och vad
+fasen ska leverera, står i `hemsida/references/skill-karta.md`.
+
+Skillen kontrollerar alltid vilka skills som faktiskt finns och antar aldrig. Den skiljer
+på Claude Code (plugin-kommandon, skript, hooks) och claude.ai (bara uppladdade skills).
+Säger en delegerad skill något som strider mot hemsidas evidensregler, till exempel
+`llms.txt`, fasta styckelängder, FAQPage för rich results eller egna stjärnbetyg i markup,
+gäller hemsida och avvikelsen skrivs ut.
 
 ## En enda källa
 
@@ -36,8 +51,10 @@ varje bygge från repots kanoniska filer:
 | `references/local-eeat-evidence.md` | `skills/seo/references/local-eeat-evidence.md` |
 | `scripts/validate_schema.py` | `hooks/validate-schema.py` |
 
-Handskrivet i `hemsida/` är bara `SKILL.md` och `references/rapportmall.md`. Ändras en
-kanonisk fil i repot: bygg om, så följer ändringen med.
+Handskrivet i `hemsida/` är `SKILL.md` och de svenska referensfilerna: `rapportmall.md`,
+`skapa-fas.md`, `skill-karta.md`, `faktablad-mall.md`, `qa-grind.md`, `renovera.md` och
+`exempel-bygge.md`. De är inga kopior och ligger direkt i källmappen. Ändras en kanonisk
+fil i repot: bygg om, så följer ändringen med.
 
 ## Bygga om
 
