@@ -97,9 +97,9 @@ Measured at the 75th percentile of real user data (field data).
 - Do not mark up content that is misleading or hidden from users
 - Keep schema current: update when page content changes
 
-### Deprecated/Restricted Types (as of Feb 2026)
+### Deprecated/Restricted Types (FAQ updated Sep 2026)
 - **HowTo**: Rich results removed (September 2023)
-- **FAQ**: Restricted to government and healthcare authority sites (August 2023)
+- **FAQ**: Rich result no longer shown in Google Search (since May 7, 2026)
 - **SpecialAnnouncement**: Deprecated (July 31, 2025)
 - **CourseInfo, EstimatedSalary, LearningVideo**: Retired (June 2025)
 - **ClaimReview**: Retired (June 2025)

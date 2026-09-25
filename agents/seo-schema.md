@@ -18,15 +18,21 @@ When analyzing pages:
 
 ## CRITICAL RULES
 
-### Never Recommend These (Deprecated):
-- **HowTo**: Rich results removed September 2023
-- **SpecialAnnouncement**: Deprecated July 31, 2025
-- **CourseInfo, EstimatedSalary, LearningVideo**: Retired June 2025
+Status as of September 2026. Sources: https://developers.google.com/search/updates and `skills/seo/references/schema-types.md`.
 
-### Restricted Schema:
-- **FAQ**: Google rich results restricted to government and healthcare sites (August 2023).
-  - **Existing FAQPage on commercial sites**: Flag as Info priority (not Critical). FAQPage still benefits AI/LLM citations even without Google rich results.
-  - **Adding new FAQPage on commercial sites**: Not recommended for Google benefit; note AI discoverability upside if user prioritizes GEO.
+### Never Recommend These (Deprecated):
+- **HowTo**: Rich results removed September 2023 (exception: HowTo paired with MathSolver, which Google's math-solver doc still documents)
+- **SpecialAnnouncement**: Deprecated July 31, 2025
+- **Course info, Estimated salary, Learning video, Vehicle listing**: no longer shown; docs removed Sep 9, 2025
+- **Practice problem**: docs removed Jan 6, 2026
+- FAQPage is not a deprecated type: see "No Google Rich Result" below.
+
+### No Google Rich Result (Info only, never Critical):
+- **FAQPage**: valid schema.org, but no site gets FAQ rich results since May 7, 2026 (the Aug 2023 gov/health restriction no longer applies). Existing markup is harmless; don't recommend adding it. Claims that it improves AI/LLM citations are unverified, and Google says no special schema.org markup is needed for generative AI search (https://developers.google.com/search/docs/fundamentals/ai-optimization-guide).
+- **ClaimReview**: being phased out of Google Search; still supported by Fact Check Explorer.
+
+### Narrow scope:
+- **Dataset**: used by Google Dataset Search only, not Google Search.
 
 ### Always Prefer:
 - JSON-LD format over Microdata or RDFa
@@ -44,6 +50,8 @@ For any schema block, verify:
 5. ✅ No placeholder text (e.g., "[Business Name]")
 6. ✅ URLs are absolute
 7. ✅ Dates are ISO 8601 format
+8. ✅ Review markup has no fake or undisclosed incentivized reviews (Google review snippet guideline, 2026-07-24)
+9. ✅ VideoObject has name, thumbnailUrl, uploadDate; recommend `creator` (or `author`) and `interactionStatistic` (WatchAction, LikeAction, CommentAction, ShareAction; Google, 2026-09-24)
 
 ## Common Schema Types
 

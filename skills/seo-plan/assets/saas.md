@@ -1,4 +1,4 @@
-<!-- Updated: 2026-02-07 -->
+<!-- Updated: 2026-09-24 -->
 # SaaS SEO Strategy Template
 
 ## Industry Characteristics
@@ -107,7 +107,7 @@ Comparison pages are among the highest-converting content types for SaaS, with c
 - Include structured comparison tables with pricing, features, pros/cons
 - Be factually accurate about competitors: verify claims regularly
 - Include customer testimonials from users who switched
-- Add FAQ schema for common comparison questions (valuable for AI search)
+- Add FAQ content for common comparison questions (Google FAQ rich results are no longer shown since May 7, 2026; no special schema is needed for AI search)
 - Update regularly: stale comparison data damages credibility
 - Cross-reference the `seo-competitor-pages` skill for detailed frameworks
 
@@ -126,10 +126,10 @@ Comparison pages are among the highest-converting content types for SaaS, with c
 
 ## Generative Engine Optimization (GEO) for SaaS
 
-- [ ] Include clear, structured feature comparisons that AI systems can parse and cite
+- [ ] Include clear, structured feature comparisons (headings, HTML tables) for readers
 - [ ] Use SoftwareApplication schema with complete feature lists and pricing
 - [ ] Publish original benchmark data, case studies, and ROI metrics
 - [ ] Build content clusters around key product categories and use cases
-- [ ] Ensure integration pages have clear, quotable descriptions
-- [ ] Structure pricing information in tables AI can extract
-- [ ] Monitor AI citation across Google AI Overviews, ChatGPT, and Perplexity
+- [ ] Ensure integration pages have clear, specific descriptions of what each integration does
+- [ ] Structure pricing information in HTML tables
+- [ ] Measure AI visibility with the Search Console Generative AI performance report (impressions by page/country/device; manual export) and the Bing Webmaster Tools AI Performance report (citations, grounding queries); third-party sampling of ChatGPT/Perplexity is optional

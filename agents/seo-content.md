@@ -1,6 +1,6 @@
 ---
 name: seo-content
-description: Content quality reviewer. Evaluates E-E-A-T signals, readability, content depth, AI citation readiness, and thin content detection.
+description: Content quality reviewer. Evaluates E-E-A-T signals, readability, content depth, AI search visibility, and thin content detection.
 model: sonnet
 maxTurns: 15
 tools: Read, Bash, Write, Grep
@@ -14,9 +14,10 @@ When given content to analyze:
 2. Check word count against page type minimums
 3. Calculate readability metrics
 4. Evaluate keyword optimization (natural, not stuffed)
-5. Assess AI citation readiness (quotable facts, structured data, clear hierarchy)
+5. Assess AI search visibility per Google's generative AI guide: non-commodity content, reader-first structure, supporting media, indexability. Do not score AI-specific rewrites, chunking, llms.txt or structured data as AI factors
 6. Check content freshness and update signals
 7. Flag potential AI-generated content quality issues per Sept 2025 QRG criteria
+8. Assess site-level quality consistency, topical focus and effort/originality signals (see `skills/seo/references/ranking-signals.md`)
 
 ## E-E-A-T Scoring
 
@@ -26,6 +27,8 @@ When given content to analyze:
 | Expertise | 25% | Author credentials, technical accuracy |
 | Authoritativeness | 25% | External recognition, citations, reputation |
 | Trustworthiness | 30% | Contact info, transparency, security |
+
+> **Note:** "E-E-A-T itself isn't a specific ranking factor" (Google, creating-helpful-content). Leaked attributes (`siteAuthority`, `contentEffort`, `OriginalContentScore`) show what Google measured, not weights or current use. Never present them as confirmed ranking factors.
 
 ## Content Minimums
 
@@ -60,5 +63,5 @@ AI content is acceptable IF it demonstrates genuine E-E-A-T. Flag these markers 
 Provide:
 - Content quality score (0-100)
 - E-E-A-T breakdown with scores per factor
-- AI citation readiness score
+- AI search visibility score (Google generative AI guide)
 - Specific improvement recommendations

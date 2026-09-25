@@ -1,5 +1,5 @@
-<!-- Updated: 2026-02-07 -->
-# Core Web Vitals Thresholds (February 2026)
+<!-- Updated: 2026-09-24 -->
+# Core Web Vitals Thresholds (September 2026)
 
 ## Current Metrics
 
@@ -14,9 +14,9 @@
 - Evaluation uses the **75th percentile** of real user data (field data from CrUX).
 - Google assesses at the **page level** and the **origin level**.
 - Core Web Vitals are a **tiebreaker** ranking signal: they matter most when content quality is similar between competitors.
-- **Thresholds unchanged since original definitions**: ignore claims of "tightened thresholds" from SEO blogs.
-- December 2025 core update appeared to weight **mobile CWV more heavily**.
-- As of October 2025: **57.1%** desktop sites and **49.7%** mobile sites pass all three CWV.
+- **Thresholds unchanged since original definitions**: ignore claims of "tightened thresholds" from SEO blogs. Poor boundaries: LCP >4,000ms, INP >500ms, CLS >0.25 (web.dev/articles/vitals).
+- **Pass rates (origin level):** CrUX August 2026 dataset (published 2026-09-08): **55.6%** of origins have good CWV (LCP 68.1%, CLS 81.5%, INP 85.3% good; Chrome flags a continued INP regression). Source: developer.chrome.com/docs/crux/release-notes
+- **Pass rates (by device):** Web Almanac 2025 Performance chapter (CrUX July 2025 data): **48%** of mobile and **56%** of desktop websites have good CWV (2024: 44% / 55%). Source: almanac.httparchive.org/en/2025/performance
 
 ## LCP Subparts (February 2025 CrUX Addition)
 
@@ -47,7 +47,8 @@ Use this breakdown to identify which phase is causing LCP issues.
 ## Measurement Sources
 
 ### Field Data (Real Users)
-- Chrome User Experience Report (CrUX)
+- Chrome User Experience Report (CrUX): API (28-day rolling), History API (weekly)
+- CrUX on BigQuery (monthly, origin-level, competitor benchmarks): `scripts/crux_bigquery.py`
 - PageSpeed Insights (uses CrUX data)
 - Search Console Core Web Vitals report
 
@@ -100,9 +101,8 @@ npx lighthouse URL --output json --output-path report.json
 
 ## Performance Tooling Updates (2025)
 
-- **Lighthouse 13.0** (October 2025): Major audit restructuring with reorganized performance categories and updated scoring weights. Lighthouse is a lab tool (simulated conditions): always cross-reference with CrUX field data for real-world performance.
+- **Lighthouse 13** (October 10, 2025): Legacy performance audits replaced by Insights (shared with the DevTools Performance panel). **No changes to performance scoring** (developer.chrome.com/blog/lighthouse-13-0). Lighthouse is a lab tool (simulated conditions): always cross-reference with CrUX field data for real-world performance.
 - **CrUX Vis** replaced the CrUX Dashboard (November 2025). The old Looker Studio dashboard was deprecated. Use [CrUX Vis](https://cruxvis.withgoogle.com) or the CrUX API directly.
 - **LCP subparts** added to CrUX (February 2025): Time to First Byte (TTFB), resource load delay, resource load time, and element render delay are now available as sub-components of LCP in CrUX data.
-- **Google Search Console 2025 features** (December 2025): AI-powered configuration for automated analysis. Branded vs. non-branded queries filter. Hourly data available in API. Custom chart annotations. Social channels tracking.
 
 > **Mobile-first indexing** is 100% complete as of July 5, 2024. Google now crawls and indexes ALL websites exclusively with the mobile Googlebot user-agent. Ensure your mobile version contains all critical content, structured data, and meta tags.

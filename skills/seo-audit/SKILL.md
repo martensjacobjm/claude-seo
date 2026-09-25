@@ -19,12 +19,12 @@ metadata:
 3. **Crawl site**: follow internal links up to 500 pages, respect robots.txt
 4. **Delegate to subagents** (if available, otherwise run inline sequentially):
    - `seo-technical` -- robots.txt, sitemaps, canonicals, Core Web Vitals, security headers
-   - `seo-content` -- E-E-A-T, readability, thin content, AI citation readiness
+   - `seo-content` -- E-E-A-T, readability, thin content, AI search visibility (Google AI optimization guide)
    - `seo-schema` -- detection, validation, generation recommendations
    - `seo-sitemap` -- structure analysis, quality gates, missing pages
    - `seo-performance` -- LCP, INP, CLS measurements
    - `seo-visual` -- screenshots, mobile testing, above-fold analysis
-   - `seo-geo` -- AI crawler access, llms.txt, citability, brand mention signals
+   - `seo-geo` -- AI crawler access (search vs training tokens), indexability/snippet eligibility, content uniqueness, entity signals, AI visibility measurement (llms.txt reported as informational only)
    - `seo-local` -- GBP signals, NAP consistency, reviews, local schema, industry-specific local factors (spawn when Local Service industry detected: brick-and-mortar, SAB, or hybrid business type)
    - `seo-maps` -- Geo-grid rank tracking, GBP audit, review intelligence, competitor radius mapping (spawn when Local Service detected AND DataForSEO MCP available)
    - `seo-google` -- CWV field data (CrUX), URL indexation (GSC), organic traffic (GA4) (spawn when Google API credentials detected via `python scripts/google_auth.py --check`)
@@ -104,9 +104,10 @@ Delay between requests: 1 second
 - Format recommendations
 
 ### AI Search Readiness
-- Citability score
-- Structural improvements
-- Authority signals
+- AI search crawler access and snippet eligibility
+- Non-commodity content and structure
+- Entity/trust signals
+- llms.txt/RSL (informational, not scored)
 
 ## Priority Definitions
 

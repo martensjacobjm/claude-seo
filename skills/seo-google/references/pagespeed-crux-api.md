@@ -6,7 +6,7 @@
 3. [CrUX History API (Weekly)](#crux-history-api-weekly)
 4. [Core Web Vitals Thresholds](#core-web-vitals-thresholds)
 
----
+Monthly history and competitor benchmarks: see `crux-bigquery.md` (BigQuery).
 
 ## PageSpeed Insights v5
 
@@ -65,8 +65,6 @@ Each metric contains: `percentile` (p75), `distributions[]` ({min, max, proporti
 
 ### Note on Field Data Migration
 Google is migrating CrUX field data out of PSI. For field data, prefer the CrUX API directly. Use PSI primarily for Lighthouse lab data.
-
----
 
 ## CrUX API (Daily)
 
@@ -140,8 +138,6 @@ Google is migrating CrUX field data out of PSI. For field data, prefer the CrUX 
 - 150 QPM shared between CrUX and CrUX History APIs
 - Free, no paid increase available
 
----
-
 ## CrUX History API (Weekly)
 
 **Endpoint:** `POST https://chromeuxreport.googleapis.com/v1/records:queryHistoryRecord?key={API_KEY}`
@@ -186,8 +182,6 @@ Instead of single values, returns timeseries:
 ### Update Schedule
 - Updated **Mondays** ~04:00 UTC
 - Each period = 28-day rolling average ending on a Sunday
-
----
 
 ## Core Web Vitals Thresholds
 

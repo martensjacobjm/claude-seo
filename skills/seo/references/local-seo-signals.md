@@ -109,7 +109,7 @@ XGBoost regression model, explains 92-93% of variance. (Study)
 |--------|---------------|
 | Google Business Profile | Primary local signal source |
 | Apple Business Connect | Usage nearly doubled, from 14% to 27% (BrightLocal 2026). 1B+ iPhone users |
-| Bing Places | Overhauled Oct 2025. Powers ChatGPT, Copilot, Alexa. 900M queries/day |
+| Bing Places | Keeps business details eligible for inclusion in Bing AI-generated responses (Bing Webmaster blog, Feb 2026) |
 | Facebook | Social + citation signal |
 | Yelp | Still ranks on page 1 for many local queries |
 

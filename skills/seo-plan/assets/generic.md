@@ -1,4 +1,4 @@
-<!-- Updated: 2026-02-07 -->
+<!-- Updated: 2026-09-24 -->
 # Generic Business SEO Strategy Template
 
 ## Overview
@@ -50,7 +50,7 @@ This template applies to businesses that don't fit neatly into SaaS, local servi
 | About | Organization, AboutPage |
 | Contact | ContactPage |
 | Blog | Article, BlogPosting |
-| FAQ | (FAQPage only for gov/health) |
+| FAQ | None for Google (FAQ rich result no longer shown since May 7, 2026) |
 | Product/Service | Product or Service |
 
 ## Content Quality Standards
@@ -134,11 +134,13 @@ Adjust this template based on:
 
 ## Generative Engine Optimization (GEO) Checklist
 
-- [ ] Include clear, quotable facts and statistics that AI systems can extract and cite
-- [ ] Use structured data (Schema.org) to help AI systems understand content
+- [ ] Publish verifiable facts and original data with cited sources (content quality, not rewriting for AI)
+- [ ] Use structured data (Schema.org) for rich-result eligibility; no special AI markup is needed
 - [ ] Build topical authority through comprehensive content clusters
-- [ ] Provide original data, research, or unique perspectives AI cannot find elsewhere
+- [ ] Provide original data, research, or unique perspectives not available elsewhere (non-commodity content)
 - [ ] Maintain consistent entity information (brand, people, products) across the web
 - [ ] Structure content with clear headings, definitions, and step-by-step formats
-- [ ] Consider adding an `llms.txt` file at site root (emerging convention for AI crawlers: Google treats it as a regular text file)
-- [ ] Monitor AI citation across Google AI Overviews, ChatGPT, Perplexity, and Bing Copilot
+- [ ] Ensure robots.txt allows AI search crawlers (Googlebot, bingbot, OAI-SearchBot, PerplexityBot, Claude-SearchBot); blocking training-only tokens (GPTBot, ClaudeBot, Google-Extended) is a separate business choice
+- [ ] Measure AI visibility with the Search Console Generative AI performance report (impressions by page/country/device; manual export) and the Bing Webmaster Tools AI Performance report (citations, grounding queries); third-party sampling of ChatGPT/Perplexity is optional
+
+Note: `llms.txt` is not needed for Google visibility (Google Search ignores it; no help or harm). Report its presence only; other AI engines' use is unconfirmed. See `skills/seo-geo/references/geo-evidence.md`.

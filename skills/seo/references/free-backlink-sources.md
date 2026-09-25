@@ -7,11 +7,13 @@ with free sources.
 
 | Source | Auth | Any Domain? | Data Quality | Coverage vs Commercial | Rate Limit |
 |--------|------|-------------|-------------|----------------------|------------|
-| **Moz API** | API key (free signup) | Yes | ★★★★☆ | ~70% for DA/PA | 1 req/10s, 2,500 rows/mo |
-| **Bing Webmaster** | API key (free) | Verified sites only | ★★★☆☆ | ~15% (Bing index) | Generous |
-| **Common Crawl** | None (public) | Yes | ★★★☆☆ | ~25-40% domains | N/A |
+| **Moz API** | API key (free signup) | Yes | ★★★★☆ | ~70% for DA/PA (unverified estimate) | 1 req/10s, 2,500 rows/mo |
+| **Bing Webmaster** | API key (free) | Verified sites only | ★★★☆☆ | Not published | Not documented (script waits 1s between calls) |
+| **Common Crawl** | None (public) | Yes | ★★★☆☆ | ~25-40% domains (unverified estimate) | N/A |
 | **Verification Crawler** | None | Yes | ★★★★★ (binary) | N/A (checks known links) | 1 req/s per domain |
-| **DataForSEO** (paid) | API key | Yes | ★★★★★ | ~90%+ | Per plan |
+| **DataForSEO** (paid) | API key | Yes | ★★★★★ | ~90%+ (unverified estimate) | Per plan |
+
+Star ratings and weights below are this skill's own heuristics, not vendor figures.
 
 ## Confidence Weighting
 
@@ -21,8 +23,8 @@ When merging data from multiple sources, apply confidence weights to each metric
 |--------|--------|-----------|
 | DataForSEO | 1.00 | Commercial-grade, real-time, comprehensive |
 | Verification Crawler | 0.95 | Direct observation (binary: link exists or not) |
-| Moz API | 0.85 | Large index (45.5T links), established metrics, 3-day update lag |
-| Bing Webmaster | 0.70 | Smaller index (~15% of web), but authoritative for Bing-indexed pages |
+| Moz API | 0.85 | Large commercial index, established metrics, 3-day update lag |
+| Bing Webmaster | 0.70 | Sampled inbound links for verified sites only, authoritative for Bing-indexed pages |
 | Common Crawl | 0.50 | Domain-level only, quarterly updates, no anchor text |
 
 **Composite formula:**
@@ -48,14 +50,29 @@ When only Common Crawl is available, cap the maximum health score at 70/100 and 
 
 ### Bing Webmaster Tools (Tier 2)
 - **Endpoint:** `https://ssl.bing.com/webmaster/api.svc/json/`
-- **Free tier:** Unlimited for verified sites
+- **Free tier:** Free for verified sites; Microsoft publishes no link-API quota
 - **Signup:** https://www.bing.com/webmasters (Microsoft account)
-- **Unique feature:** Competitor backlink comparison (no other free tool offers this)
-- **Data:** Inbound links with anchor text, source URL, discovery date
+- **Comparison:** Competitor comparison only for sites verified in your account (no
+  competitor method in the API). `compare` returns status `error` when either site's
+  lookup fails; use DataForSEO or Moz for real competitor gaps
+- **Data:** Pages with inbound-link counts (`GetLinkCounts`), inbound links with source URL
+  and anchor text per page (`GetUrlLinks`). `LinkDetail` has only `AnchorText` and `Url`:
+  no rel/nofollow, country or discovery date
+  ([LinkDetail](https://learn.microsoft.com/en-us/dotnet/api/microsoft.bing.webmaster.api.interfaces.linkdetail?view=bing-webmaster-dotnet))
 - **Script:** `scripts/bing_webmaster.py`
-- **Commands:** `links`, `counts`, `compare`
-- **Blind spots:** Only Bing-indexed pages (~15% of web), verified sites only,
-  no authority metrics, no spam scoring
+- **Commands:** `links`, `counts`, `compare`, `ai-performance` (offline export parser)
+- **AI Performance (citations in Copilot, Bing AI summaries and select partner integrations):**
+  UI-only, public preview since Feb 2026
+  ([Bing blog](https://blogs.bing.com/webmaster/February-2026/Introducing-AI-Performance-in-Bing-Webmaster-Tools-Public-Preview));
+  Intents, Topics, Citation Share and Compare added June 2026
+  ([Bing blog](https://blogs.bing.com/search/June-2026/New-AI-Visibility-Insights-in-Bing-Webmaster-Tools-Intents-Topics-Citation-Share-Compare)).
+  Not in the [Webmaster API method list](https://learn.microsoft.com/en-us/dotnet/api/microsoft.bing.webmaster.api.interfaces.iwebmasterapi?view=bing-webmaster-dotnet).
+  Export CSV or Excel from the UI and parse with `ai-performance`. Per the
+  [help page](https://www.bing.com/webmasters/help/ai-performance-9f8e7d6c), all AI Performance
+  data is sampled, totals may differ across views, and exports reflect the active filter
+  (never sum filtered exports as site totals). Not a backlink signal.
+- **Blind spots:** Only Bing-indexed pages, verified sites only, no rel/nofollow or
+  country data, no authority metrics, no spam scoring
 
 ### Common Crawl Web Graph (Always Available)
 - **Data source:** `s3://commoncrawl/projects/hyperlinkgraph/`
@@ -87,10 +104,9 @@ Suggest the paid DataForSEO extension when:
 
 ## Data Quality Reality Check
 
-- Commercial tools index **35-45 trillion links** across 500M+ referring domains
-- Free sources combined capture **20-40% of raw backlink data**
-- But **60-70% of actionable intelligence** since highest-authority links appear in free samples
-- For sites with <500 backlinks, free sources can capture **50%+ of the meaningful profile**
+- No primary source quantifies how much of a commercial backlink index free sources
+  capture; do not quote coverage percentages as fact
+- Free sources return samples; treat counts as lower bounds, not totals
 - **Referring domain count matters more than raw backlink count** for SEO
 - Top 50-100 referring domains capture the majority of link authority
 

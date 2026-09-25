@@ -65,6 +65,8 @@
 - `discover` and `googleNews` types do not support `query` dimension or `position` metric.
 - Country codes are **ISO 3166-1 alpha-3** (e.g., `USA`, `GBR`, `DEU`).
 - Pagination: increment `startRow` by `rowLimit` until fewer rows returned.
+- **Not available via API:** the Generative AI performance report (AI Overviews / AI Mode
+  impressions). No such `type` as of the API reference dated 2026-08-11; use a UI export (`gsc-generative-ai-report.md`).
 
 ### Rate Limits
 - 1,200 QPM per user

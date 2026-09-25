@@ -55,7 +55,9 @@ Google evaluates the **75th percentile** of page visits, 75% of visits must meet
 
 ## Performance Tooling (2025-2026)
 
-**Lighthouse 13.0** (October 2025): Major audit restructuring with reorganized performance categories and updated scoring weights. Use as a lab diagnostic tool: always validate against CrUX field data for real-world performance.
+**Lighthouse 13** (October 10, 2025): Replaced the legacy performance audits with Insights (shared with the DevTools Performance panel). **No performance scoring changes.** Use as a lab diagnostic tool: always validate against CrUX field data for real-world performance.
+
+**Benchmark context:** CrUX August 2026 dataset: 55.6% of origins have good Core Web Vitals (INP pass rate regressing). Source: developer.chrome.com/docs/crux/release-notes
 
 **CrUX Vis** replaced the CrUX Dashboard (November 2025). The old Looker Studio dashboard was deprecated. Use [CrUX Vis](https://cruxvis.withgoogle.com) or the CrUX API directly.
 
@@ -77,7 +79,13 @@ If Google API credentials are configured, prefer CrUX field data over Lighthouse
 ```bash
 python scripts/pagespeed_check.py URL --json
 python scripts/crux_history.py URL --json
+# Monthly history (BigQuery, needs billing project): always dry-run first
+python scripts/crux_bigquery.py ORIGIN --both-devices --months 12 --dry-run --json
+python scripts/crux_bigquery.py ORIGIN --both-devices --months 12 --json
+# Competitor benchmark (latest shared month, rank per metric)
+python scripts/crux_bigquery.py ORIGIN --compare COMPETITOR1 COMPETITOR2 --json
 ```
+BigQuery CrUX is origin-level and monthly (released the second Tuesday of the following month); use it for month-over-month trends and competitor comparisons, not for current URL-level values.
 Field data (28-day Chrome user average) is more representative than lab data (single Lighthouse run). Use lab data as fallback when CrUX returns 404 (insufficient traffic).
 
 ## Output Format

@@ -122,6 +122,19 @@ Credential Tier: 2 -- Full (API key + Service Account + GA4)
   [OK] GA4 Data API v1beta
 ```
 
+## Optional: BigQuery (CrUX monthly history)
+
+Only needed for `scripts/crux_bigquery.py`. Details, cost and sources: `crux-bigquery.md`.
+
+1. A **billing project** with the BigQuery API enabled (queries bill to your project).
+2. Grant `roles/bigquery.jobUser` on that project to the identity that runs queries.
+3. Credentials: the service account above (`service_account_path`), or Application
+   Default Credentials via `gcloud auth application-default login`. The OAuth token
+   from this setup is not used (its scopes exclude BigQuery).
+4. Add `"bigquery_project_id": "your-billing-project"` to `google-api.json`
+   (or pass `--project`).
+5. Check the cost first: `python scripts/crux_bigquery.py example.com --dry-run --json`.
+
 ## Environment Variable Alternatives
 
 Instead of (or in addition to) the config file:

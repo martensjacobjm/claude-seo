@@ -25,6 +25,7 @@ metadata:
 - Crawl depth: important pages within 3 clicks of homepage
 - JavaScript rendering: check if critical content requires JS execution
 - Crawl budget: for large sites (>10k pages), efficiency matters
+- Quality, popularity and spam signals help Google decide how often to crawl (US v. Google remedies opinion, Doc 1436 p.142). Inference, not a court finding: low-quality sections may be recrawled less often. The leaked `onsiteProminence` attribute (existence only, weight unknown) suggests internal prominence propagated from the homepage is measured. See `skills/seo/references/ranking-signals.md`
 
 #### AI Crawler Management
 
@@ -35,23 +36,30 @@ As of 2025-2026, AI companies actively crawl the web to train models and power A
 | Crawler | Company | robots.txt token | Purpose |
 |---------|---------|-----------------|---------|
 | GPTBot | OpenAI | `GPTBot` | Model training |
-| ChatGPT-User | OpenAI | `ChatGPT-User` | Real-time browsing |
+| OAI-SearchBot | OpenAI | `OAI-SearchBot` | ChatGPT search results (opted-out sites are not shown in ChatGPT search answers) |
+| ChatGPT-User | OpenAI | `ChatGPT-User` | User-initiated fetches; robots.txt "may not apply"; not used for Search inclusion |
 | ClaudeBot | Anthropic | `ClaudeBot` | Model training |
-| PerplexityBot | Perplexity | `PerplexityBot` | Search index + training |
+| PerplexityBot | Perplexity | `PerplexityBot` | Perplexity search results (not foundation-model training) |
+| Perplexity-User | Perplexity | `Perplexity-User` | User-initiated fetches; "generally ignores robots.txt rules" |
 | Bytespider | ByteDance | `Bytespider` | Model training |
 | Google-Extended | Google | `Google-Extended` | Gemini training (NOT search) |
 | CCBot | Common Crawl | `CCBot` | Open dataset |
 
 **Key distinctions:**
-- Blocking `Google-Extended` prevents Gemini training use but does NOT affect Google Search indexing or AI Overviews (those use `Googlebot`)
-- Blocking `GPTBot` prevents OpenAI training but does NOT prevent ChatGPT from citing your content via browsing (`ChatGPT-User`)
-- ~3-5% of websites now use AI-specific robots.txt rules
+- Blocking `Google-Extended` controls Gemini training/grounding use; Google: it "does not impact a site's inclusion in Google Search nor is it used as a ranking signal". AI Overviews and AI Mode draw on the Search index (`Googlebot`)
+- `GPTBot` (training) and `OAI-SearchBot` (ChatGPT search) are independent: block `GPTBot` and allow `OAI-SearchBot` to stay in ChatGPT search without contributing to training. `ChatGPT-User` is not the search control ([OpenAI bots docs](https://platform.openai.com/docs/bots))
+- `PerplexityBot` is for Perplexity search, "not used to crawl content for AI foundation models"; blocking it removes search visibility, not training use ([Perplexity crawlers docs](https://docs.perplexity.ai/guides/bots))
+- Adoption (Web Almanac 2025 SEO chapter): `gptbot` is named in 4.5% of desktop / 4.2% of mobile robots.txt files, up from 2.9% / 2.7% in 2024; `claudebot` 3.6% / 3.4%; `google-extended` 3.4% / 3.0% (https://almanac.httparchive.org/en/2025/seo)
 
 **Example, selective AI crawler blocking:**
 ```
 # Allow search indexing, block AI training crawlers
 User-agent: GPTBot
 Disallow: /
+
+# Keep ChatGPT search visibility
+User-agent: OAI-SearchBot
+Allow: /
 
 User-agent: Google-Extended
 Disallow: /
@@ -64,11 +72,12 @@ User-agent: *
 Allow: /
 ```
 
-**Recommendation:** Consider your AI visibility strategy before blocking. Being cited by AI systems drives brand awareness and referral traffic. Cross-reference the `seo-geo` skill for full AI visibility optimization.
+**Recommendation:** Consider your AI visibility strategy before blocking. Blocking search tokens (OAI-SearchBot, PerplexityBot, Claude-SearchBot) can remove or reduce the site's visibility in those AI search products (vendor crawler docs, see `skills/seo-geo/references/geo-evidence.md`); blocking training-only tokens has no documented effect on search visibility. Cross-reference the `seo-geo` skill for full AI visibility optimization.
 
 ### 2. Indexability
 - Canonical tags: self-referencing, no conflicts with noindex
 - Duplicate content: near-duplicates, parameter URLs, www vs non-www
+- Site diversity: Google "generally won't show more than two web page listings from the same site in our top results". Consolidate competing near-duplicates with canonicals or merges
 - Thin content: pages below minimum word counts per type
 - Pagination: rel=next/prev or load-more pattern
 - Hreflang: correct for multi-language/multi-region sites
@@ -105,6 +114,7 @@ Allow: /
 - **CLS** (Cumulative Layout Shift): target <0.1
 - Evaluation uses 75th percentile of real user data
 - Use PageSpeed Insights API or CrUX data if MCP available
+- Google: "Core Web Vitals are used by our ranking systems", evaluated generally per page with "some site-wide assessments"
 
 ### 7. Structured Data
 - Detection: JSON-LD (preferred), Microdata, RDFa
@@ -161,7 +171,7 @@ If DataForSEO MCP tools are available, use `on_page_instant_pages` for real page
 
 ## Google API Integration (Optional)
 
-If Google API credentials are configured, use `python scripts/pagespeed_check.py <url> --json` for real PSI + CrUX field data (replaces lab-only CWV estimates), `python scripts/crux_history.py <url> --json` for 25-week CWV trends, and `python scripts/gsc_inspect.py <url> --json` for real indexation status per URL.
+If Google API credentials are configured, use `python scripts/pagespeed_check.py <url> --json` for real PSI + CrUX field data (replaces lab-only CWV estimates), `python scripts/crux_history.py <url> --json` for 25-week CWV trends, `python scripts/crux_bigquery.py <origin> --json` for monthly origin-level CrUX history and competitor benchmarks (BigQuery billing project required; see `skills/seo-google/references/crux-bigquery.md`), and `python scripts/gsc_inspect.py <url> --json` for real indexation status per URL.
 
 ## Error Handling
 

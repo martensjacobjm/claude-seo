@@ -30,9 +30,6 @@ metadata:
 | Review signals share (up from 16%) | ~20% | Whitespark 2026 |
 | Google searches seeking local info | 46% | Industry data |
 | Mobile "near me" searches leading to visit in 24h | 76% | Google confirmed |
-| ChatGPT/AI usage for local recommendations | 45% (up from 6%) | BrightLocal LCRS 2026 |
-| ChatGPT local conversion rate | 15.9% | Seer Interactive |
-| Google organic local conversion rate | 1.76% | Seer Interactive |
 | Local pack ads growth (Jan 2025 to Jan 2026) | 1% to 22% | Sterling Sky |
 
 ---
@@ -124,7 +121,7 @@ Review velocity matters more than total count. The **18-day rule** (Sterling Sky
 
 ### 3. Local On-Page SEO (20%)
 
-Dedicated service pages = **#1 local organic factor AND #2 AI visibility factor** (Whitespark 2026).
+Dedicated service pages = **#1 local organic factor** (Whitespark 2026).
 
 **Check for:**
 - Title tag contains city/service keywords
@@ -152,7 +149,7 @@ Dedicated service pages = **#1 local organic factor AND #2 AI visibility factor*
 
 ### 4. NAP Consistency & Citations (15%)
 
-Citations declining for traditional pack rankings but **3 of top 5 AI visibility factors are citation-related** (Whitespark 2026). Google's July 2025 documentation update removed "directories" from prominence definition.
+Citations declining for traditional pack rankings. Google's July 2025 documentation update removed "directories" from prominence definition.
 
 **Check for:**
 - NAP extraction: compare Name, Address, Phone from:
@@ -166,7 +163,7 @@ Citations declining for traditional pack rankings but **3 of top 5 AI visibility
   - BBB: `site:bbb.org "Business Name"`
   - Facebook business page references
 - Apple Business Connect awareness (usage doubled to 27%, BrightLocal 2026 -- recommend claiming)
-- Bing Places awareness (powers ChatGPT, Copilot, Alexa -- recommend claiming and optimizing)
+- Bing Places awareness (helps keep address, hours and contact details current and eligible for inclusion in Bing/Copilot AI-generated responses, per Bing Webmaster blog 2026-02-10 -- recommend claiming and optimizing)
 - Industry-specific directory recommendations: load `references/local-schema-types.md` for per-vertical citation sources
 - Data aggregator awareness: Data Axle, Foursquare, Neustar/TransUnion (recommend submission for downstream distribution)
 
@@ -205,7 +202,7 @@ Schema is NOT a direct ranking factor (John Mueller confirmed). But enables rich
 
 ### 6. Local Link & Authority Signals (10%)
 
-Links declining for local pack but remain **~26% of local organic ranking** (Whitespark 2026, #2 factor group). "Best of" list placements = **#1 AI visibility citation factor**.
+Links declining for local pack but remain **~26% of local organic ranking** (Whitespark 2026, #2 factor group).
 
 **Check for:**
 - Local backlink indicators detectable from page:
@@ -213,9 +210,7 @@ Links declining for local pack but remain **~26% of local organic ranking** (Whi
   - BBB accreditation/badge (Google uses BBB for business verification)
   - Local news/press mentions
   - Community involvement signals (sponsorships, local events, partnerships)
-- "Best of" list presence (top AI visibility factor per Whitespark 2026)
-- Digital PR signals: 66.2% of PR practitioners now track AI citations as KPI (BuzzStream 2026)
-- Brand mentions correlate **3x more strongly** with AI visibility than traditional backlinks (Ahrefs: 0.664 vs 0.218 correlation)
+- "Best of" list presence and local press coverage (earned, authentic mentions only; no AI-visibility weighting is claimed)
 - Link velocity benchmark: 5-10 quality local links/month for small businesses (consensus)
 
 **Scoring guide:**
@@ -229,15 +224,13 @@ Links declining for local pack but remain **~26% of local organic ranking** (Whi
 
 **Do not duplicate seo-geo analysis.** Provide local-specific AI context and recommend `/seo geo <url>` for full analysis.
 
-Key local AI facts:
-- AI Overviews appear on up to 68% of local searches (Whitespark Q2 2025)
-- ChatGPT converts at 15.9% vs Google organic at 1.76% (Seer Interactive)
-- 3 of top 5 AI visibility factors are citation-related (Whitespark 2026)
-- ChatGPT does NOT access GBP directly -- sources from Bing index, Yelp, TripAdvisor, BBB, Reddit
-- Bing Places is critical: powers ChatGPT, Copilot, Alexa
-- AI-powered local packs (mobile US) show only 1-2 businesses, 32% fewer shown (Sterling Sky)
+Key local AI facts (vendor-documented; sources in `skills/seo-geo/references/geo-evidence.md`):
+- Google: Google Business Profiles (and Merchant Center feeds) can help products and services be visible in AI responses and other Google Search results
+- Bing: Bing Places for Business helps keep address, hours and contact details current and eligible for inclusion in AI-generated responses
+- Measure with the Search Console Generative AI performance report and Bing Webmaster Tools AI Performance report
+- Third-party local AI statistics (share of local searches with AI Overviews, conversion rates, AI local pack sizes) are not used unless a primary source is cited
 
-**Recommendation**: Run `/seo geo <url>` for comprehensive AI search visibility analysis including citability scoring, llms.txt check, and brand mention audit.
+**Recommendation**: Run `/seo geo <url>` for comprehensive AI search visibility analysis (AI crawler access, snippet eligibility, entity signals, and Search Console / Bing AI visibility reports).
 
 ---
 
@@ -270,7 +263,7 @@ Generate `LOCAL-SEO-ANALYSIS-{domain}.md` with:
 ## Quick Wins
 
 1. Claim and optimize Apple Business Connect (usage doubled to 27%)
-2. Claim and optimize Bing Places (powers ChatGPT, Copilot, Alexa)
+2. Claim and optimize Bing Places (keeps details current and eligible for inclusion in Bing/Copilot AI-generated responses)
 3. Fix any NAP discrepancies between page, schema, and GBP
 4. Add LocalBusiness schema with correct industry subtype
 5. Add `geo` coordinates with 5+ decimal precision
@@ -288,9 +281,9 @@ Generate `LOCAL-SEO-ANALYSIS-{domain}.md` with:
 
 ## High Impact
 
-1. Build local digital PR strategy targeting "best of" lists (#1 AI visibility factor)
+1. Build local digital PR strategy targeting "best of" lists and local press (earned coverage, no paid or inauthentic mentions)
 2. Develop unique, non-swappable content for each location page (>60% unique)
-3. Establish presence on platforms ChatGPT sources from (Yelp, TripAdvisor, BBB, Reddit)
+3. Maintain accurate, active profiles on the review and directory platforms your customers use (e.g. Yelp, TripAdvisor, BBB, industry directories)
 4. Pursue Chamber of Commerce and BBB membership (authority + verification signals)
 5. Create community involvement content (sponsorships, local events, partnerships)
 

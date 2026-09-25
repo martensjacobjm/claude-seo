@@ -1,6 +1,6 @@
 ---
 name: seo
-description: "Comprehensive SEO analysis for any website or business type. Full site audits, single-page analysis, technical SEO (crawlability, indexability, Core Web Vitals with INP), schema markup, content quality (E-E-A-T), image optimization, sitemap analysis, and GEO for AI Overviews/ChatGPT/Perplexity. Industry detection for SaaS, e-commerce, local, publishers, agencies. Triggers on: SEO, audit, schema, Core Web Vitals, sitemap, E-E-A-T, AI Overviews, GEO, technical SEO, content quality, page speed, structured data."
+description: "Comprehensive SEO analysis for any website or business type. Full site audits, single-page analysis, technical SEO (crawlability, indexability, Core Web Vitals with INP), schema markup, content quality (E-E-A-T), image optimization, sitemap analysis, and GEO / AI search visibility for AI Overviews, AI Mode, ChatGPT search, Perplexity and Bing Copilot. Industry detection for SaaS, e-commerce, local, publishers, agencies. Triggers on: SEO, audit, schema, Core Web Vitals, sitemap, E-E-A-T, AI Overviews, AI Mode, GEO, AEO, technical SEO, content quality, page speed, structured data."
 user-invokable: true
 argument-hint: "[command] [url]"
 license: MIT
@@ -31,15 +31,15 @@ e-commerce, publishers, agencies). Orchestrates 16 specialized sub-skills and 11
 | `/seo images <url or optimize>` | Image SEO: on-page audit, SERP analysis, file optimization |
 | `/seo technical <url>` | Technical SEO audit (9 categories) |
 | `/seo content <url>` | E-E-A-T and content quality analysis |
-| `/seo geo <url>` | AI Overviews / Generative Engine Optimization |
+| `/seo geo <url>` | AI search visibility (AI Overviews, AI Mode, ChatGPT, Perplexity, Copilot): crawler access, eligibility, measurement |
 | `/seo plan <business-type>` | Strategic SEO planning |
 | `/seo programmatic [url\|plan]` | Programmatic SEO analysis and planning |
 | `/seo competitor-pages [url\|generate]` | Competitor comparison page generation |
 | `/seo local <url>` | Local SEO analysis (GBP, citations, reviews, map pack) |
 | `/seo maps [command] [args]` | Maps intelligence (geo-grid, GBP audit, reviews, competitors) |
 | `/seo hreflang [url]` | Hreflang/i18n SEO audit and generation |
-| `/seo google [command] [url]` | Google SEO APIs (GSC, PageSpeed, CrUX, Indexing, GA4) |
-| `/seo backlinks <url>` | Backlink profile analysis (free: Moz, Bing, CC; premium: DataForSEO) |
+| `/seo google [command] [url]` | Google SEO APIs (GSC, PageSpeed, CrUX, Indexing, GA4); also `crux-bq`, `crux-benchmark` (CrUX on BigQuery) and `gen-ai-report` (Search Console Generative AI report, manual export) |
+| `/seo backlinks <url>` | Backlink profile analysis (free: Moz, Bing, CC; premium: DataForSEO); `ai-performance --file <export>` parses a Bing AI Performance export |
 | `/seo firecrawl [command] <url>` | Full-site crawling and site mapping (extension) |
 | `/seo dataforseo [command]` | Live SEO data via DataForSEO (extension) |
 | `/seo image-gen [use-case] <description>` | AI image generation for SEO assets (extension) |
@@ -76,8 +76,9 @@ Read `references/quality-gates.md` for thin content thresholds per page type.
 Hard rules:
 - WARNING at 30+ location pages (enforce 60%+ unique content)
 - HARD STOP at 50+ location pages (require user justification)
-- Never recommend HowTo schema (deprecated Sept 2023)
-- FAQ schema for Google rich results: only government and healthcare sites (Aug 2023 restriction); existing FAQPage on commercial sites -> flag Info priority (not Critical), noting AI/LLM citation benefit; adding new FAQPage -> not recommended for Google benefit
+- Never recommend HowTo schema (deprecated Sept 2023; exception: HowTo paired with a MathSolver, see seo-schema)
+- FAQ rich result: no longer shown in Google Search for any site since May 7, 2026; docs removed June 15, 2026 (https://developers.google.com/search/updates). Existing FAQPage -> Info priority only; never recommend adding it for Google benefit; any AI-citation benefit is unverified
+- Never recommend llms.txt, content chunking, AI-specific rewrites or special AI schema for Google AI features (Google AI optimization guide, updated 2026-07-10); report llms.txt as informational only
 - All Core Web Vitals references use INP, never FID
 
 ## Reference Files
@@ -89,6 +90,8 @@ Load these on-demand as needed (do NOT load all at startup):
 - `references/quality-gates.md`: Content length minimums, uniqueness thresholds
 - `references/local-seo-signals.md`: Local ranking factors, review benchmarks, citation tiers, GBP status
 - `references/local-schema-types.md`: LocalBusiness subtypes, industry-specific schema and citation sources
+- `references/ranking-signals.md`: Evidence-graded map of Google systems (DOJ v. Google record) and 2024 Content Warehouse API leak attributes to audit checks; context only, not scoring (the leak shows attributes exist, not weights)
+- `references/free-backlink-sources.md`, `references/backlink-quality.md`: Backlink source comparison and toxic-link patterns (loaded by seo-backlinks)
 
 Maps-specific references (loaded by seo-maps skill, not at startup):
 - `references/maps-geo-grid.md`, `references/maps-gbp-checklist.md`, `references/maps-api-endpoints.md`, `references/maps-free-apis.md`
@@ -125,14 +128,14 @@ This skill orchestrates 15 specialized sub-skills (+ 2 extensions):
 5. **seo-schema** -- Schema markup detection and generation
 6. **seo-images** -- Image optimization, SERP analysis, file optimization
 7. **seo-sitemap** -- Sitemap analysis and generation
-8. **seo-geo** -- AI Overviews / GEO optimization
+8. **seo-geo** -- AI search visibility (AI Overviews, AI Mode, ChatGPT search, Perplexity, Copilot)
 9. **seo-plan** -- Strategic planning with templates
 10. **seo-programmatic** -- Programmatic SEO analysis and planning
 11. **seo-competitor-pages** -- Competitor comparison page generation
 12. **seo-hreflang** -- Hreflang/i18n SEO audit and generation
 13. **seo-local** -- Local SEO (GBP, NAP, citations, reviews, local schema, multi-location)
 14. **seo-maps** -- Maps intelligence (geo-grid, GBP audit, reviews, competitor radius)
-15. **seo-google** -- Google SEO APIs (GSC, PageSpeed, CrUX, Indexing API, GA4)
+15. **seo-google** -- Google SEO APIs (GSC, PageSpeed, CrUX, CrUX on BigQuery, Indexing API, GA4, Generative AI report export)
 16. **seo-backlinks** -- Backlink profile analysis (free: Moz, Bing, CC; premium: DataForSEO)
 17. **seo-firecrawl** -- Full-site crawling and site mapping via Firecrawl MCP (extension)
 18. **seo-dataforseo** -- Live SEO data via DataForSEO MCP (extension)
@@ -147,7 +150,7 @@ For parallel analysis during audits:
 - `seo-sitemap` -- Structure, coverage, quality gates
 - `seo-performance` -- Core Web Vitals measurement
 - `seo-visual` -- Screenshots, mobile testing, above-fold
-- `seo-geo` -- AI crawler access, llms.txt, citability, brand mention signals
+- `seo-geo` -- AI crawler access (search vs training tokens), indexability/snippet eligibility, content uniqueness, entity signals, AI visibility measurement (llms.txt reported as informational only)
 - `seo-local` -- GBP signals, NAP consistency, reviews, local schema, industry-specific local factors (conditional: spawned when Local Service detected)
 - `seo-maps` -- Geo-grid rank tracking, GBP audit, review intelligence, competitor radius mapping (conditional: spawned when Local Service detected AND DataForSEO MCP available)
 - `seo-google` -- CWV field data, URL indexation status, organic traffic trends (conditional: spawned when Google API credentials detected)

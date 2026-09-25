@@ -1,7 +1,7 @@
 ---
 name: seo-content
 description: >
-  Content quality and E-E-A-T analysis with AI citation readiness assessment.
+  Content quality and E-E-A-T analysis with AI search visibility assessment.
   Use when user says "content quality", "E-E-A-T", "content analysis",
   "readability check", "thin content", or "content audit".
 user-invokable: true
@@ -18,6 +18,8 @@ metadata:
 ## E-E-A-T Framework (updated Sept 2025 QRG)
 
 Read `skills/seo/references/eeat-framework.md` for full criteria.
+
+Read `skills/seo/references/ranking-signals.md` for what Google docs, the DOJ v. Google record and the 2024 API leak disclose about site-level quality, content effort and originality. Google states "E-E-A-T itself isn't a specific ranking factor"; score E-E-A-T as a proxy for signals its systems do use, never as a factor itself.
 
 ### Experience (first-hand signals)
 - Original research, case studies, before/after results
@@ -68,9 +70,9 @@ Compare against page type minimums:
 
 ### Keyword Optimization
 - Primary keyword in title, H1, first 100 words
-- Natural density (1-3%)
+- Natural use of the topic's key terms and entities; no keyword-density target (heuristic ranges like 1-3% have no Google source)
 - Semantic variations present
-- No keyword stuffing
+- No keyword stuffing (a `KeywordStuffingScore` field exists in the leaked API docs)
 
 ### Content Structure
 - Logical heading hierarchy (H1 -> H2 -> H3)
@@ -114,37 +116,45 @@ Google's raters now formally assess whether content appears AI-generated.
 
 > **Helpful Content System (March 2024):** The Helpful Content System was merged into Google's core ranking algorithm during the March 2024 core update. It no longer operates as a standalone classifier. Helpfulness signals are now weighted within every core update. The same principles apply (people-first content, demonstrating E-E-A-T, satisfying user intent), but enforcement is continuous rather than through separate HCU updates.
 
-## AI Citation Readiness (GEO signals)
+## AI Search Visibility (Google AI Overviews / AI Mode)
 
-Optimize for AI search engines (ChatGPT, Perplexity, Google AI Overviews):
+Base this section on Google's "Guide to Optimizing for Generative AI Features on Google Search"
+(https://developers.google.com/search/docs/fundamentals/ai-optimization-guide, updated 2026-07-10).
+Google: "There are no additional requirements to appear in AI Overviews or AI Mode", and both
+features "surface relevant links" (https://developers.google.com/search/docs/appearance/ai-features).
 
-- Clear, quotable statements with statistics/facts
-- Structured data (especially for data points)
-- Strong heading hierarchy (H1->H2->H3 flow)
-- Answer-first formatting for key questions
-- Tables and lists for comparative data
-- Clear attribution and source citations
+**Assess (what Google recommends):**
+- **Non-commodity content:** a unique point of view, first-hand experience, expert takes that go beyond common knowledge. Flag content that only restates what is available elsewhere or "could easily be produced by a generative AI model"
+- **Organization for readers:** paragraphs, sections and headings that make the page easy to follow
+- **Images and video:** high-quality, relevant media that supports the text (cross-check `seo-images`)
+- **Technical basics:** page indexed and eligible for a snippet; crawlable (cross-check `seo-technical`)
+- **Scaled variants:** separate pages for every query variation or fan-out query made "primarily to manipulate rankings or generative AI responses" violate the scaled content abuse policy
 
-### AI Search Visibility & GEO (2025-2026)
+**Do not score or recommend (Google lists these as unnecessary):**
+- Rewriting content "just for AI systems" or in a special "quotable"/answer-first style
+- "Chunking" content into small pieces; there is "no ideal page length"
+- llms.txt or other AI-specific files and markup
+- Structured data as a generative AI factor: it "isn't required for generative AI search, and there's no special schema.org markup you need to add" (still worth using for rich-result eligibility)
+- Seeking inauthentic "mentions"
 
-**Google AI Mode** launched publicly in May 2025 as a separate tab in Google Search, available in 180+ countries. Unlike AI Overviews (which appear above organic results), AI Mode provides a fully conversational search experience with **zero organic blue links**, making AI citation the only visibility mechanism.
-
-**Key optimization strategies for AI citation:**
-- **Structured answers:** Clear question-answer formats, definition patterns, and step-by-step instructions that AI systems can extract and cite
-- **First-party data:** Original research, statistics, case studies, and unique datasets are highly cited by AI systems
-- **Schema markup:** Article, FAQ (for non-Google AI platforms), and structured content schemas help AI systems parse and attribute content
-- **Topical authority:** AI systems preferentially cite sources that demonstrate deep expertise. Build content clusters, not isolated pages
-- **Entity clarity:** Ensure brand, authors, and key concepts are clearly defined with structured data (Organization, Person schema)
-- **Multi-platform tracking:** Monitor visibility across Google AI Overviews, AI Mode, ChatGPT, Perplexity, and Bing Copilot, not just traditional rankings. Treat AI citation as a standalone KPI alongside organic rankings and traffic.
-
-**Generative Engine Optimization (GEO):**
-GEO is the emerging discipline of optimizing content specifically for AI-generated answers. Key GEO signals include: quotability (clear, concise extractable facts), attribution (source citations within your content), structure (well-organized heading hierarchy), and freshness (regularly updated data). Cross-reference the `seo-geo` skill for detailed GEO workflows.
+**Measure:** the Search Console Generative AI performance report (see `seo-google`). Other AI
+platforms (ChatGPT, Perplexity, Copilot) are covered by the `seo-geo` skill; do not apply their
+tactics to Google scoring.
 
 ## Content Freshness
 
 - Publication date visible
 - Last updated date if content has been revised
 - Flag content older than 12 months without update for fast-changing topics
+- Change visible and schema dates only for substantive updates. Google flags "changing the date of pages to make them seem fresh" as a warning sign
+
+## Site-Level Quality & Effort
+
+See `skills/seo/references/ranking-signals.md` (evidence-graded; leaked attributes show what exists, not weights).
+- **Site-wide signals:** Google uses "site-wide signals and classifiers" that "contribute to our understanding of pages" (ranking-systems guide). The leak shows site-level quality-variance fields (`siteQualityStddev`, "spread of the page-level PQ ratings of a site"; weight unknown). Sample pages across sections and report variance. Whether weak sections lower the whole site is an inference, not documented.
+- **Effort and originality:** original data, first-hand media, process detail, analysis that is hard to replicate (leak: `contentEffort`, "LLM-based effort estimation for article pages"). Short pages still need unique content (`OriginalContentScore` applies to pages with little content).
+- **Topical focus:** flag sections that drift from the site's core topic (leak: `siteFocusScore`, `siteRadius`).
+- **YMYL:** apply stricter E-E-A-T checks to health and news pages (leak: `ymylHealthScore`, `ymylNewsScore`).
 
 ## Output
 
@@ -158,7 +168,7 @@ GEO is the emerging discipline of optimizing content specifically for AI-generat
 | Authoritativeness | XX/25 | ... |
 | Trustworthiness | XX/25 | ... |
 
-### AI Citation Readiness: XX/100
+### AI Search Visibility (Google guide): XX/100
 
 ### Issues Found
 ### Recommendations

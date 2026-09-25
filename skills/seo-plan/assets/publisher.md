@@ -1,4 +1,4 @@
-<!-- Updated: 2026-02-07 -->
+<!-- Updated: 2026-09-24 -->
 # Publisher/Media SEO Strategy Template
 
 ## Industry Characteristics
@@ -109,20 +109,19 @@ Publishers face highest E-E-A-T scrutiny.
 4. Newsletter landing pages
 
 ### GEO Considerations
-- Clear, quotable facts in articles
+- Clear, verifiable facts with cited sources in articles
 - Tables for data-heavy content
 - Expert quotes with attribution
 - Update dates prominently displayed
 - Structured headings (H2/H3)
-- First-party data and original research are highly cited by AI systems
+- First-party data and original research (non-commodity content per Google's AI optimization guide)
 - Ensure author entities are clearly defined with Person schema + sameAs links
-- Monitor AI citation frequency across Google AI Overviews, AI Mode, ChatGPT, Perplexity
-- Treat AI citation as a standalone KPI alongside organic traffic
+- Measure AI visibility with the Search Console Generative AI performance report (impressions by page/country/device; manual export) and the Bing Webmaster Tools AI Performance report (citations, grounding queries) as a KPI alongside organic traffic; third-party sampling of ChatGPT/Perplexity is optional
 
 ### Publisher SEO Updates (2025-2026)
 
 - **Google News automatic inclusion:** Google News no longer accepts manual applications (since March 2025). Inclusion is fully automatic based on Google's content quality criteria. Focus on Google News sitemap markup and consistent, high-quality publishing cadence.
-- **KPI shift:** Traffic-based KPIs (sessions, pageviews) are declining in relevance as AI Overviews reduce click-through rates. Leading publishers are shifting to: subscriber conversions, time on page, scroll depth, newsletter signups, AI citation frequency, and revenue per visitor.
+- **KPI mix:** Pair traffic KPIs (sessions, pageviews) with engagement and revenue KPIs (subscriber conversions, newsletter signups, revenue per visitor) and AI visibility (Search Console Gen AI impressions, Bing AI Performance citations). The size of any AI Overviews effect on click-through rate is not established here (unverified).
 - **Site reputation abuse risk:** Publishers hosting third-party content (coupons, product reviews, affiliate content) under their domain are at high risk. Google penalized Forbes, WSJ, Time, and CNN for this in late 2024. If hosting third-party content, ensure strong editorial oversight and clear first-party involvement.
 
 ## Technical Considerations

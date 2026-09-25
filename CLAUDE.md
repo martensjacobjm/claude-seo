@@ -22,7 +22,7 @@ claude-seo/
   skills/                            # 19 skills (auto-discovered)
     seo/                           # Main orchestrator skill
       SKILL.md                     # Entry point, routing table, core rules
-      references/                  # On-demand knowledge files (12 files)
+      references/                  # On-demand knowledge files (13 files, incl. ranking-signals.md)
     seo-audit/SKILL.md            # Full site audit with parallel agents
     seo-page/SKILL.md            # Deep single-page analysis
     seo-technical/SKILL.md       # Technical SEO (9 categories)
@@ -30,7 +30,9 @@ claude-seo/
     seo-schema/SKILL.md          # Schema.org markup detection/generation
     seo-sitemap/SKILL.md         # XML sitemap analysis/generation
     seo-images/SKILL.md          # Image optimization analysis
-    seo-geo/SKILL.md             # AI search / GEO optimization
+    seo-geo/                     # AI search / GEO optimization
+      SKILL.md
+      references/                # Evidence register (1 file: geo-evidence.md)
     seo-local/SKILL.md           # Local SEO (GBP, citations, reviews, map pack)
     seo-maps/SKILL.md            # Maps intelligence (geo-grid, GBP audit, reviews, competitors)
     seo-plan/SKILL.md            # Strategic SEO planning
@@ -39,7 +41,7 @@ claude-seo/
     seo-hreflang/SKILL.md       # International SEO / hreflang
     seo-google/                  # Google SEO APIs
       SKILL.md
-      references/                # API reference files (10 files)
+      references/                # API reference files (12 files, incl. crux-bigquery.md, gsc-generative-ai-report.md)
     seo-backlinks/SKILL.md      # Backlink profile analysis
     seo-dataforseo/SKILL.md     # Live SEO data via DataForSEO MCP (extension mirror)
     seo-image-gen/              # AI image generation for SEO assets (extension mirror)
@@ -52,7 +54,7 @@ claude-seo/
     seo-sitemap.md               # Sitemap quality gates
     seo-performance.md           # Core Web Vitals, page speed
     seo-visual.md                # Screenshots, mobile rendering
-    seo-geo.md                   # AI crawler access, GEO, citability
+    seo-geo.md                   # AI crawler access, eligibility, AI visibility measurement
     seo-local.md                 # GBP, NAP, citations, reviews, local schema
     seo-maps.md                  # Geo-grid, GBP audit, reviews, competitor radius
     seo-google.md                # Google API analyst (CrUX, GSC, GA4)
@@ -60,16 +62,18 @@ claude-seo/
     seo-dataforseo.md            # DataForSEO data analyst
     seo-image-gen.md             # SEO image audit analyst
   hooks/                           # Quality gate hooks
-    hooks.json                   # PostToolUse schema validation
-  scripts/                         # Python execution scripts (20 tracked + 2 dev-only)
+    hooks.json                   # PostToolUse schema validation (validate-schema.py reads the hook event on stdin)
+  scripts/                         # Python execution scripts (22 tracked + 2 dev-only)
     google_auth.py               # Credential management (OAuth, SA, API key, 4-tier detection)
     backlinks_auth.py            # Backlink API credential management (Moz, Bing)
     moz_api.py                   # Moz Link Explorer API (DA/PA, spam, domains, anchors)
-    bing_webmaster.py            # Bing Webmaster Tools API (links, competitor comparison)
+    bing_webmaster.py            # Bing Webmaster Tools API (links, verified-site compare) + AI Performance export parser
     commoncrawl_graph.py         # Common Crawl web graph parser (PageRank, in-degree)
     verify_backlinks.py          # Backlink existence verification crawler
+    validate_backlink_report.py  # Backlink report consistency validator
     pagespeed_check.py           # PSI v5 + CrUX API
     crux_history.py              # CrUX History API (25-week trends)
+    crux_bigquery.py             # CrUX on BigQuery (monthly origin CWV + competitor benchmark)
     gsc_query.py                 # Search Console (queries, pages, sitemaps, sites)
     gsc_inspect.py               # URL Inspection (single + batch)
     indexing_notify.py           # Indexing API v3 (URL_UPDATED/URL_DELETED)
@@ -83,6 +87,7 @@ claude-seo/
     capture_screenshot.py        # Playwright screenshots
     analyze_visual.py            # Visual analysis helper
     mobile_analysis.py           # Mobile rendering analysis (gitignored, dev-only)
+    generate_setup_guide.py      # Setup guide generator (gitignored, dev-only)
   schema/                          # Schema.org JSON-LD templates
   extensions/                      # Optional add-on install helpers
     dataforseo/                  # DataForSEO MCP install scripts
@@ -102,7 +107,7 @@ claude-seo/
 | `/seo schema <url>` | Schema.org detection, validation, generation |
 | `/seo sitemap <url>` | XML sitemap analysis or generation |
 | `/seo images <url or optimize>` | Image SEO: on-page audit, SERP analysis, file optimization |
-| `/seo geo <url>` | AI search / Generative Engine Optimization |
+| `/seo geo <url>` | AI search visibility (AI Overviews, AI Mode, ChatGPT, Perplexity, Copilot) |
 | `/seo plan <type>` | Strategic SEO planning by industry |
 | `/seo programmatic` | Programmatic SEO analysis and planning |
 | `/seo competitor-pages` | Competitor comparison page generation |
@@ -110,9 +115,13 @@ claude-seo/
 | `/seo maps [command] [args]` | Maps intelligence (geo-grid, GBP audit, reviews, competitors) |
 | `/seo hreflang <url>` | International SEO / hreflang audit |
 | `/seo google [command] [url]` | Google SEO APIs (GSC, PageSpeed, CrUX, Indexing, GA4) |
+| `/seo google crux-bq <origin>` | Monthly CrUX history from BigQuery (billing project required) |
+| `/seo google crux-benchmark <origin> <competitors...>` | CWV benchmark vs competitor origins (CrUX on BigQuery) |
+| `/seo google gen-ai-report` | Search Console Generative AI report (AI Overviews / AI Mode impressions) from a manual export |
 | `/seo backlinks <url>` | Backlink profile analysis (free: Moz, Bing, CC; premium: DataForSEO) |
 | `/seo backlinks setup` | Setup instructions for free backlink APIs |
 | `/seo backlinks verify <url>` | Verify known backlinks still exist |
+| `/seo backlinks ai-performance [<url>] --file <export>` | Parse a Bing Webmaster Tools AI Performance CSV/Excel export (not a backlink metric) |
 | `/seo firecrawl [command] <url>` | Full-site crawling and site mapping (extension) |
 | `/seo dataforseo [command]` | Live SEO data via DataForSEO MCP (extension) |
 | `/seo image-gen [use-case] <desc>` | AI image generation for SEO assets (extension) |
@@ -133,7 +142,8 @@ claude-seo/
 - **URL validation**: All scripts that accept user URLs must call `validate_url()` from `google_auth.py` before making API calls. This blocks private IPs, loopback, and GCP metadata endpoints (SSRF protection).
 - **OAuth tokens**: Never store `client_secret` in the token file. Read it from the client_secret.json file at runtime.
 - **No hardcoded paths**: Use `os.path.dirname(os.path.abspath(__file__))` for relative paths, never `/home/username/...`
-- **Config location**: `~/.config/claude-seo/google-api.json` and `~/.config/claude-seo/backlinks-api.json` (user-space, not in repo)
+- **Config location**: `~/.config/claude-seo/google-api.json` and `~/.config/claude-seo/backlinks-api.json` (user-space, not in repo). Optional `bigquery_project_id` key in google-api.json sets the billing project for `crux_bigquery.py` (auth: service account or Application Default Credentials)
+- **Python version**: `google-cloud-bigquery` 3.42+ requires Python >= 3.10 (PyPI metadata)
 
 ## Report Generation Rules
 

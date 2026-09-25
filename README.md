@@ -121,7 +121,7 @@ claude
 | `/seo images <url>` | Image optimization analysis |
 | `/seo technical <url>` | Technical SEO audit (9 categories) |
 | `/seo content <url>` | E-E-A-T and content quality analysis |
-| `/seo geo <url>` | AI Overviews / Generative Engine Optimization |
+| `/seo geo <url>` | AI search visibility (AI Overviews, AI Mode, ChatGPT, Perplexity, Copilot) |
 | `/seo plan <type>` | Strategic SEO planning (saas, local, ecommerce, publisher, agency) |
 | `/seo programmatic <url>` | Programmatic SEO analysis and planning |
 | `/seo competitor-pages <url>` | Competitor comparison page generation |
@@ -130,6 +130,10 @@ claude
 | `/seo hreflang <url>` | Hreflang/i18n SEO audit and generation |
 | `/seo google [command] [url]` | Google SEO APIs (GSC, PageSpeed, CrUX, Indexing, GA4) |
 | `/seo google report [type]` | Generate PDF/HTML report with charts (cwv-audit, gsc-performance, full) |
+| `/seo google crux-bq <origin>` | Monthly CrUX history from BigQuery (needs a billing project) |
+| `/seo google crux-benchmark <origin> <competitors...>` | CWV benchmark vs competitor origins (CrUX on BigQuery) |
+| `/seo google gen-ai-report` | Search Console Generative AI report (AI Overviews / AI Mode impressions) from a manual export |
+| `/seo backlinks ai-performance [<url>] --file <export>` | Parse a Bing Webmaster Tools AI Performance CSV/Excel export |
 
 ### `/seo programmatic [url|plan]`
 **Programmatic SEO Analysis & Planning**
@@ -189,15 +193,18 @@ Updated to September 2025 Quality Rater Guidelines:
 - Generation with templates
 - Deprecation awareness:
   - HowTo: Deprecated (Sept 2023)
-  - FAQ: Restricted to gov/health sites (Aug 2023)
+  - FAQ: rich result no longer shown in Google Search since May 7, 2026 (Info priority only)
+  - Practice problem: docs removed Jan 6, 2026
+  - ClaimReview: phasing out in Search; Fact Check Explorer still supports it
+  - Dataset: used by Dataset Search only
   - SpecialAnnouncement: Deprecated (July 2025)
 
 ### AI Search Optimization (GEO)
-New for 2026 - optimize for:
-- Google AI Overviews
-- ChatGPT web search
-- Perplexity
-- Other AI-powered search
+Evidence-graded checks for Google AI Overviews / AI Mode, ChatGPT search, Perplexity and Bing Copilot:
+- AI crawler access per vendor token (search vs training vs user-initiated)
+- Indexability and snippet eligibility, non-commodity content, semantic HTML, rich media, entity signals
+- Measurement via the Search Console Generative AI report and Bing AI Performance (manual exports)
+- Follows Google's AI optimization guide: llms.txt, chunking and AI-specific rewrites are not recommended (llms.txt is reported as informational only)
 
 ### Google SEO APIs (New in v1.7.0)
 Direct integration with Google's SEO data:
@@ -211,6 +218,7 @@ Direct integration with Google's SEO data:
 | Tier | Auth | APIs |
 |------|------|------|
 | 0 | API key | PSI, CrUX, CrUX History |
+| BQ | Service account or ADC + billing project | CrUX on BigQuery (monthly history, competitor benchmark) |
 | 1 | + OAuth/SA | + GSC, URL Inspection, Indexing |
 | 2 | + GA4 config | + GA4 organic traffic |
 | 3 | + Ads token | + Keyword Planner |
@@ -242,6 +250,8 @@ Additional schema types for video content, live streaming, and key moments:
 - Clip: Key moments / chapters within videos
 - SeekToAction: Enable seek functionality in video rich results
 - SoftwareSourceCode: Open source and code repository pages
+
+Also: ProductCategory (Google product taxonomy `CategoryCode`), Certification, OfferShippingDetails with `shippingDestination`.
 
 See `schema/templates.json` for ready-to-use JSON-LD snippets.
 
@@ -339,7 +349,7 @@ Claude SEO is part of a family of Claude Code skills that work together:
 2. `/seo backlinks https://example.com` -- analyze link profile and competitor gaps
 3. `/blog write "target keyword"` -- create SEO-optimized blog posts
 4. `/seo image-gen hero "blog topic"` -- generate hero images (banana extension)
-5. `/seo geo https://example.com/blog/post` -- optimize for AI citations
+5. `/seo geo https://example.com/blog/post` -- check AI search visibility
 
 ## Documentation
 

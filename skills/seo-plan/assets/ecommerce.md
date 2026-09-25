@@ -1,4 +1,4 @@
-<!-- Updated: 2026-02-07 -->
+<!-- Updated: 2026-09-24 -->
 # E-commerce SEO Strategy Template
 
 ## Industry Characteristics
@@ -156,12 +156,12 @@
 
 ## Generative Engine Optimization (GEO) for E-commerce
 
-AI search platforms increasingly answer product queries directly. Optimize for AI citation:
+Google's AI features draw on the same core ranking systems as Search; Merchant Center feeds help product visibility (Google AI optimization guide, 2026-07-10). Write for shoppers, not for AI:
 
 - [ ] Include clear product specifications, dimensions, materials in structured format
 - [ ] Use ProductGroup schema for variant products
 - [ ] Provide original product photography with descriptive alt text
 - [ ] Include genuine customer review content (AggregateRating schema)
 - [ ] Maintain consistent product entity data across all platforms (site, Amazon, Merchant Center)
-- [ ] Structure comparison content with clear feature tables AI can parse
+- [ ] Structure comparison content with clear headings and HTML feature tables for readers
 - [ ] Add detailed FAQ content for common product questions
