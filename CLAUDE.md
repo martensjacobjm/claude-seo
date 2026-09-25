@@ -89,6 +89,7 @@ claude-seo/
     mobile_analysis.py           # Mobile rendering analysis (gitignored, dev-only)
     generate_setup_guide.py      # Setup guide generator (gitignored, dev-only)
   schema/                          # Schema.org JSON-LD templates
+  claude-ai-skills/                # Uploadable claude.ai skills (hemsida, skill-evidens); build: python3 claude-ai-skills/build.py -> dist/*.skill
   tests/                           # pytest suite + synthetic fixtures (run: python -m pytest tests/)
   extensions/                      # Optional add-on install helpers
     dataforseo/                  # DataForSEO MCP install scripts

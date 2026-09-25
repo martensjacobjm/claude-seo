@@ -23,6 +23,8 @@ __pycache__/
 *.egg-info/
 dist/
 build/
+# Exception: prebuilt claude.ai skill packages are versioned for download
+!claude-ai-skills/dist/
 .eggs/
 
 # Virtual environments
