@@ -29,8 +29,38 @@ cd claude-seo
 The installer will:
 1. Prompt for your DataForSEO API login and API password
 2. Install the skill (with `references/tool-catalog.md`) and agent files
-3. Configure the MCP server in `~/.claude/settings.json` as `npx -y dataforseo-mcp-server@3`
+3. Register the MCP server `dataforseo` (`npx -y dataforseo-mcp-server@3`) at user scope
+   with `claude mcp add --scope user` (see [MCP registration](#mcp-registration))
 4. Pre-download the package
+
+### MCP registration
+
+Claude Code reads user-scope MCP servers from `~/.claude.json`; it never reads
+`mcpServers` from `~/.claude/settings.json`
+([docs](https://code.claude.com/docs/en/mcp)). Installers up to v1.8.1 wrote the server
+there, so it never loaded. The installer now:
+
+- runs `claude mcp remove dataforseo --scope user` (errors ignored, so a reinstall is
+  idempotent) and then
+  `claude mcp add --env DATAFORSEO_LOGIN=... --env DATAFORSEO_PASSWORD=... --env FIELD_CONFIG_PATH=... --transport stdio --scope user dataforseo -- npx -y dataforseo-mcp-server@3`
+  when the `claude` CLI is on PATH;
+- otherwise merges the same entry into the top-level `mcpServers` of `~/.claude.json`
+  (backup `~/.claude.json.claude-seo-backup-<time>` first, other keys untouched) and prints
+  the equivalent `claude mcp add` command with the secrets masked. Close Claude Code
+  first in that case: it rewrites `~/.claude.json` while running;
+- removes a leftover `mcpServers.dataforseo` entry from `~/.claude/settings.json`
+  (backup first) and says so.
+
+The server name stays `dataforseo`: the agents grant `mcp__dataforseo`. Check it with
+`claude mcp get dataforseo` or `claude mcp list`, or `/mcp` inside Claude Code.
+
+**Credentials.** The login and password are read with `read -s` (the password is not
+shown), passed to the helper (`extensions/claude_mcp_config.py`) through environment
+variables only, and never printed. They are not written to your shell history. They
+are stored in plain text in `~/.claude.json` by `claude mcp add --env`, as the old
+installer stored them in `~/.claude/settings.json`; keep that file private
+(the fallback writes it with mode 600). While `claude mcp add` runs they are briefly
+visible in its process arguments to other users of the same machine.
 
 ### Server version
 
@@ -166,7 +196,9 @@ tool such as `serp_organic_live_advanced` is present, and say so when neither is
 
 ### MCP server not connecting
 
-1. Check credentials: `cat ~/.claude/settings.json | grep DATAFORSEO` (v3 reads `DATAFORSEO_LOGIN`; `DATAFORSEO_USERNAME` is accepted as an alias)
+1. Check the registration: `claude mcp get dataforseo` (or `/mcp` in Claude Code). It must be in
+   `~/.claude.json`, not `~/.claude/settings.json`, which Claude Code does not read MCP servers from;
+   rerun the installer to move an old entry. v3 reads `DATAFORSEO_LOGIN`; `DATAFORSEO_USERNAME` is accepted as an alias
 2. Check Node: `node -v` must be 22 or newer
 3. Test the API from a shell: `DATAFORSEO_LOGIN=... DATAFORSEO_PASSWORD=... npx -y dataforseo-mcp-server@3 request -X GET -p /v3/serp/google/locations`
 4. Re-run installer: `./extensions/dataforseo/install.sh`
@@ -180,7 +212,7 @@ the old server instead, set the args to `dataforseo-mcp-server@2` (deprecated up
 
 ### API errors
 
-- **401 Unauthorized**: Check username/password in settings.json
+- **401 Unauthorized**: Check the API login/password (`claude mcp get dataforseo`); rerun the installer to replace them
 - **402 Payment Required**: Add credits at [app.dataforseo.com](https://app.dataforseo.com)
 - **429 Rate Limited**: Wait and retry (DataForSEO allows up to 2,000 API calls per minute)
 
@@ -203,7 +235,9 @@ from `ENABLED_MODULES`.
 .\extensions\dataforseo\uninstall.ps1
 ```
 
-This removes the skill, agent, field config, and MCP server entry from settings.json.
+This removes the skill, agent and field config, runs `claude mcp remove dataforseo --scope user`
+(without the CLI: removes the entry from `~/.claude.json`), and deletes a legacy
+`mcpServers.dataforseo` entry from `~/.claude/settings.json` (backups first).
 
 ## Links
 

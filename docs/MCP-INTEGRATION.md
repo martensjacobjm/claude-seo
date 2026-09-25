@@ -1,9 +1,35 @@
-<!-- Updated: 2026-02-07 -->
+<!-- Updated: 2026-09-25 -->
 # MCP Integration
 
 ## Overview
 
 Claude SEO can integrate with Model Context Protocol (MCP) servers to access external APIs and enhance analysis capabilities.
+
+## Where Claude Code reads MCP servers
+
+Claude Code reads MCP servers from `~/.claude.json` (user scope: top-level `mcpServers`;
+local scope: under `projects["<path>"]`) and from `.mcp.json` in the project root
+(project scope). It does not read `mcpServers` from `~/.claude/settings.json`
+([Claude Code MCP docs](https://code.claude.com/docs/en/mcp)). Add servers with the CLI:
+
+```bash
+claude mcp add --env KEY=value --transport stdio --scope user <name> -- <command> [args...]
+claude mcp add-json <name> '<json>' --scope user
+claude mcp get <name>
+claude mcp list
+claude mcp remove <name> --scope user
+```
+
+`--env` accepts several `KEY=value` pairs, so put another option (such as `--transport
+stdio`) between the last `--env` and the server name; `--` separates the server command.
+The JSON examples below are the `mcpServers` entries; add them with `claude mcp add-json`
+or into `.mcp.json` (project scope, shared via git, so keep secrets out of it).
+
+The extension installers (`extensions/*/install.sh|ps1`) use the shared helper
+`extensions/claude_mcp_config.py`: `claude mcp add --scope user` when the CLI is on PATH,
+otherwise a JSON-safe merge into `~/.claude.json` (backup first). Installers up to v1.8.1
+wrote to `~/.claude/settings.json`, where the servers never loaded; rerunning an
+installer moves them and deletes the old entry (backup first).
 
 ## Available Integrations
 

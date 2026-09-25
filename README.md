@@ -291,7 +291,13 @@ Integrates with MCP servers for live SEO data, including official servers from *
 
 ## Extensions
 
-Optional add-ons that integrate external data sources via MCP servers.
+Optional add-ons that integrate external data sources via MCP servers. The installers
+register each server at user scope with `claude mcp add --scope user` (Claude Code keeps
+user-scope servers in `~/.claude.json`; it does not read `mcpServers` from
+`~/.claude/settings.json`). Without the `claude` CLI they merge the entry into
+`~/.claude.json` directly. Rerunning an installer moves a server that an older version
+(v1.8.1 and earlier) wrote to `settings.json`, where it never loaded. Check with
+`claude mcp list`.
 
 ### DataForSEO
 
@@ -331,7 +337,8 @@ Generate SEO images (OG previews, blog heroes, product photos, infographics) usi
 ```
 
 See [Banana Extension](extensions/banana/README.md) for full documentation.
-Already using standalone Claude Banana? The extension reuses your existing nanobanana-mcp setup.
+Already using standalone Claude Banana? The extension reuses an existing user-scope `nanobanana-mcp`
+registration, and moves one found in `~/.claude/settings.json` to `~/.claude.json`.
 
 ## Ecosystem
 

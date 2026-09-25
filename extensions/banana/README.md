@@ -22,9 +22,23 @@ banana Creative Director pipeline.
 
 The installer will:
 1. Verify Claude SEO is installed
-2. Prompt for your Google AI API key (if nanobanana-mcp not already configured)
+2. Register the MCP server `nanobanana-mcp` at user scope, unless it is already registered
+   in `~/.claude.json`:
+   - with the `claude` CLI on PATH: `claude mcp remove nanobanana-mcp --scope user`, then
+     `claude mcp add --env GOOGLE_AI_API_KEY=... --transport stdio --scope user nanobanana-mcp -- npx -y @ycse/nanobanana-mcp@latest`;
+   - without it: a JSON-safe merge into the top-level `mcpServers` of `~/.claude.json`
+     (backup first, other keys untouched; close Claude Code first).
+
+   It prompts for your Google AI API key (input hidden) only when no key can be reused:
+   an entry left in `~/.claude/settings.json` by v1.8.1 and earlier or by an older
+   standalone banana install is migrated with its key and then deleted there (backup
+   first). Claude Code never loaded MCP servers from `settings.json`
+   ([docs](https://code.claude.com/docs/en/mcp)).
 3. Install the `seo-image-gen` skill and agent
-4. Configure the MCP server in `~/.claude/settings.json`
+
+The key reaches the helper (`extensions/claude_mcp_config.py`) through an environment
+variable, is never printed and does not enter your shell history. `claude mcp add --env`
+stores it in plain text in `~/.claude.json`, as older versions did in `settings.json`.
 
 ## Commands
 

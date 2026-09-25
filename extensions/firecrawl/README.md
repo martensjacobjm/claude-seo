@@ -22,7 +22,24 @@ Full-site crawling, scraping, and site mapping powered by [Firecrawl](https://ww
 .\extensions\firecrawl\install.ps1
 ```
 
-The installer will prompt for your Firecrawl API key and configure the MCP server automatically.
+The installer prompts for your Firecrawl API key (input hidden) and registers the MCP
+server `firecrawl-mcp` at user scope:
+
+- with the `claude` CLI on PATH: `claude mcp remove firecrawl-mcp --scope user` (errors
+  ignored, so a reinstall is idempotent), then
+  `claude mcp add --env FIRECRAWL_API_KEY=... --transport stdio --scope user firecrawl-mcp -- npx -y firecrawl-mcp`;
+- without it: a JSON-safe merge into the top-level `mcpServers` of `~/.claude.json`
+  (backup first, other keys untouched; close Claude Code first), plus the equivalent
+  `claude mcp add` command with the key masked.
+
+Claude Code reads user-scope MCP servers from `~/.claude.json`, not from
+`~/.claude/settings.json` ([docs](https://code.claude.com/docs/en/mcp)). Installers up to
+v1.8.1 wrote the server to `settings.json`, where it never loaded; the installer removes
+that leftover `mcpServers.firecrawl-mcp` entry (backup first) and tells you.
+
+The key goes to the helper (`extensions/claude_mcp_config.py`) through an environment
+variable, is never printed and does not enter your shell history. `claude mcp add --env`
+stores it in plain text in `~/.claude.json`, as the old installer did in `settings.json`.
 
 ## Commands
 
@@ -56,7 +73,8 @@ When installed, other Claude SEO skills automatically leverage Firecrawl:
 ## Troubleshooting
 
 **MCP not connecting?**
-- Check: `cat ~/.claude/settings.json | python3 -m json.tool | grep firecrawl`
+- Check: `claude mcp get firecrawl-mcp` (or `/mcp` in Claude Code). An entry only in
+  `~/.claude/settings.json` is never loaded: rerun the installer to move it
 - Manual config: See [FIRECRAWL-SETUP.md](docs/FIRECRAWL-SETUP.md)
 
 **Credits exhausted?**
@@ -74,6 +92,9 @@ When installed, other Claude SEO skills automatically leverage Firecrawl:
 ./extensions/firecrawl/uninstall.sh      # macOS/Linux
 .\extensions\firecrawl\uninstall.ps1     # Windows
 ```
+
+This runs `claude mcp remove firecrawl-mcp --scope user` (without the CLI: removes the
+entry from `~/.claude.json`) and deletes a legacy entry from `~/.claude/settings.json`.
 
 ## Links
 

@@ -8,7 +8,6 @@ main() {
     SKILL_DIR="${HOME}/.claude/skills/seo-dataforseo"
     AGENT_DIR="${HOME}/.claude/agents"
     SEO_SKILL_DIR="${HOME}/.claude/skills/seo"
-    SETTINGS_FILE="${HOME}/.claude/settings.json"
     # Pinned to major 3: v3 replaced the ~80 per-endpoint tools with api_request,
     # so a future major could break the skills the same way. Bump deliberately.
     DFSE_PACKAGE="dataforseo-mcp-server@3"
@@ -48,6 +47,27 @@ main() {
     fi
     echo "✓ npx detected"
 
+    # python3 runs the shared MCP registration helper (extensions/claude_mcp_config.py)
+    if ! command -v python3 >/dev/null 2>&1; then
+        echo "✗ python3 is required to register the MCP server."
+        exit 1
+    fi
+    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    MCP_HELPER=""
+    for candidate in "${SCRIPT_DIR}/../claude_mcp_config.py" "${SCRIPT_DIR}/extensions/claude_mcp_config.py"; do
+        if [ -f "${candidate}" ]; then MCP_HELPER="${candidate}"; break; fi
+    done
+    if [ -z "${MCP_HELPER}" ]; then
+        echo "✗ Cannot find extensions/claude_mcp_config.py."
+        echo "  Run this script from the claude-seo repo: ./extensions/dataforseo/install.sh"
+        exit 1
+    fi
+    if command -v claude >/dev/null 2>&1; then
+        echo "✓ claude CLI detected (MCP server will be added with: claude mcp add --scope user)"
+    else
+        echo "ℹ claude CLI not on PATH: the MCP server will be written to ~/.claude.json directly"
+    fi
+
     # Prompt for credentials
     echo ""
     echo "DataForSEO API credentials required."
@@ -68,9 +88,6 @@ main() {
         echo "✗ Password cannot be empty."
         exit 1
     fi
-
-    # Determine script directory (works for both ./install.sh and curl|bash)
-    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
     # Check if running from repo or standalone
     if [ -f "${SCRIPT_DIR}/skills/seo-dataforseo/SKILL.md" ]; then
@@ -102,56 +119,27 @@ main() {
     echo "→ Installing field config..."
     cp "${SOURCE_DIR}/field-config.json" "${SEO_SKILL_DIR}/dataforseo-field-config.json"
 
-    # Merge MCP config into settings.json
-    echo "→ Configuring MCP server..."
+    # Register the MCP server at user scope. Claude Code reads user-scope MCP
+    # servers from ~/.claude.json (via `claude mcp add --scope user`), never
+    # from ~/.claude/settings.json, where installers up to v1.8.1 wrote them.
+    echo "→ Registering MCP server (user scope)..."
     FIELD_CONFIG_PATH="${SEO_SKILL_DIR}/dataforseo-field-config.json"
 
-    # Credentials go through the environment, not string interpolation, so quotes
-    # or backslashes in the password cannot break the Python snippet.
-    DFSE_SETTINGS_FILE="${SETTINGS_FILE}" DFSE_FIELD_CONFIG="${FIELD_CONFIG_PATH}" \
-    DFSE_LOGIN="${DFSE_USERNAME}" DFSE_PASS="${DFSE_PASSWORD}" DFSE_PACKAGE="${DFSE_PACKAGE}" \
-    python3 -c "
-import json, os, sys
-
-settings_path = os.environ['DFSE_SETTINGS_FILE']
-username = os.environ['DFSE_LOGIN']
-password = os.environ['DFSE_PASS']
-field_config = os.environ['DFSE_FIELD_CONFIG']
-package = os.environ['DFSE_PACKAGE']
-
-# Read existing settings or create new
-if os.path.exists(settings_path):
-    with open(settings_path, 'r') as f:
-        settings = json.load(f)
-else:
-    settings = {}
-
-# Ensure mcpServers key exists
-if 'mcpServers' not in settings:
-    settings['mcpServers'] = {}
-
-# Add DataForSEO server config (v3: DATAFORSEO_LOGIN; ENABLED_MODULES no longer exists)
-settings['mcpServers']['dataforseo'] = {
-    'command': 'npx',
-    'args': ['-y', package],
-    'env': {
-        'DATAFORSEO_LOGIN': username,
-        'DATAFORSEO_PASSWORD': password,
-        'FIELD_CONFIG_PATH': field_config
-    }
-}
-
-# Write back
-os.makedirs(os.path.dirname(settings_path), exist_ok=True)
-with open(settings_path, 'w') as f:
-    json.dump(settings, f, indent=2)
-
-print('  ✓ MCP server configured in settings.json')
-" || {
-        echo "  ⚠  Could not auto-configure MCP server."
-        echo "  Add the dataforseo server manually to ~/.claude/settings.json"
+    # Credentials go to the helper through the environment only: never argv of
+    # this shell, never string interpolation, never echoed.
+    DATAFORSEO_LOGIN="${DFSE_USERNAME}" DATAFORSEO_PASSWORD="${DFSE_PASSWORD}" \
+    FIELD_CONFIG_PATH="${FIELD_CONFIG_PATH}" \
+    python3 "${MCP_HELPER}" install --name dataforseo \
+        --env-keys DATAFORSEO_LOGIN,DATAFORSEO_PASSWORD,FIELD_CONFIG_PATH \
+        --secret-keys DATAFORSEO_LOGIN,DATAFORSEO_PASSWORD \
+        -- npx -y "${DFSE_PACKAGE}" || {
+        echo "  ⚠  Could not register the MCP server automatically. Run:"
+        echo "     claude mcp add --env DATAFORSEO_LOGIN=<login> --env DATAFORSEO_PASSWORD=<password> \\"
+        echo "       --env FIELD_CONFIG_PATH=${FIELD_CONFIG_PATH} --transport stdio --scope user \\"
+        echo "       dataforseo -- npx -y ${DFSE_PACKAGE}"
         echo "  See: extensions/dataforseo/docs/DATAFORSEO-SETUP.md"
     }
+    unset DFSE_PASSWORD
 
     # Pre-warm npx package
     echo "→ Pre-downloading ${DFSE_PACKAGE}..."

@@ -135,6 +135,28 @@ cp /path/to/claude-seo/agents/*.md ~/.claude/agents/
 
 ---
 
+### Extension MCP Server Not Loading (DataForSEO, Firecrawl, Banana)
+
+**Symptom:** `/mcp` or `claude mcp list` does not show `dataforseo`, `firecrawl-mcp` or
+`nanobanana-mcp`, and the extension says its tools are unavailable.
+
+**Cause:** Extension installers up to v1.8.1 wrote the server to `mcpServers` in
+`~/.claude/settings.json`. Claude Code does not read MCP servers from that file; user-scope
+servers live in `~/.claude.json` ([docs](https://code.claude.com/docs/en/mcp)).
+
+**Solution:** rerun the extension installer (`./extensions/<name>/install.sh` or
+`install.ps1`). It registers the server with `claude mcp add --scope user` (or merges it
+into `~/.claude.json` when the `claude` CLI is not on PATH) and removes the old
+`settings.json` entry, with a backup (`*.claude-seo-backup-<time>`) of each file it edits.
+Then check:
+
+```bash
+claude mcp get dataforseo      # or firecrawl-mcp / nanobanana-mcp
+```
+
+Restart Claude Code afterwards. Without the CLI, close Claude Code before running the
+installer: it rewrites `~/.claude.json` while running.
+
 ### Timeout Errors
 
 **Symptom:** `Request timed out after 30 seconds`

@@ -48,12 +48,32 @@ Per-endpoint source links: `extensions/dataforseo/README.md` (section API Credit
 
 ## 4. Manual MCP Configuration
 
-If the installer's auto-configuration fails, add this to `~/.claude/settings.json`:
+Claude Code loads user-scope MCP servers from `~/.claude.json`, not from
+`~/.claude/settings.json` ([Claude Code MCP docs](https://code.claude.com/docs/en/mcp)).
+If the installer could not register the server, add it with the CLI (note the space
+before `claude` in bash/zsh with `HISTCONTROL=ignorespace`, which keeps the password out
+of shell history; otherwise clear the history line afterwards):
+
+```bash
+ claude mcp add --env DATAFORSEO_LOGIN=your-api-login \
+  --env DATAFORSEO_PASSWORD=your-api-password \
+  --env FIELD_CONFIG_PATH="$HOME/.claude/skills/seo/dataforseo-field-config.json" \
+  --transport stdio --scope user dataforseo -- npx -y dataforseo-mcp-server@3
+```
+
+`--env` takes several `KEY=value` pairs, so keep another option (`--transport stdio`)
+between the last `--env` and the server name; `--` separates the server command.
+Keep the name `dataforseo`: the agents grant `mcp__dataforseo`. Check it with
+`claude mcp get dataforseo`; remove it with `claude mcp remove dataforseo --scope user`.
+
+Without the `claude` CLI, close Claude Code and add the entry to the top-level
+`mcpServers` object of `~/.claude.json` (back the file up first; leave all other keys):
 
 ```json
 {
   "mcpServers": {
     "dataforseo": {
+      "type": "stdio",
       "command": "npx",
       "args": ["-y", "dataforseo-mcp-server@3"],
       "env": {
@@ -65,6 +85,9 @@ If the installer's auto-configuration fails, add this to `~/.claude/settings.jso
   }
 }
 ```
+
+A `mcpServers.dataforseo` entry in `~/.claude/settings.json` (written by installers
+in v1.8.1 and earlier) is never loaded; delete it. Rerunning the installer does this for you.
 
 Replace the login, password, and FIELD_CONFIG_PATH with your actual values.
 

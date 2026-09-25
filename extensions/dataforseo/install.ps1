@@ -44,6 +44,34 @@ if ($null -eq $npxCmd) {
 }
 Write-Host "✓ npx detected" -ForegroundColor Green
 
+# Shared MCP registration helper (extensions/claude_mcp_config.py). It runs
+# `claude mcp add --scope user` (user-scope servers live in ~/.claude.json;
+# Claude Code never reads mcpServers from ~/.claude/settings.json, where
+# installers up to v1.8.1 wrote them), falls back to a JSON-safe merge into
+# ~/.claude.json, and removes the legacy settings.json entry (backup first).
+function Find-Python {
+    foreach ($name in @('python3', 'python', 'py')) {
+        $cmd = Get-Command -Name $name -CommandType Application -ErrorAction SilentlyContinue |
+            Select-Object -First 1
+        if ($null -eq $cmd) { continue }
+        $pre = @()
+        if ($name -eq 'py') { $pre = @('-3') }
+        try {
+            # Skips the Microsoft Store "python" alias, which exits non-zero.
+            & $cmd.Source @pre -c "import sys; sys.exit(0 if sys.version_info >= (3, 7) else 1)" 2>$null | Out-Null
+            if ($LASTEXITCODE -eq 0) { return [pscustomobject]@{ Exe = $cmd.Source; Pre = $pre } }
+        } catch { }
+    }
+    return $null
+}
+
+function Find-McpHelper([string]$Dir) {
+    foreach ($candidate in @((Join-Path $Dir '..\claude_mcp_config.py'), (Join-Path $Dir 'extensions\claude_mcp_config.py'))) {
+        if (Test-Path $candidate) { return (Resolve-Path $candidate).Path }
+    }
+    return $null
+}
+
 # Prompt for credentials
 Write-Host ""
 Write-Host "DataForSEO API credentials required." -ForegroundColor Yellow
@@ -82,7 +110,6 @@ if (Test-Path "$ScriptDir\skills\seo-dataforseo\SKILL.md") {
 # Set paths
 $SkillDir = "$env:USERPROFILE\.claude\skills\seo-dataforseo"
 $AgentDir = "$env:USERPROFILE\.claude\agents"
-$SettingsFile = "$env:USERPROFILE\.claude\settings.json"
 $FieldConfigPath = "$SeoSkillDir\dataforseo-field-config.json"
 
 # Install skill
@@ -104,61 +131,44 @@ Copy-Item -Force "$SourceDir\agents\seo-dataforseo.md" "$AgentDir\seo-dataforseo
 Write-Host "→ Installing field config..." -ForegroundColor Yellow
 Copy-Item -Force "$SourceDir\field-config.json" $FieldConfigPath
 
-# Merge MCP config into settings.json
-Write-Host "→ Configuring MCP server..." -ForegroundColor Yellow
-
-$python = Get-Command -Name python -ErrorAction SilentlyContinue
-if ($null -eq $python) {
-    $python = Get-Command -Name py -ErrorAction SilentlyContinue
-}
-
-if ($null -ne $python) {
-    $pyExe = $python.Source
-    $pyScript = @"
-import json, os
-settings_path = os.environ['DFSE_SETTINGS_FILE']
-if os.path.exists(settings_path):
-    with open(settings_path, 'r') as f:
-        settings = json.load(f)
-else:
-    settings = {}
-if 'mcpServers' not in settings:
-    settings['mcpServers'] = {}
-# v3: DATAFORSEO_LOGIN; ENABLED_MODULES no longer exists
-settings['mcpServers']['dataforseo'] = {
-    'command': 'npx',
-    'args': ['-y', os.environ['DFSE_PACKAGE']],
-    'env': {
-        'DATAFORSEO_LOGIN': os.environ['DFSE_LOGIN'],
-        'DATAFORSEO_PASSWORD': os.environ['DFSE_PASS'],
-        'FIELD_CONFIG_PATH': os.environ['DFSE_FIELD_CONFIG']
+# Register the MCP server at user scope
+Write-Host "→ Registering MCP server (user scope)..." -ForegroundColor Yellow
+$python = Find-Python
+$mcpHelper = Find-McpHelper $ScriptDir
+$registered = $false
+if ($null -ne $python -and $null -ne $mcpHelper) {
+    # Credentials reach the helper through the environment only (never argv,
+    # never string interpolation into code, never echoed). Splatting keeps the
+    # literal '--' separator intact for the native command.
+    $env:DATAFORSEO_LOGIN = $DfseUsername
+    $env:DATAFORSEO_PASSWORD = $DfsePassword
+    $env:FIELD_CONFIG_PATH = $FieldConfigPath
+    $helperArgs = @($python.Pre) + @($mcpHelper, 'install', '--name', 'dataforseo',
+        '--env-keys', 'DATAFORSEO_LOGIN,DATAFORSEO_PASSWORD,FIELD_CONFIG_PATH',
+        '--secret-keys', 'DATAFORSEO_LOGIN,DATAFORSEO_PASSWORD',
+        '--', 'npx', '-y', $DfsePackage)
+    try {
+        & $python.Exe @helperArgs
+        $registered = ($LASTEXITCODE -eq 0)
+    } catch {
+        $registered = $false
+    } finally {
+        Remove-Item Env:DATAFORSEO_LOGIN, Env:DATAFORSEO_PASSWORD, Env:FIELD_CONFIG_PATH -ErrorAction SilentlyContinue
     }
-}
-os.makedirs(os.path.dirname(settings_path), exist_ok=True)
-with open(settings_path, 'w') as f:
-    json.dump(settings, f, indent=2)
-print('  ok')
-"@
-
-    # Credentials go through the environment, not string interpolation, so quotes
-    # in the password cannot break the Python snippet.
-    $env:DFSE_SETTINGS_FILE = $SettingsFile
-    $env:DFSE_FIELD_CONFIG = $FieldConfigPath
-    $env:DFSE_LOGIN = $DfseUsername
-    $env:DFSE_PASS = $DfsePassword
-    $env:DFSE_PACKAGE = $DfsePackage
-    $result = & $pyExe -c $pyScript 2>&1
-    Remove-Item Env:DFSE_PASS, Env:DFSE_LOGIN -ErrorAction SilentlyContinue
-    if ($LASTEXITCODE -eq 0) {
-        Write-Host "  ✓ MCP server configured in settings.json" -ForegroundColor Green
-    } else {
-        Write-Host "  ⚠  Could not auto-configure MCP server." -ForegroundColor Yellow
-        Write-Host "  Add the dataforseo server manually to ~\.claude\settings.json"
-    }
+} elseif ($null -eq $python) {
+    Write-Host "  ⚠  Python 3 not found; cannot register the MCP server automatically." -ForegroundColor Yellow
 } else {
-    Write-Host "  ⚠  Python not found. Configure MCP server manually." -ForegroundColor Yellow
+    Write-Host "  ⚠  extensions\claude_mcp_config.py not found (run from the claude-seo repo)." -ForegroundColor Yellow
+}
+if (-not $registered) {
+    Write-Host "  Register it yourself (replace the <...> values):"
+    Write-Host "    claude mcp add --env DATAFORSEO_LOGIN=<login> --env DATAFORSEO_PASSWORD=<password> ``"
+    Write-Host "      --env FIELD_CONFIG_PATH=$FieldConfigPath --transport stdio --scope user ``"
+    Write-Host "      dataforseo -- npx -y $DfsePackage"
+    Write-Host "  and delete any mcpServers.dataforseo entry from ~\.claude\settings.json."
     Write-Host "  See: extensions\dataforseo\docs\DATAFORSEO-SETUP.md"
 }
+$DfsePassword = $null
 
 # Pre-warm npx package
 Write-Host "→ Pre-downloading $DfsePackage..." -ForegroundColor Yellow

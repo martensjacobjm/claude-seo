@@ -9,7 +9,6 @@ Write-Host ""
 
 $SkillDir = "$env:USERPROFILE\.claude\skills\seo-firecrawl"
 $SeoSkillDir = "$env:USERPROFILE\.claude\skills\seo"
-$SettingsFile = "$env:USERPROFILE\.claude\settings.json"
 
 # Check prerequisites
 if (-not (Test-Path $SeoSkillDir)) {
@@ -30,6 +29,34 @@ if ($major -lt 20) {
     exit 1
 }
 Write-Host "v Node.js v$nodeVersion detected" -ForegroundColor Green
+
+# Shared MCP registration helper (extensions/claude_mcp_config.py). It runs
+# `claude mcp add --scope user` (user-scope servers live in ~/.claude.json;
+# Claude Code never reads mcpServers from ~/.claude/settings.json, where
+# installers up to v1.8.1 wrote them), falls back to a JSON-safe merge into
+# ~/.claude.json, and removes the legacy settings.json entry (backup first).
+function Find-Python {
+    foreach ($name in @('python3', 'python', 'py')) {
+        $cmd = Get-Command -Name $name -CommandType Application -ErrorAction SilentlyContinue |
+            Select-Object -First 1
+        if ($null -eq $cmd) { continue }
+        $pre = @()
+        if ($name -eq 'py') { $pre = @('-3') }
+        try {
+            # Skips the Microsoft Store "python" alias, which exits non-zero.
+            & $cmd.Source @pre -c "import sys; sys.exit(0 if sys.version_info >= (3, 7) else 1)" 2>$null | Out-Null
+            if ($LASTEXITCODE -eq 0) { return [pscustomobject]@{ Exe = $cmd.Source; Pre = $pre } }
+        } catch { }
+    }
+    return $null
+}
+
+function Find-McpHelper([string]$Dir) {
+    foreach ($candidate in @((Join-Path $Dir '..\claude_mcp_config.py'), (Join-Path $Dir 'extensions\claude_mcp_config.py'))) {
+        if (Test-Path $candidate) { return (Resolve-Path $candidate).Path }
+    }
+    return $null
+}
 
 # Prompt for API key
 Write-Host ""
@@ -64,17 +91,40 @@ Write-Host "=> Installing Firecrawl skill..." -ForegroundColor Yellow
 New-Item -ItemType Directory -Force -Path $SkillDir | Out-Null
 Copy-Item "$SourceDir\skills\seo-firecrawl\SKILL.md" "$SkillDir\SKILL.md" -Force
 
-# Configure MCP server
-Write-Host "=> Configuring MCP server..." -ForegroundColor Yellow
-$settingsContent = if (Test-Path $SettingsFile) { Get-Content $SettingsFile -Raw | ConvertFrom-Json } else { @{} }
-if (-not $settingsContent.mcpServers) { $settingsContent | Add-Member -NotePropertyName mcpServers -NotePropertyValue @{} -Force }
-$settingsContent.mcpServers | Add-Member -NotePropertyName 'firecrawl-mcp' -NotePropertyValue @{
-    command = 'npx'
-    args = @('-y', 'firecrawl-mcp')
-    env = @{ FIRECRAWL_API_KEY = $apiKeyPlain }
-} -Force
-$settingsContent | ConvertTo-Json -Depth 10 | Set-Content $SettingsFile -Encoding UTF8
-Write-Host "  v MCP server configured" -ForegroundColor Green
+# Register the MCP server at user scope
+Write-Host "=> Registering MCP server (user scope)..." -ForegroundColor Yellow
+$python = Find-Python
+$mcpHelper = Find-McpHelper $ScriptDir
+$registered = $false
+if ($null -ne $python -and $null -ne $mcpHelper) {
+    # The key reaches the helper through the environment only (never argv,
+    # never string interpolation into code, never echoed). Splatting keeps the
+    # literal '--' separator intact for the native command.
+    $env:FIRECRAWL_API_KEY = $apiKeyPlain
+    $helperArgs = @($python.Pre) + @($mcpHelper, 'install', '--name', 'firecrawl-mcp',
+        '--env-keys', 'FIRECRAWL_API_KEY', '--secret-keys', 'FIRECRAWL_API_KEY',
+        '--', 'npx', '-y', 'firecrawl-mcp')
+    try {
+        & $python.Exe @helperArgs
+        $registered = ($LASTEXITCODE -eq 0)
+    } catch {
+        $registered = $false
+    } finally {
+        Remove-Item Env:FIRECRAWL_API_KEY -ErrorAction SilentlyContinue
+    }
+} elseif ($null -eq $python) {
+    Write-Host "  Warning: Python 3 not found; cannot register the MCP server automatically." -ForegroundColor Yellow
+} else {
+    Write-Host "  Warning: extensions\claude_mcp_config.py not found (run from the claude-seo repo)." -ForegroundColor Yellow
+}
+if (-not $registered) {
+    Write-Host "  Register it yourself (replace <key>):"
+    Write-Host "    claude mcp add --env FIRECRAWL_API_KEY=<key> --transport stdio --scope user ``"
+    Write-Host "      firecrawl-mcp -- npx -y firecrawl-mcp"
+    Write-Host "  and delete any mcpServers.firecrawl-mcp entry from ~\.claude\settings.json."
+    Write-Host "  See: extensions\firecrawl\docs\FIRECRAWL-SETUP.md"
+}
+$apiKeyPlain = $null
 
 # Pre-warm
 Write-Host "=> Pre-downloading firecrawl-mcp..." -ForegroundColor Yellow

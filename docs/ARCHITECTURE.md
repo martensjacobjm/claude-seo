@@ -198,6 +198,7 @@ Extensions are opt-in add-ons that integrate external data sources via MCP serve
 
 ```
 extensions/
+├── claude_mcp_config.py      # Shared helper: claude mcp add/remove --scope user, ~/.claude.json fallback, legacy settings.json cleanup
 ├── dataforseo/               # DataForSEO MCP integration
 │   ├── README.md                  # Extension documentation
 │   ├── install.sh                 # Unix installer
@@ -229,7 +230,7 @@ extensions/
     │   ├── batch.py               # CSV batch workflow
     │   ├── cost_tracker.py        # Usage and cost tracking
     │   ├── presets.py             # Brand preset management
-    │   ├── setup_mcp.py           # MCP configuration
+    │   ├── setup_mcp.py           # MCP registration (user scope, ~/.claude.json)
     │   └── validate_setup.py      # Installation verification
     ├── references/                # On-demand knowledge
     │   ├── prompt-engineering.md  # 6-component Reasoning Brief
@@ -258,4 +259,7 @@ Each extension follows this pattern:
 3. Own `uninstall.sh` and `uninstall.ps1` that cleanly reverse installation
 4. Installs skill to `~/.claude/skills/seo-<name>/`
 5. Installs agent to `~/.claude/agents/seo-<name>.md`
-6. Merges MCP config into `~/.claude/settings.json` (non-destructive)
+6. Registers the MCP server at user scope via `extensions/claude_mcp_config.py`:
+   `claude mcp add --scope user` when the CLI is on PATH, otherwise a non-destructive merge
+   into `~/.claude.json` (Claude Code does not read `mcpServers` from `~/.claude/settings.json`);
+   removes a legacy `settings.json` entry left by v1.8.1 and earlier

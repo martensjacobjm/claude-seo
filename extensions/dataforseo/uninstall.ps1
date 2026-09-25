@@ -21,38 +21,57 @@ if (Test-Path $fieldConfig) {
     Remove-Item -Force $fieldConfig
 }
 
-# Remove MCP server entry from settings.json
-$settingsFile = "$env:USERPROFILE\.claude\settings.json"
-if (Test-Path $settingsFile) {
-    $python = Get-Command -Name python -ErrorAction SilentlyContinue
-    if ($null -eq $python) {
-        $python = Get-Command -Name py -ErrorAction SilentlyContinue
+# Shared MCP registration helper (extensions/claude_mcp_config.py). It runs
+# `claude mcp add --scope user` (user-scope servers live in ~/.claude.json;
+# Claude Code never reads mcpServers from ~/.claude/settings.json, where
+# installers up to v1.8.1 wrote them), falls back to a JSON-safe merge into
+# ~/.claude.json, and removes the legacy settings.json entry (backup first).
+function Find-Python {
+    foreach ($name in @('python3', 'python', 'py')) {
+        $cmd = Get-Command -Name $name -CommandType Application -ErrorAction SilentlyContinue |
+            Select-Object -First 1
+        if ($null -eq $cmd) { continue }
+        $pre = @()
+        if ($name -eq 'py') { $pre = @('-3') }
+        try {
+            # Skips the Microsoft Store "python" alias, which exits non-zero.
+            & $cmd.Source @pre -c "import sys; sys.exit(0 if sys.version_info >= (3, 7) else 1)" 2>$null | Out-Null
+            if ($LASTEXITCODE -eq 0) { return [pscustomobject]@{ Exe = $cmd.Source; Pre = $pre } }
+        } catch { }
     }
+    return $null
+}
 
-    if ($null -ne $python) {
-        $pyExe = $python.Source
-        $pyScript = @"
-import json
-settings_path = r'$settingsFile'
-with open(settings_path, 'r') as f:
-    settings = json.load(f)
-if 'mcpServers' in settings and 'dataforseo' in settings['mcpServers']:
-    del settings['mcpServers']['dataforseo']
-    if not settings['mcpServers']:
-        del settings['mcpServers']
-    with open(settings_path, 'w') as f:
-        json.dump(settings, f, indent=2)
-    print('  ok')
-"@
-        $result = & $pyExe -c $pyScript 2>&1
-        if ($LASTEXITCODE -eq 0) {
-            Write-Host "  ✓ Removed dataforseo from settings.json" -ForegroundColor Green
-        } else {
-            Write-Host "  ⚠  Could not auto-remove MCP config. Remove 'dataforseo' from ~\.claude\settings.json manually." -ForegroundColor Yellow
-        }
-    } else {
-        Write-Host "  ⚠  Python not found. Remove 'dataforseo' from ~\.claude\settings.json manually." -ForegroundColor Yellow
+function Find-McpHelper([string]$Dir) {
+    foreach ($candidate in @((Join-Path $Dir '..\claude_mcp_config.py'), (Join-Path $Dir 'extensions\claude_mcp_config.py'))) {
+        if (Test-Path $candidate) { return (Resolve-Path $candidate).Path }
     }
+    return $null
+}
+
+# Unregister the MCP server: `claude mcp remove dataforseo --scope user` (or
+# ~/.claude.json directly without the CLI), plus the legacy entry that
+# installers up to v1.8.1 wrote to ~/.claude/settings.json.
+$ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+$python = Find-Python
+$mcpHelper = Find-McpHelper $ScriptDir
+$unregistered = $false
+if ($null -ne $python -and $null -ne $mcpHelper) {
+    $helperArgs = @($python.Pre) + @($mcpHelper, 'uninstall', '--name', 'dataforseo')
+    try {
+        & $python.Exe @helperArgs
+        $unregistered = ($LASTEXITCODE -eq 0)
+    } catch {
+        $unregistered = $false
+    }
+} elseif ($null -ne (Get-Command -Name claude -ErrorAction SilentlyContinue)) {
+    try { & claude mcp remove dataforseo --scope user 2>&1 | Out-Null } catch { }
+    Write-Host "  Ran: claude mcp remove dataforseo --scope user" -ForegroundColor Green
+    Write-Host "  Python 3 not found: delete any mcpServers.dataforseo entry from ~\.claude\settings.json by hand."
+    $unregistered = $true
+}
+if (-not $unregistered) {
+    Write-Host "  ⚠  Could not unregister the MCP server. Run: claude mcp remove dataforseo --scope user" -ForegroundColor Yellow
 }
 
 Write-Host "✓ DataForSEO extension uninstalled." -ForegroundColor Green
