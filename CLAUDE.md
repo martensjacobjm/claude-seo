@@ -22,7 +22,7 @@ claude-seo/
   skills/                            # 19 skills (auto-discovered)
     seo/                           # Main orchestrator skill
       SKILL.md                     # Entry point, routing table, core rules
-      references/                  # On-demand knowledge files (13 files, incl. ranking-signals.md)
+      references/                  # On-demand knowledge files (14 files, incl. ranking-signals.md, local-eeat-evidence.md)
     seo-audit/SKILL.md            # Full site audit with parallel agents
     seo-page/SKILL.md            # Deep single-page analysis
     seo-technical/SKILL.md       # Technical SEO (9 categories)
@@ -89,6 +89,7 @@ claude-seo/
     mobile_analysis.py           # Mobile rendering analysis (gitignored, dev-only)
     generate_setup_guide.py      # Setup guide generator (gitignored, dev-only)
   schema/                          # Schema.org JSON-LD templates
+  claude-ai-skills/                # Uploadable claude.ai skills (hemsida, skill-evidens); build: python3 claude-ai-skills/build.py -> dist/*.skill
   tests/                           # pytest suite + synthetic fixtures (run: python -m pytest tests/)
   extensions/                      # Optional add-on install helpers
     dataforseo/                  # DataForSEO MCP install scripts

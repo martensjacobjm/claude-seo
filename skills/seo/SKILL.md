@@ -86,10 +86,11 @@ Hard rules:
 Load these on-demand as needed (do NOT load all at startup):
 - `references/cwv-thresholds.md`: Current Core Web Vitals thresholds and measurement details
 - `references/schema-types.md`: All supported schema types with deprecation status
-- `references/eeat-framework.md`: E-E-A-T evaluation criteria (Sept 2025 QRG update)
+- `references/eeat-framework.md`: E-E-A-T evaluation criteria (QRG edition 2025-09-11, evidence-tagged)
 - `references/quality-gates.md`: Content length minimums, uniqueness thresholds
-- `references/local-seo-signals.md`: Local ranking factors, review benchmarks, citation tiers, GBP status
+- `references/local-seo-signals.md`: Google's local ranking statements, labeled practitioner surveys, review policy and law, citation tiers, GBP changes
 - `references/local-schema-types.md`: LocalBusiness subtypes, industry-specific schema and citation sources
+- `references/local-eeat-evidence.md`: Evidence register (sources, Removed claims) for the E-E-A-T and local references; add a row before adding a claim
 - `references/ranking-signals.md`: Evidence-graded map of Google systems (DOJ v. Google record) and 2024 Content Warehouse API leak attributes to audit checks; context only, not scoring (the leak shows attributes exist, not weights)
 - `references/free-backlink-sources.md`, `references/backlink-quality.md`: Backlink source comparison and toxic-link patterns (loaded by seo-backlinks)
 

@@ -1,218 +1,174 @@
-<!-- Updated: 2026-03-23 -->
-# Local SEO Ranking Signals & Benchmarks (March 2026)
+<!-- Updated: 2026-09-25 -->
+# Local SEO Ranking Signals & Benchmarks
 
-## Source Key
+Register with URLs, dates and removed claims: `local-eeat-evidence.md`.
 
-- **Confirmed**: Google official documentation or employee statements
-- **Study**: Data-driven industry research from recognized firms
-- **Consensus**: Practitioner agreement without controlled testing
-- **Caution**: Single-source or unverified claims
+## Evidence Levels
 
----
+| Tag | Meaning | Severity cap |
+|-----|---------|--------------|
+| [V] | Vendor-documented (Google Business Profile Help, Search Central, Bing, Apple) or law (FTC, HHS) | Any |
+| [H survey] | Practitioner survey (Whitespark, BrightLocal): opinions or consumer self-reports, not Google facts | Medium; say "practitioner survey" or "heuristic" |
+| [H] | Practitioner rule of thumb | Medium; say "heuristic" |
 
-## Whitespark 2026 Local Search Ranking Factors
-
-Published November 6, 2025. 47 experts surveyed across 187 factors. (Study)
-
-### Local Pack/Maps Factor Groups
-
-| Factor Group | Weight | Trend |
-|---|---|---|
-| GBP Signals | **32%** | Stable (top group) |
-| Review Signals | **~20%** | Up from ~16% in 2023 |
-| On-Page Signals | ~15-19% | Slight decline |
-| Link Signals | Declining | Continued multi-year drop |
-| Behavioral/Engagement | Rising | Clicks, calls, direction requests |
-| Citation Signals | Lower for Pack | But 3 of top 5 AI visibility factors are citation-related |
-| Social Signals | New entry | First time measured |
-| AI Search Signals | New category | Added for the first time |
-
-### Top 15 Individual Local Pack Factors
-
-1. Primary GBP category (score: 193)
-2. Keywords in GBP business title (score: 181)
-3. Proximity of address to search point (score: 176)
-4. Verified GBP
-5. Business open at time of search (Sterling Sky controlled study)
-6. High numerical Google ratings
-7. Quantity of native Google reviews
-8. Additional GBP categories
-9. Review recency/velocity
-10. Dedicated service pages
-11. Domain authority
-12. NAP consistency
-13. Spam listing removal
-14. Quality backlinks
-15. Review sentiment
-
-### Top Negative Factors
-
-1. Incorrect primary category (score: 176) -- single worst mistake
-2. Duplicate profiles at same address (score: 142)
+Only [V] may drive Critical or High. Never present a survey figure as a Google ranking fact.
 
 ---
 
-## Search Atlas ML Study (August 2025)
+## What Google Says About Local Ranking [V]
 
-XGBoost regression model, explains 92-93% of variance. (Study)
+Google Business Profile Help, "Tips to improve your local ranking on Google" (fetched
+2026-09-25):
 
-| Factor | Variance Explained |
-|--------|-------------------|
-| Proximity | **55.2%** |
-| Review Count | **19.2%** |
-| Domain Power | 5.9% |
-| Semantic Relevance in Reviews | 5.3% |
-| All others | <5% each |
+- "Local results are mainly based on relevance, distance, and popularity." The page then
+  defines **Relevance**, **Distance** and **Prominence**.
+- Prominence is "based on info like how many websites link to your business and how many
+  reviews you have. More reviews and positive ratings can help your business's local ranking."
+- "There's no way to request or pay for a better local ranking on Google."
+- Recommended actions: verify the business, keep information complete and accurate (address,
+  hours including special hours, category, attributes), respond to reviews, add photos and
+  videos, add in-store products (retail, eligible countries).
+- The current page does not mention directories or citations.
 
----
-
-## Review Benchmarks
-
-### Sterling Sky Findings (2025, Study)
-
-- **Magic 10 threshold**: Significant ranking boost at 10 reviews. 9-to-10 = noticeable increase. 10-to-11 = no similar bump.
-- **18-Day Rule**: Rankings "fall off a cliff" if no new reviews for 3 weeks. Velocity > volume.
-
-### BrightLocal LCRS 2026 (February 2026, Study)
-
-| Metric | Value |
-|--------|-------|
-| Only care about reviews in last 3 months | 74% |
-| "Always" read reviews | 41% (up from 29% in 2025) |
-| Only use 4.5+ stars | 31% (up from 17% in 2025) |
-| Only use 4+ stars | 68% (up from 55% in 2025) |
-| Consumers use average review sites | 6 platforms |
-
-### Review Platform Usage (BrightLocal 2026)
-
-| Platform | Usage | Trend |
-|----------|-------|-------|
-| Google | 71% | Down from 83% in 2025 |
-| Instagram | 37% | Rising |
-| TikTok | 29% | Rising |
-| Apple Maps | 27% | Up from 14% in 2025 |
-
-### Enforcement
-
-- Google blocked/removed **240M+ policy-violating reviews** in 2024 (Confirmed, 40% increase over 2023)
-- Review deletion rates up **600%+** Jan-Jul 2025; 38% of deleted were 5-star (Study, GMBapi.com)
-- FTC Consumer Review Rule effective Oct 21, 2024: penalties up to **$53,088/violation** (Confirmed, US law)
-- **Review gating prohibited** by both Google (fake engagement policy) and FTC (Confirmed)
+GBP guidelines [V]: the business name "should reflect your business's real-world name";
+"Including unnecessary information in your business name isn't permitted, and could result
+in the suspension of your Business Profile." Keyword-stuffed names are a policy risk.
 
 ---
 
-## Citation Source Tiers
+## Whitespark Local Search Ranking Factors 2026 [H survey]
 
-### Tier 1 (Universal, All Industries)
+Practitioner survey published 2025-11-06: 47 invited local SEO experts scored 187 factors
+(0 to 5). Whitespark: "None of the experts have special access to the internal workings of
+Google's local search algorithm." Expert opinion, not measurement.
 
-| Source | Why It Matters |
-|--------|---------------|
-| Google Business Profile | Primary local signal source |
-| Apple Business Connect | Usage nearly doubled, from 14% to 27% (BrightLocal 2026). 1B+ iPhone users |
-| Bing Places | Keeps business details eligible for inclusion in Bing AI-generated responses (Bing Webmaster blog, Feb 2026) |
-| Facebook | Social + citation signal |
-| Yelp | Still ranks on page 1 for many local queries |
+**Factor group weights (experts' estimates):**
 
-### Tier 2 (Broad Directories)
+| Group | Local pack/Maps | Local organic |
+|-------|-----------------|---------------|
+| GBP signals | 32% | 7% |
+| Review signals | 20% | 6% |
+| On-page signals | 15% | 33% |
+| Behavioural signals | 9% | 10% |
+| Link signals | 8% | 24% |
+| Citation signals | 6% | 7% |
+| Personalization | 6% | 8% |
+| Social signals | 4% | 5% |
 
-BBB, YellowPages, Manta, Superpages, Foursquare, Nextdoor
+**Top local pack/Maps factors (score):** 1. Primary GBP Category (227); 2. Proximity of address
+to the point of search (225); 3. Keywords in GBP Business Title (223); 4. Physical address in
+city of search (213); 5. Business is open at time of search (189); 6. High numerical Google
+ratings (181); 7. Address showing on GBP, not SAB (176); 8. Additional GBP categories (173);
+9. Quantity of native Google reviews with text (170).
 
-### Tier 3 (Data Aggregators)
+Factor 3 conflicts with GBP name guidelines: report it, never recommend adding keywords to a
+business name.
 
-| Aggregator | Partnerships |
-|-----------|-------------|
-| Data Axle (formerly Infogroup) | Google, Bing, Apple |
-| Foursquare | Merged with Factual. Powers Uber, Nextdoor, Yahoo, ChatGPT. 500M+ devices |
-| Neustar/TransUnion Digital | 80+ platform partnerships including Bing, Apple |
+**Top local organic factors:** 1. Dedicated page for each service (210); 2. Geographic keyword
+relevance of content (190); 3. Quality/authority of inbound links to domain (187).
 
-### Industry-specific directories: see `local-schema-types.md`
+**Top negative factors:** 1. Business marked as permanently closed (217); 2. Incorrect primary
+category (214); 3. Other profiles in the same category at the same address (188).
 
----
-
-## GBP Feature Status (March 2026)
-
-### Deprecated/Removed
-
-| Feature | Date | Replacement |
-|---------|------|------------|
-| Q&A section | Dec 3, 2025 | Ask Maps (Gemini AI) |
-| GBP Messaging/Chat | Removed | None |
-| Call History/Tracking | Jul 31, 2024 | None |
-| GBP-hosted websites | Discontinued | Redirect to social/website |
-| School reviews/ratings | Apr 30, 2025 | None |
-
-### Active Features
-
-Posts (with scheduling), Services menu, Attributes (including identity: Women-led, Eco-friendly), Photos/Video, Local Lists (Local Gems, Trending, Top List), AI-generated "Suggest Description", Google Verified badge (replaced Guaranteed/Screened Oct 2025)
-
-### Key GBP Insights
-
-- **Posts**: No direct ranking impact (WebFX empirical testing). Can trigger Post Justifications. (Study)
-- **Photos**: "Likely a ranking benefit adding some vs none, but not continued benefit adding more" (WebFX). Geotagging has NO impact. 45% more direction requests with photos. (Study/Confirmed mix)
-- **Attributes**: Identity attributes have minor, targeted impact for attribute-specific searches only (WebFX/Sterling Sky). General attributes are filter/informational, NOT direct ranking factors. (Study)
+The survey's "AI search visibility" scores are not used (see `geo-evidence.md`, Removed claims).
 
 ---
 
-## Algorithm Updates Affecting Local (2025-2026)
+## Reviews
 
-| Update | Date | Impact | Source |
-|--------|------|--------|--------|
-| March 2025 Core | Mar 13-27 | Emphasized E-E-A-T, penalized thin/AI content | Confirmed |
-| June 2025 Core | Jun-Jul 17 | General quality focus | Confirmed |
-| August 2025 Spam | Aug 26-Sep 22 | Targeted keyword stuffing, fake reviews, PBNs. Local Pack often stable | Confirmed |
-| December 2025 Core | Dec 11-29 | Enhanced E-E-A-T, behavioral signal weighting | Confirmed |
-| February 2026 Discover Core | Feb 5-27 | Discover-only; favored local expertise | Confirmed |
-| "Diversity Update" | 2025 | Harder to rank in both map pack AND organic simultaneously | Study (Sterling Sky) |
+### Policy and law [V]
 
----
+- **Google Maps fake engagement policy:** do not "Discourage or prohibit negative reviews, or
+  selectively solicit positive reviews from customers", and do not offer incentives for
+  reviews. Review gating falls under this.
+- **FTC guidance** (Soliciting and Paying for Online Reviews, 2022): "Don't ask for reviews
+  only from customers you think will leave positive ones."
+- **FTC Consumer Review Rule** (16 CFR Part 465): published 2024-08-22, effective 2024-10-21.
+  Covers fake reviews, incentives conditioned on sentiment, and review suppression (465.7).
+  Civil penalty for rule violations: up to $53,088 per violation (16 CFR 1.98, current
+  eCFR; no 2026 inflation adjustment).
+- **Google structured data:** a business's own reviews in LocalBusiness markup are not
+  eligible for star snippets (see `local-schema-types.md`).
+- **Google enforcement:** "blocked or removed more than 240 million policy-violating reviews
+  from 2024" (Google blog, 2025-04-07); "over 292 million policy-violating reviews" in 2025
+  (Google blog, 2026-04-16).
 
-## Voice Search & Assistants
+### Consumer behavior: BrightLocal Local Consumer Review Survey 2026 [H survey]
 
-- 58% of voice searches are for local business information (Study, BusinessDasher)
-- Voice queries typically 4-7 words, phrased as complete questions (Consensus)
-- 80%+ of Google Assistant voice answers come from top 3 search results (Study)
+Published 2026-02-11; representative panel of 1,002 US adult consumers (SurveyMonkey).
+Self-reported attitudes, not ranking data.
 
-| Voice Assistant | Primary Data Source |
-|-----------------|-------------------|
-| Google Assistant | GBP (transitioning to Gemini) |
-| Siri (Apple) | Apple Business Connect + Yelp |
-| Alexa (Amazon) | Bing Places + Yelp + aggregators |
-
----
-
-## AI Search Impact on Local
-
-| Metric | Value | Source |
-|--------|-------|--------|
-| ChatGPT/AI for local recommendations | 45% of users (up from 6%) | BrightLocal LCRS 2026 |
-| ChatGPT conversion rate | 15.9% | Seer Interactive |
-| Google organic conversion rate | 1.76% | Seer Interactive |
-| AI Overviews on local searches | Up to 68% | Whitespark Q2 2025 |
-| AI Overview CTR reduction for pos 1 | -58% | Ahrefs, Feb 2026 |
-| Brand cited in AIO = organic CTR boost | +35% | Seer Interactive |
-| ChatGPT traffic vs Google for local | ~2% | Sterling Sky, Feb 2026 |
-| Top 5 AI visibility factors: 3 are citation-related | -- | Whitespark 2026 |
-
-**ChatGPT sources**: Bing web index (primary), Yelp, TripAdvisor, BBB, Reddit. Does NOT access GBP directly. (Study, Search Engine Land)
-
-**Perplexity sources**: Authority-first. 40% more from high-authority sites. Averages 21.87 citations per question. (Study, Qwairy)
+| Finding | Value |
+|---------|-------|
+| "Always" read reviews when browsing for businesses | 41% (29% in 2025) |
+| Only use a business with 4.5+ stars | 31% (17% in 2025) |
+| Only use a business with 4+ stars | 68% (55% in 2025) |
+| Seek reviews written in the last three months | 74% |
+| Review sites used by the average consumer | 6 |
+| Unlikely to use a business that never replies to reviews | 42% |
+| Apple Maps usage for reviews/recommendations | 27% (14% in 2025) |
 
 ---
 
-## Local Pack Structure
+## Citation Sources
 
-- Standard: **3 results** (universal)
-- New: Curated Local Lists (Local Gems, Trending) around position 4 (SOCi, Nov 2025)
-- AI-powered local packs (mobile US): Only 1-2 businesses, 32% fewer businesses shown (Sterling Sky)
-- Local pack ads grew from ~1% to **22%** of tracked mobile keywords in 12 months (Sterling Sky/Places Scout)
-- Zero-click rate for local-intent searches: up to **78%** on mobile (Similarweb)
+### Tier 1 platforms
+
+| Source | Why it matters |
+|--------|----------------|
+| Google Business Profile | Google's own local listing; verification and complete info are Google-recommended [V] |
+| Apple Business (formerly Apple Business Connect; businessconnect.apple.com redirects to business.apple.com) | Apple: "Put your business on the map"; Maps listing, custom actions, insights [V] |
+| Bing Places for Business | Keeps address, hours and contact details current and "eligible for inclusion in AI-generated responses" (Bing Webmaster blog, 2026-02; see `geo-evidence.md`) [V] |
+| Facebook, Yelp | Widely used consumer platforms [H] |
+
+### Tier 2 and aggregators [H]
+
+BBB, Yellow Pages, Nextdoor, Foursquare; data aggregators such as Data Axle and Foursquare
+distribute listings to other platforms. No partnership or reach figures are claimed.
+Industry-specific directories: see `local-schema-types.md`.
 
 ---
 
-## Proximity & Search Behavior
+## GBP Feature Changes [V]
 
-- 46% of all Google searches seek local information (Study)
-- 76% of mobile "near me" searches lead to visit within 24 hours (Confirmed, Google)
-- 900% increase in "near me" searches over two years (Confirmed/Study, Google)
-- Proximity varies: urban 1-2 miles, rural 5-10+ miles, specialty/niche = wider (Consensus)
-- Google uses dynamic weighting per query: "emergency plumber near me" = proximity-dominant; "best plastic surgeon" = prominence-dominant (Consensus)
+| Change | Date | Source |
+|--------|------|--------|
+| Chat and call history removed from Business Profile | 2024-07-31 | GBP Help 14919056 |
+| My Business Q&A API discontinued (support ended 2025-09-15) | 2025-11-03 | GBP API sunset dates |
+| My Business Business Calls API deprecated | 2023-05-30 | GBP API sunset dates |
+| Local Services Ads: single "Google Verified" badge replaces earlier LSA badges; Money Back Guarantee discontinued | 2025 | Local Services Help 16498018 |
+
+"Google Verified" is a Local Services Ads badge, not an organic GBP feature. Consumer-facing
+Q&A: the API is gone; re-home useful Q&A as FAQ content on the website [H].
+
+---
+
+## Google Ranking Updates 2025-2026 [V]
+
+Google Search Status Dashboard (start date, duration). Google publishes no local-specific
+impact for these; do not attribute a local ranking change to an update without data.
+
+| Update | Start | Duration |
+|--------|-------|----------|
+| March 2025 core update | 2025-03-13 | 13 days, 21 hours |
+| June 2025 core update | 2025-06-30 | 16 days, 18 hours |
+| August 2025 spam update | 2025-08-26 | 26 days, 15 hours |
+| December 2025 core update | 2025-12-11 | 18 days, 2 hours |
+| February 2026 Discover update | 2026-02-05 | 21 days, 17 hours |
+| March 2026 spam update | 2026-03-24 | 19 hours, 30 minutes |
+| March 2026 core update | 2026-03-27 | 12 days, 4 hours |
+| May 2026 core update | 2026-05-21 | 11 days, 21 hours |
+| June 2026 spam update | 2026-06-24 | 2 days, 1 hour |
+| August 2026 spam update | 2026-08-18 | 2 days, 16 hours |
+| September 2026 spam update | 2026-09-24 | ongoing at fetch |
+
+---
+
+## Proximity and Intent [H]
+
+- Distance is a documented factor [V]; how far it reaches varies by query, category and
+  density of competitors (heuristic, no fixed radius is documented).
+- Service-area businesses: GBP says the service area "shouldn't extend farther than about 2
+  hours of driving time from where your business is based", adding "For some businesses,
+  larger service areas may be appropriate" [V].
+- AI search and local: vendor statements only, see `skills/seo-geo/references/geo-evidence.md`.
