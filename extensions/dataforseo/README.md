@@ -1,11 +1,11 @@
 # DataForSEO Extension for Claude SEO
 
-Live SEO data via the [DataForSEO MCP server](https://github.com/dataforseo/mcp-server-typescript). Adds 22 commands across 9 API modules: SERP analysis, keyword research, backlinks, on-page analysis, competitor analysis, content analysis, business listings, AI visibility checking, and LLM mention tracking.
+Live SEO data via the [DataForSEO MCP server](https://github.com/dataforseo/mcp-server-typescript) (`dataforseo-mcp-server` 3.x). Adds 23 commands across 9 DataForSEO APIs: SERP analysis (organic, images, YouTube), keyword research, backlinks, on-page analysis, competitor analysis, content analysis, business listings, AI visibility checking, and LLM mention tracking.
 
 ## Prerequisites
 
 - [Claude SEO](https://github.com/AgriciDaniel/claude-seo) installed
-- Node.js 20+
+- Node.js 22+ (`dataforseo-mcp-server` 3.1.x requires `node >=22`)
 - [DataForSEO account](https://app.dataforseo.com/register) with API credentials
 
 ## Installation
@@ -27,10 +27,54 @@ cd claude-seo
 ```
 
 The installer will:
-1. Prompt for your DataForSEO username and password
-2. Install the skill and agent files
-3. Configure the MCP server in `~/.claude/settings.json`
-4. Pre-download the `dataforseo-mcp-server` npm package
+1. Prompt for your DataForSEO API login and API password
+2. Install the skill (with `references/tool-catalog.md`) and agent files
+3. Register the MCP server `dataforseo` (`npx -y dataforseo-mcp-server@3`) at user scope
+   with `claude mcp add --scope user` (see [MCP registration](#mcp-registration))
+4. Pre-download the package
+
+### MCP registration
+
+Claude Code reads user-scope MCP servers from `~/.claude.json`; it never reads
+`mcpServers` from `~/.claude/settings.json`
+([docs](https://code.claude.com/docs/en/mcp)). Installers up to v1.8.1 wrote the server
+there, so it never loaded. The installer now:
+
+- runs `claude mcp remove dataforseo --scope user` (errors ignored, so a reinstall is
+  idempotent) and then
+  `claude mcp add --env DATAFORSEO_LOGIN=... --env DATAFORSEO_PASSWORD=... --env FIELD_CONFIG_PATH=... --transport stdio --scope user dataforseo -- npx -y dataforseo-mcp-server@3`
+  when the `claude` CLI is on PATH;
+- otherwise merges the same entry into the top-level `mcpServers` of `~/.claude.json`
+  (backup `~/.claude.json.claude-seo-backup-<time>` first, other keys untouched) and prints
+  the equivalent `claude mcp add` command with the secrets masked. Close Claude Code
+  first in that case: it rewrites `~/.claude.json` while running;
+- removes a leftover `mcpServers.dataforseo` entry from `~/.claude/settings.json`
+  (backup first) and says so.
+
+The server name stays `dataforseo`: the agents grant `mcp__dataforseo`. Check it with
+`claude mcp get dataforseo` or `claude mcp list`, or `/mcp` inside Claude Code.
+
+**Credentials.** The login and password are read with `read -s` (the password is not
+shown), passed to the helper (`extensions/claude_mcp_config.py`) through environment
+variables only, and never printed. They are not written to your shell history. They
+are stored in plain text in `~/.claude.json` by `claude mcp add --env`, as the old
+installer stored them in `~/.claude/settings.json`; keep that file private
+(the fallback writes it with mode 600). While `claude mcp add` runs they are briefly
+visible in its process arguments to other users of the same machine.
+
+### Server version
+
+The installer pins the **major** version: `dataforseo-mcp-server@3` (any 3.x, currently
+3.1.1, released 2026-08-25). v3.0.0 (2026-08-11) replaced the ~80 per-endpoint v2 tools
+(`serp_organic_live_advanced`, `backlinks_summary`, ...) with four generic tools:
+`api_request`, `docs_search`, `docs_index`, `docs_list_sections`. The skills call
+`api_request` with the DataForSEO endpoint path and keep the v2 tool name as a fallback,
+so an existing 2.x setup keeps working. A future 4.x is not picked up until someone
+checks it and bumps the pin. The v2-name to v3-path map is in
+`skills/seo-dataforseo/references/tool-catalog.md`.
+
+Sources: [npm registry metadata](https://registry.npmjs.org/dataforseo-mcp-server),
+[server README](https://github.com/dataforseo/mcp-server-typescript#readme).
 
 ## Commands
 
@@ -38,7 +82,8 @@ The installer will:
 
 | Command | Description |
 |---------|-------------|
-| `/seo dataforseo serp <keyword>` | Google organic SERP results (also supports Bing/Yahoo via `se` parameter) |
+| `/seo dataforseo serp <keyword>` | Google organic SERP results (also Bing/Yahoo) |
+| `/seo dataforseo serp-images <keyword>` | Google Images SERP results (needs v3) |
 | `/seo dataforseo serp-youtube <keyword>` | YouTube search results |
 | `/seo dataforseo youtube <video_id>` | YouTube video deep analysis (info, comments, subtitles) |
 
@@ -86,13 +131,14 @@ The installer will:
 | `/seo dataforseo ai-scrape <query>` | ChatGPT web scraper for GEO visibility |
 | `/seo dataforseo ai-mentions <keyword>` | LLM mention tracking across AI platforms |
 
-## API Modules
+## APIs Used
 
-All 9 DataForSEO modules are enabled:
+v3 has no module switch: `api_request` reaches every DataForSEO API your account can use.
+(v2's `ENABLED_MODULES` variable is ignored by v3.)
 
-| Module | Purpose | Example Commands |
+| API | Purpose | Example Commands |
 |--------|---------|-----------------|
-| SERP | Search engine results | serp, serp-youtube, youtube |
+| SERP | Search engine results | serp, serp-images, serp-youtube, youtube |
 | KEYWORDS_DATA | Search volume, trends | volume, trends |
 | DATAFORSEO_LABS | Keyword research, competitors | keywords, difficulty, intent, competitors, ranked, subdomains, top-searches |
 | BACKLINKS | Link profiles | backlinks, intersection |
@@ -104,19 +150,33 @@ All 9 DataForSEO modules are enabled:
 
 ## API Credits
 
-DataForSEO charges per API call. Credit costs vary by endpoint:
+DataForSEO charges per call. Live-mode list prices from DataForSEO's pricing pages,
+fetched 2026-09-25 (USD; prices change, re-check before quoting):
 
-- **SERP** calls: ~0.001-0.003 per request
-- **Keyword** research: ~0.0005-0.002 per keyword
-- **Backlinks**: ~0.002-0.01 per request
-- **On-page** analysis: ~0.01-0.05 per page
-- **AI optimization**: ~0.01 per request
+| Endpoint | Live price | Source |
+|---|---|---|
+| Google Organic SERP | $0.002 per SERP of 10 results (depth 100 = 10 SERPs) | [pricing](https://dataforseo.com/pricing/google-serp/google-organic-serp-api) |
+| Google Images SERP | $0.002 per SERP of up to 100 results; `site:`/`filetype:` etc. x5 | [pricing](https://dataforseo.com/pricing/google-serp/google-images-serp-api) |
+| Google Ads search volume | $0.09 per task (up to 1,000 keywords) | [pricing](https://dataforseo.com/pricing/keywords-data/google-ads) |
+| DataForSEO Labs (most endpoints) | $0.012 per task + $0.00012 per item | [pricing](https://dataforseo.com/pricing/dataforseo-labs/dataforseo-google-api) |
+| Backlinks | $0.024 per request + $0.000036 per row | [pricing](https://dataforseo.com/pricing/backlinks/backlinks) |
+| OnPage Instant Pages / Content Parsing | $0.00015 per page (basic) | [pricing](https://dataforseo.com/pricing/on-page/onpage-api) |
+| Lighthouse | $0.005 per page | [pricing](https://dataforseo.com/pricing/on-page/lighthouse-api) |
+| ChatGPT LLM Scraper | $0.004 per results page | [pricing](https://dataforseo.com/pricing/ai-optimization/llm-scraper) |
+| LLM Mentions | $0.1 per request + $0.001 per row | [pricing](https://dataforseo.com/pricing/ai-optimization/llm-mentions) |
 
-New accounts include a free trial balance. See [DataForSEO pricing](https://dataforseo.com/pricing) for current rates.
+The earlier ranges in this file (for example "AI optimization ~$0.01", "on-page
+$0.01-0.05 per page") did not match these pages and were removed. v3 `.ai` responses
+omit the `cost` field; the skill passes `noAiMode: true` when it must report credits.
+New accounts get $1 free credit ([MCP page](https://dataforseo.com/seo-mcp-server)); the minimum top-up is $50 ([pricing](https://dataforseo.com/pricing)).
 
 ## Field Filtering
 
-The extension includes a custom `field-config.json` that reduces API response sizes by ~75%, keeping only SEO-relevant fields. This saves tokens and speeds up analysis.
+`field-config.json` uses the v3 format (keyed by endpoint path) and ships empty: v3
+already returns the trimmed `.ai` response by default (`depth`/`limit` default to 10,
+empty fields dropped). Add paths to trim further; see the
+[field configuration docs](https://github.com/dataforseo/mcp-server-typescript#field-configuration).
+The old module-keyed v2 file is rejected by v3 and then ignored.
 
 ## Integration with Claude SEO
 
@@ -127,24 +187,39 @@ When installed, other Claude SEO skills automatically detect DataForSEO availabi
 - **`/seo content`**:Uses keyword volume, difficulty, and intent data
 - **`/seo geo`**:Uses ChatGPT scraper and LLM mentions for GEO signals
 - **`/seo plan`**:Uses competitor and keyword data for strategy
+- **`/seo backlinks`**, **`/seo local`**, **`/seo maps`**, **`/seo images`**, **`/seo page`**: live backlink, local, maps, image SERP and SERP data
+
+Skills detect DataForSEO when the `dataforseo` server's `api_request` tool (v3) or a v2
+tool such as `serp_organic_live_advanced` is present, and say so when neither is.
 
 ## Troubleshooting
 
 ### MCP server not connecting
 
-1. Check credentials: `cat ~/.claude/settings.json | grep DATAFORSEO`
-2. Test manually: `npx -y dataforseo-mcp-server`
-3. Re-run installer: `./extensions/dataforseo/install.sh`
+1. Check the registration: `claude mcp get dataforseo` (or `/mcp` in Claude Code). It must be in
+   `~/.claude.json`, not `~/.claude/settings.json`, which Claude Code does not read MCP servers from;
+   rerun the installer to move an old entry. v3 reads `DATAFORSEO_LOGIN`; `DATAFORSEO_USERNAME` is accepted as an alias
+2. Check Node: `node -v` must be 22 or newer
+3. Test the API from a shell: `DATAFORSEO_LOGIN=... DATAFORSEO_PASSWORD=... npx -y dataforseo-mcp-server@3 request -X GET -p /v3/serp/google/locations`
+4. Re-run installer: `./extensions/dataforseo/install.sh`
+
+### Skills mention tools that do not exist
+
+You are on v3 and a skill named a v2 tool. Look up its path in
+`skills/seo-dataforseo/references/tool-catalog.md` and call `api_request`. To stay on
+the old server instead, set the args to `dataforseo-mcp-server@2` (deprecated upstream:
+[mcp-server-typescript-deprecated](https://github.com/dataforseo/mcp-server-typescript-deprecated)).
 
 ### API errors
 
-- **401 Unauthorized**: Check username/password in settings.json
+- **401 Unauthorized**: Check the API login/password (`claude mcp get dataforseo`); rerun the installer to replace them
 - **402 Payment Required**: Add credits at [app.dataforseo.com](https://app.dataforseo.com)
-- **429 Rate Limited**: Wait and retry (DataForSEO has per-second limits)
+- **429 Rate Limited**: Wait and retry (DataForSEO allows up to 2,000 API calls per minute)
 
 ### Module not available
 
-If a specific command fails, check that the module is in `ENABLED_MODULES` in your settings.json. All 9 modules should be listed.
+v3 has no modules. On the old v2 server, a missing tool meant its module was absent
+from `ENABLED_MODULES`.
 
 ## Uninstall
 
@@ -160,10 +235,12 @@ If a specific command fails, check that the module is in `ENABLED_MODULES` in yo
 .\extensions\dataforseo\uninstall.ps1
 ```
 
-This removes the skill, agent, field config, and MCP server entry from settings.json.
+This removes the skill, agent and field config, runs `claude mcp remove dataforseo --scope user`
+(without the CLI: removes the entry from `~/.claude.json`), and deletes a legacy
+`mcpServers.dataforseo` entry from `~/.claude/settings.json` (backups first).
 
 ## Links
 
 - [DataForSEO API Docs](https://docs.dataforseo.com/)
-- [DataForSEO MCP Server](https://github.com/dataforseo/mcp-server-typescript)
+- [DataForSEO MCP Server](https://github.com/dataforseo/mcp-server-typescript) / [npm](https://www.npmjs.com/package/dataforseo-mcp-server)
 - [Claude SEO](https://github.com/AgriciDaniel/claude-seo)

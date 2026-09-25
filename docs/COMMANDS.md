@@ -290,13 +290,14 @@ python scripts/bing_webmaster.py ai-performance https://example.com --file queri
 
 ### `/seo dataforseo [command]`
 
-Live SEO data via DataForSEO MCP server (extension). 22 commands across 9 API modules.
+Live SEO data via DataForSEO MCP server (extension, `dataforseo-mcp-server@3`). 23 commands across 9 DataForSEO APIs.
 
 **Prerequisites:** DataForSEO extension installed (`./extensions/dataforseo/install.sh`)
 
 **SERP Analysis:**
 ```
 /seo dataforseo serp <keyword>              # Google organic results (also Bing/Yahoo)
+/seo dataforseo serp-images <keyword>       # Google Images results (needs v3)
 /seo dataforseo serp-youtube <keyword>      # YouTube search results
 /seo dataforseo youtube <video_id>          # YouTube video deep analysis
 ```

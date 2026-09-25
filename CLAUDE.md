@@ -92,6 +92,7 @@ claude-seo/
   claude-ai-skills/                # Uploadable claude.ai skills (hemsida, skill-evidens); build: python3 claude-ai-skills/build.py -> dist/*.skill
   tests/                           # pytest suite + synthetic fixtures (run: python -m pytest tests/)
   extensions/                      # Optional add-on install helpers
+    claude_mcp_config.py         # Shared MCP registration helper (claude mcp add --scope user, ~/.claude.json fallback)
     dataforseo/                  # DataForSEO MCP install scripts
     firecrawl/                   # Firecrawl MCP install scripts
     banana/                      # Banana MCP install scripts

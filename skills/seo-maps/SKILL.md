@@ -62,7 +62,7 @@ Before any analysis, detect the available capability tier:
 **Load:** `references/maps-free-apis.md`
 
 ### Tier 1 (DataForSEO)
-**Detection:** a DataForSEO MCP tool is available: `api_request` (dataforseo-mcp-server 3.x, the version `extensions/dataforseo/install.sh` now installs) or `business_data_business_listings_search` (deprecated v2 server). With v3, call endpoints by path, e.g. `/v3/serp/google/maps/live/advanced`.
+**Detection:** a DataForSEO MCP tool is available: `api_request` (dataforseo-mcp-server 3.x; `extensions/dataforseo/install.sh` installs `dataforseo-mcp-server@3`) or `business_data_business_listings_search` (deprecated v2 server). With v3, call endpoints by path, e.g. `/v3/serp/google/maps/live/advanced`. The v2 server had no Maps SERP, My Business Info or Reviews tools: with v2 only, run listings search and handle grid, GBP and reviews as Tier 0 (tell the user v3 is needed).
 **Capabilities:** Everything in Tier 0 PLUS geo-grid rank tracking, live GBP profile audit, review intelligence (velocity, sentiment, distribution), GBP post activity, Q&A data (Google's own Q&A API was discontinued 2025-11-03; treat empty results as no data), Tripadvisor/Trustpilot reviews.
 **Load:** `references/maps-api-endpoints.md`
 

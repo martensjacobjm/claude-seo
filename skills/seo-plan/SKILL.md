@@ -115,7 +115,7 @@ Load from `assets/` directory:
 
 ## DataForSEO Integration (Optional)
 
-If DataForSEO MCP tools are available, use `dataforseo_labs_google_competitors_domain` and `dataforseo_labs_google_domain_intersection` for real competitive intelligence, `dataforseo_labs_bulk_traffic_estimation` for traffic estimates, `kw_data_google_ads_search_volume` and `dataforseo_labs_bulk_keyword_difficulty` for keyword research, and `business_data_business_listings_search` for local business data.
+If DataForSEO MCP is detected (v3: the `dataforseo` server's `api_request` tool; deprecated v2: per-endpoint tools such as `serp_organic_live_advanced`), use POST `/v3/dataforseo_labs/google/competitors_domain/live` (`dataforseo_labs_google_competitors_domain`) and `/v3/dataforseo_labs/google/domain_intersection/live` (`dataforseo_labs_google_domain_intersection`) for competitive intelligence, `/v3/dataforseo_labs/google/bulk_traffic_estimation/live` (`dataforseo_labs_bulk_traffic_estimation`) for traffic estimates, `/v3/keywords_data/google_ads/search_volume/live` (`kw_data_google_ads_search_volume`) and `/v3/dataforseo_labs/google/bulk_keyword_difficulty/live` (`dataforseo_labs_bulk_keyword_difficulty`) for keyword research, and `/v3/business_data/business_listings/search/live` (`business_data_business_listings_search`) for local business data. Paths are for v3 `api_request`; the v2 tool name is in parentheses. Map: `skills/seo-dataforseo/references/tool-catalog.md`. If neither is detected, say so in the plan's data sources.
 
 ## Error Handling
 

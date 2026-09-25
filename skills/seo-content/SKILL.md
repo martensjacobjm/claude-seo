@@ -175,7 +175,7 @@ See `skills/seo/references/ranking-signals.md` (evidence-graded; leaked attribut
 
 ## DataForSEO Integration (Optional)
 
-If DataForSEO MCP tools are available, use `kw_data_google_ads_search_volume` for real keyword volume data, `dataforseo_labs_bulk_keyword_difficulty` for difficulty scores, `dataforseo_labs_search_intent` for intent classification, and `content_analysis_summary` for content quality analysis.
+If DataForSEO MCP is detected (v3: the `dataforseo` server's `api_request` tool; deprecated v2: per-endpoint tools such as `serp_organic_live_advanced`), use POST `/v3/keywords_data/google_ads/search_volume/live` (`kw_data_google_ads_search_volume`) for real keyword volume, `/v3/dataforseo_labs/google/bulk_keyword_difficulty/live` (`dataforseo_labs_bulk_keyword_difficulty`) for difficulty scores, `/v3/dataforseo_labs/google/search_intent/live` (`dataforseo_labs_search_intent`) for intent classification, and `/v3/content_analysis/summary/live` (`content_analysis_summary`) for content quality analysis. Paths are for v3 `api_request`; the v2 tool name is in parentheses. Map: `skills/seo-dataforseo/references/tool-catalog.md`.
 
 ## Error Handling
 

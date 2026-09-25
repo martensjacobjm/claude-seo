@@ -1,20 +1,26 @@
 ---
 name: hemsida
-description: Skapa och granska hemsidor med belagd SEO. Använd när Jacob vill bygga en ny hemsida, webbplats, landningssida eller sida för ett lokalt företag så att den blir sökoptimerad från början, och när en befintlig sajt ska granskas via URL, HTML-filer eller skärmdumpar. Trigga på hemsida, webbplats, sajt, SEO, sökoptimering, granska sajt, granska hemsida, bygga hemsida, synas på Google, AI-sök, AI Overviews, AI Mode, ChatGPT-sök, Perplexity, Copilot, robots.txt, strukturerad data, schema, JSON-LD, Core Web Vitals, sidhastighet, Google Business Profile, Företagsprofil på Google, Bing Places, lokal SEO, Search Console, website audit, site review, SEO audit, build a website, technical SEO, GEO och llms.txt. Varje råd bär en evidensnivå, och bara leverantörsdokumenterade fynd får klassas som kritiska eller höga.
+description: Skapa, renovera och granska hemsidor med belagd SEO. Leder ett bygge i nio faser från brief och faktablad via strategi, innehåll, bygge, teknisk SEO, lokal närvaro och mätning till QA-grind, lansering och uppföljning. Använder andra skills när de finns (claude-seo, marketingskills, astro med flera) och fungerar ensam när de saknas. Trigga på skapa hemsida, bygga webbplats, ny sajt, ny hemsida, landningssida, renovera sajt, göra om hemsidan, granska hemsida, granska sajt, SEO, sökoptimering, synas på Google, AI-sök, AI Overviews, AI Mode, ChatGPT-sök, lokal SEO, Google Business Profile, Företagsprofil på Google, Bing Places, schema, JSON-LD, robots.txt, Core Web Vitals, Search Console, lansera sajt, och på engelska website build, build a website, new site, landing page, site launch, site redesign, website audit, SEO audit, technical SEO, GEO och llms.txt. Varje råd bär en evidensnivå, och bara leverantörsdokumenterade fynd får klassas som kritiska eller höga.
 license: MIT
 metadata:
-  version: "1.0.0"
+  version: "2.0.0"
   updated: "2026-09-25"
   source: "claude-seo (skills/seo, skills/seo-geo, hooks/validate-schema.py)"
 ---
 
-# Hemsida: bygga och granska med belagd SEO
+# Hemsida: skapa, renovera och granska med belagd SEO
 
-Skillen har två lägen. **Byggläget** används när en ny sida eller sajt ska tas fram och
-ska vara rätt från början. **Granskningsläget** används när en befintlig sajt ska
-bedömas, via URL, uppladdade filer eller skärmdumpar. Kunskapen är hämtad ur
-claude-seo-repot och gäller per 2026-09-25. Allt här är vad Google, Bing och
-AI-leverantörerna själva dokumenterar, plus tydligt märkta tumregler.
+Skillen har tre lägen:
+
+- **Skapa**: en ny sida eller sajt tas fram i nio faser (0 till 8) med en QA-grind före
+  lansering. Hemsida är dirigenten: den använder specialistskills när de finns och sina
+  egna checklistor när de saknas.
+- **Renovera**: en befintlig sajt ska göras om eller ändras. Jämför alltid repo mot
+  livesajt först.
+- **Granska**: en befintlig sajt bedöms via URL, HTML-filer eller skärmdumpar.
+
+Kunskapen är hämtad ur claude-seo-repot och gäller per 2026-09-25. Allt här är vad Google,
+Bing och AI-leverantörerna själva dokumenterar, plus tydligt märkta tumregler.
 
 Grundsatsen, från Googles guide för generativa AI-funktioner (uppdaterad 2026-07-10):
 AI Overviews och AI Mode vilar på samma ranknings- och kvalitetssystem som vanlig sökning.
@@ -29,7 +35,7 @@ Varje fynd och varje råd får en tagg.
 |------|---------|
 | **[V]** | Leverantörsdokumenterat: Google, Bing, OpenAI, Anthropic, Perplexity, Apple |
 | **[R]** | Forskning (GEO-studien KDD 2024, en granskande preprint 2026) |
-| **[H]** | Tumregel från praktiker, inklusive alla poängvikter |
+| **[H]** | Tumregel från praktiker, inklusive alla poängvikter och budgetar |
 
 Regler som alltid gäller:
 
@@ -44,6 +50,10 @@ Regler som alltid gäller:
    evidensgranskade (2026-09-25) och märkta med [V] och [H]. Checklistor, vikter och
    kataloglistor där är tumregler [H]. Källorna står i `references/local-eeat-evidence.md`.
    Vid krock gäller `geo-evidence.md` och `schema-types.md`.
+6. **Hitta aldrig på fakta om företaget.** Namn, adress, telefon, öppettider, priser,
+   recensioner, betyg, certifieringar, kundcitat och siffror kommer bara från ägaren och
+   skrivs in i faktabladet (`references/faktablad-mall.md`) med källa. Saknas ett faktum:
+   utelämna det och fråga.
 
 ## Rekommendera aldrig
 
@@ -51,8 +61,8 @@ Enligt Googles AI-guide [V] hjälper följande inte i Google Sök:
 
 - `llms.txt` eller andra särskilda AI-filer. Google Sök använder dem inte. Rapportera
   förekomst som information, utan poäng och utan åtgärd.
-- Att dela upp text i "chunks" eller sikta på en viss styckelängd eller sidlängd.
-  Google: "There's no ideal page length."
+- Att dela upp text i "chunks" eller sikta på en fast styckelängd, svarslängd eller
+  sidlängd. Google: "There's no ideal page length."
 - Att skriva om text bara för AI, till exempel "citerbara" svar först i varje stycke.
 - Egna sidor för varje frågevariant för att styra AI-svar. Det är skalat innehållsmissbruk.
 - Köpta eller tillverkade "omnämnanden" på andra sajter.
@@ -61,12 +71,88 @@ Enligt Googles AI-guide [V] hjälper följande inte i Google Sök:
 - FAQPage- eller HowTo-markup för att få rich results. FAQ-resultatet visas inte längre
   i Google sedan 2026-05-07 och HowTo togs bort 2023. FAQ-innehåll på sidan går bra om
   det hjälper läsaren.
+- Stjärnbetyg om det egna företaget i markup (`aggregateRating` eller `Review` på egen
+  LocalBusiness eller Organization). Google visar inga stjärnor för sådana [V].
 - Nyckelordstäthet i procent, klickmanipulation, datumbyten utan verklig ändring.
 
 Forskningsnotis [R]: GEO-studien från 2024 mätte förbättringar med källan redan i ett fast
 sammanhang. En granskande preprint från 2026 fann att citatinriktade omskrivningar kan
 försämra hämtningen. Rekommendera därför källhänvisningar och egen data som kvalitet,
 aldrig som AI-trick.
+
+## Andra skills: använd dem om de finns
+
+Hemsida ska fungera helt på egen hand. Finns specialistskills gör de djupare jobb i sin fas.
+Hela kartan, med reserv och leverans per fas: `references/skill-karta.md`.
+
+1. **Kontrollera, anta aldrig.** En skill finns bara om den står i listan över
+   tillgängliga skills i den aktuella miljön (skill-listan i systemprompten, i Claude Code
+   även Skill-verktyget och plugin-kommandon som `/seo`). Namn kan ha ett prefix, till
+   exempel `marketingskills:copywriting` eller `anthropic-skills:astro`; matcha på namnet
+   efter prefixet och kontrollera beskrivningen.
+2. **Saknas den: ta reserven** i skillkartan och hemsidas egna avsnitt nedan. Avbryt aldrig
+   och kräv aldrig en installation för att komma vidare; nämn den högst som ett tips.
+3. **Känn miljön.** Claude Code kan köra claude-seo-pluginens `/seo`-kommandon, skript,
+   hooks och subagenter. I claude.ai finns bara uppladdade skills och kodkörning i
+   sandlådan: inga `/seo`-kommandon och inga repo-skript. Nämn aldrig ett kommando som
+   inte går att köra där du är.
+4. **Namnkrock.** `seo-audit` finns både i claude-seo (`/seo audit`, full granskning med
+   subagenter) och i marketingskills (diagnos av SEO-problem). Skilj dem på beskrivningen.
+   `brand-guidelines` är Anthropics egen profil och används aldrig för en kunds sajt.
+5. **Redovisa.** Varje fasleverans slutar med en rad: "Skills: använde X och Y; Z saknades,
+   reserv användes."
+
+### Konfliktregel
+
+Hemsidas evidensregler vinner över allt en delegerad skill levererar. Gå igenom
+utdata innan den används:
+
+- Ett Kritisk- eller Hög-fynd utan [V] sänks till högst Medel och märks tumregel.
+- Allt på listan "Rekommendera aldrig" stryks, även om skillen föreslår det.
+- Siffror som inte finns i evidensfilerna citeras inte.
+- Påhittade fakta, platshållare, kundcitat utan källa och "brådska" som inte är sann stryks.
+- Skriv avvikelsen i leveransen: "Avvikelse: <skill> föreslog X; följer hemsida
+  (skäl, tagg)."
+
+## Skapa: faserna
+
+Gå igenom faserna i ordning. En fas är klar när dess leverans finns; hoppa inte över
+fas 0 eller fas 7. Detaljerade steg: `references/skapa-fas.md`. Påhittat genomarbetat
+exempel för ett litet lokalt tjänsteföretag: `references/exempel-bygge.md`.
+
+| Fas | Använd om den finns | Reserv | Leverans |
+|-----|---------------------|--------|----------|
+| **Fas 0 Brief och fakta** | `product-marketing-context`, `doc-coauthoring` | `references/faktablad-mall.md` | Ifyllt faktablad med källa per rad, lista över det som saknas |
+| **Fas 1 Strategi** | `/seo plan`, `site-architecture`, `content-strategy`, `/seo dataforseo`, `/seo google keywords` | Fas 1 i `skapa-fas.md` | Sidkarta: URL, sökavsikt, målgrupp och tjänst per sida |
+| **Fas 2 Innehåll** | `copywriting`, `copy-editing`, `/seo content`, `marketing-psychology` | Avsnittet Innehåll nedan | Text per sida; varje faktapåstående spårbart till faktabladet |
+| **Fas 3 Bygge** | `astro`, `react`, `vue`, `theme-factory`, `/seo images`, `seo-image-gen` | Teknisk checklista nedan | Kod, prestandabudget, tillgänglighetskontroll, mobil |
+| **Fas 4 Teknisk SEO och AI-sök** | `/seo technical`, `/seo schema`, `/seo sitemap`, `/seo geo`, `/seo hreflang`, `schema-markup`, `ai-seo` | Crawlers, Strukturerad data, `validate_schema.py` | robots.txt, sitemap, canonical, JSON-LD som passerar validering |
+| **Fas 5 Lokalt** | `/seo local`, `/seo maps` | Avsnittet Lokalt företag | NAP-tabell, profilchecklista för Google, Bing och Apple |
+| **Fas 6 Konvertering och mätning** | `page-cro`, `form-cro`, `analytics-tracking`, `/seo google` | Avsnittet Mätning | Formulär som når fram, mätplan, Search Console och Bing klara |
+| **Fas 7 QA-grind före lansering** | `webapp-testing`, `/seo audit`, `/seo page`, `/seo google pagespeed` | `references/qa-grind.md` | Ifylld QA-tabell; alla blockerande rader pass |
+| **Fas 8 Lansering och uppföljning** | `/seo google` (inspect, sitemaps, gen-ai-report), `/seo backlinks ai-performance` | Fas 8 i `skapa-fas.md` | Lanseringslogg, baslinjeexporter, uppföljningsplan |
+
+Grindregler:
+
+- **Fas 0 före allt annat.** Utan faktablad blir det platshållare. Fråga efter det du inte
+  kan hitta på, en gång och samlat, och bygg vidare med tydligt markerade luckor.
+- **Luckor i kod** markeras `REPLACE_ME`; den bundna validatorn stoppar det, så en lucka
+  kan inte slinka igenom till lansering. Hitta aldrig på ett värde för att fylla den.
+- **Fas 7 är en grind.** En enda blockerande rad som fallerar stoppar lanseringen. Säg det
+  rakt ut och lista vad som måste rättas.
+
+### Vanliga misstag vid bygge
+
+| Fel | Rätt |
+|-----|------|
+| JSON-LD med `[Phone]`, `555-0100` eller påhittad adress | Bara faktabladets värden; saknas ett värde: utelämna egenskapen [V] |
+| Kundcitat och "4,9 av 5" utan källa | Bara verkliga omdömen med namn eller källa och samtycke; inga egna stjärnor i markup [V] |
+| Kontaktformulär med `action="#"` eller utan mottagare | Formulär som skickar till en verklig adress, testat från början till slut före lansering |
+| Googlebot blockerad för att hålla sajten borta från AI | Tillåt Googlebot; styr utdrag med `nosnippet` eller `max-snippet` [V] |
+| `noindex` eller `Disallow: /` från testmiljön följer med till lansering | Testmiljö bakom lösenord; kontrollera robots och meta i fas 7 [V] |
+| Deploy av repot skriver över en nyare livesajt | Jämför repo mot live först, deploya en fastlåst commit, spara kopia av live |
+| AI-bild som ser ut som personalen eller ett utfört jobb | Egna foton; genererade bilder bara som illustration och aldrig som bevis |
+| En platssida per grannort med samma text | Bara verkliga orter med eget innehåll; byt-ortnamn-testet [H] |
 
 ## Crawlers och robots.txt
 
@@ -152,8 +238,8 @@ Vill ägaren tillåta träning: ta bort Disallow-blocket. Lägg aldrig till `ant
 | CLS | högst 0,1 | 0,1 till 0,25 | över 0,25 |
 
 INP ersatte FID 2024. Nämn aldrig FID. Labbdata (Lighthouse) är för felsökning; fältdata
-(CrUX, PageSpeed Insights, Search Console) är det som räknas. Detaljer och vanliga orsaker:
-`references/cwv-thresholds.md`.
+(CrUX, PageSpeed Insights, Search Console) är det som räknas. En ny sajt saknar ofta
+fältdata tills den har tillräckligt med trafik. Detaljer: `references/cwv-thresholds.md`.
 
 **Bilder**
 - Beskrivande `alt` på innehållsbilder [V]; tom `alt=""` på rena dekorbilder [H]
@@ -162,10 +248,12 @@ INP ersatte FID 2024. Nämn aldrig FID. Labbdata (Lighthouse) är för felsökni
 - `loading="lazy"` bara under vecket; LCP-bilden laddas direkt och får gärna `fetchpriority="high"` [V]
 - Relevanta bilder och video av hög kvalitet [V]; egna foton framför bildbank där det går [H]
 
-**Mobil och säkerhet**
+**Mobil, tillgänglighet och säkerhet**
 - `<meta name="viewport" content="width=device-width, initial-scale=1">` [V]
 - Google indexerar enbart med mobil Googlebot sedan juli 2024, så mobilversionen måste ha allt innehåll [V]
 - Ingen horisontell scroll, läsbar text, tryckytor runt 48 px [H]
+- Inga påträngande popup-fönster som täcker innehållet på mobil [V]
+- WCAG 2.2 nivå AA som mål: kontrast, tangentbord, etiketter på formulärfält [H]
 - HTTPS överallt, inget blandat innehåll [V]
 
 ## Strukturerad data
@@ -183,8 +271,8 @@ INP ersatte FID 2024. Nämn aldrig FID. Labbdata (Lighthouse) är för felsökni
 - Recensioner: inga falska eller odeklarerat ersatta recensioner, varken på sidan eller i
   markup [V, 2026-07-24]. Ett företag som märker upp recensioner om sig självt får ingen
   stjärnvisning i Google [V].
-- Bara verkliga uppgifter. Hittar du inte ett faktum: lämna egenskapen bort eller markera
-  den tydligt som att fylla i, och fråga ägaren.
+- Bara verkliga uppgifter från faktabladet. Saknas ett faktum: lämna egenskapen bort eller
+  markera `REPLACE_ME`, och fråga ägaren.
 - `@context` är `https://schema.org`, URL:er absoluta, datum i ISO 8601.
 
 Fullständig lista, egenskaper och e-handelskrav: `references/schema-types.md`.
@@ -196,9 +284,12 @@ Kör det på varje HTML-fil du bygger eller får:
 python3 scripts/validate_schema.py sida.html --json
 ```
 
-Status `block` betyder avvecklad typ eller kvarglömd platshållare och ska rättas. `warn`
-gäller till exempel FAQPage. Hänvisa dessutom ägaren till Googles Rich Results Test och
-validator.schema.org, som skriptet inte ersätter.
+Status `block` (exit 2) betyder avvecklad typ eller kvarglömd platshållare som `REPLACE_ME`
+eller `[Phone]` och ska rättas. `warn` (exit 1) gäller till exempel FAQPage eller en
+exempeldomän som `example.se`; före lansering ska även den vara borta. Svenska hakparenteser
+som `[TELEFON]` fångas inte, så använd `REPLACE_ME`. I Claude Code med claude-seo installerat
+kör samma kontroll automatiskt som hook efter varje filändring. Hänvisa dessutom ägaren
+till Googles Rich Results Test och validator.schema.org, som skriptet inte ersätter.
 
 ## Lokalt företag
 
@@ -226,7 +317,7 @@ validator.schema.org, som skriptet inte ersätter.
 
 - **Icke-kommodifierat innehåll** [V]. Googles egen kontrast: "7 Tips for First-Time
   Homebuyers" (samma råd som alla andra) mot "Why We Waived the Inspection & Saved Money"
-  (egen erfarenhet, ett konkret beslut och dess utfall). Granskningsfrågan för varje sida:
+  (egen erfarenhet, ett konkret beslut och dess utfall). Frågan för varje sida:
   vad finns här som ingen annan sida på webben har?
 - **Egen erfarenhet och egen data**: fallstudier, egna foton, mätningar, priser, processer [V].
 - **E-E-A-T** är ingen rankningsfaktor i sig (Google) men sammanfattar vad kvalitetssystemen
@@ -256,7 +347,8 @@ Mer om hur Googles system väger kvalitet: `references/ranking-signals.md`.
   rader, datum i Stillahavstid. Finns inte i API:t; exportera från gränssnittet.
 - Inställningar > Search generative AI ska stå på "Include" (standard). Skillen kan inte
   läsa det; be ägaren bekräfta.
-- URL-inspektion för enskilda sidor efter lansering eller större ändring.
+- URL-inspektion för enskilda sidor efter lansering eller större ändring. Indexing API
+  gäller bara JobPosting och BroadcastEvent, inte vanliga sidor.
 
 **Bing Webmaster Tools** [V]
 - Importera sajten från Search Console, skicka in sitemap, aktivera IndexNow.
@@ -268,25 +360,22 @@ Tredjepartsverktyg för AI-synlighet är bara stickprov. Google: "No third-party
 access to our internal ranking or AI systems." Ta en baslinjeexport från båda rapporterna
 vid lansering.
 
-## Byggläget
+## Renoveringsläget
 
-Fråga först efter det du inte kan hitta på: företagsnamn, adress, telefon, öppettider,
-tjänster, orter, priser, egna bilder, vem som skriver texterna, och om AI-träning ska
-tillåtas. Bygg sedan i den här ordningen och bocka av innan leverans:
+En befintlig sajt ska byggas om, flyttas eller ändras. Detaljer och kommandon:
+`references/renovera.md`. Grundreglerna:
 
-1. Sidstruktur: en sida per tjänst, en per verklig ort, om oss, kontakt, integritet. Korta URL:er.
-2. Varje sida: unik title, metabeskrivning, en H1, logiska rubriker, canonical till sig själv.
-3. Innehåll med egen erfarenhet, egna bilder, författare och datum där det passar.
-4. Bilder med alt, width/height, moderna format; LCP-bilden utan lazy loading.
-5. Viewport, responsiv layout, HTTPS, inga tunga skript före innehållet.
-6. JSON-LD: Organization och WebSite på startsidan, LocalBusiness på kontakt eller
-   platssida, BreadcrumbList, Article/BlogPosting för artiklar. Kör `validate_schema.py`.
-7. robots.txt enligt mallen ovan, XML-sitemap, 404-sida som svarar 404.
-8. Open Graph (`og:title`, `og:description`, `og:image`, `og:url`) för delning [H].
-9. Efter lansering: Search Console, Bing Webmaster Tools, Google Business Profile,
-   Bing Places, baslinjeexport.
-
-Leverera koden med en kort lista över vad som ännu måste fyllas i av ägaren.
+1. **Repot är inte sanningen.** Livesajten kan ha ändrats utanför git (i ett CMS, i
+   värdens gränssnitt, via FTP eller av någon annan). Hämta livesajten och jämför mot
+   repot innan något ändras eller deployas. Är live nyare: för in ändringarna i repot först.
+2. **Leta efter läckta hemligheter** i repot, i historiken och på livesajten (till exempel
+   `/.env` eller `/.git/HEAD` som svarar 200). Hittas en nyckel: rotera den först, städa
+   historiken sedan. Checka aldrig in inloggningsuppgifter.
+3. **Baslinje före ändring**: exportera Search Console, rapporten för generativ AI och
+   Bing AI Performance, och lista alla URL:er som har trafik eller länkar.
+4. **URL-karta**: varje gammal URL får en 301 till närmaste nya motsvarighet.
+5. **Deploya en fastlåst commit** efter förhandsvisning, med en sparad kopia av livesajten
+   för återställning. Kör fas 7 och fas 8 som vid ett nybygge.
 
 ## Granskningsläget
 
@@ -294,23 +383,32 @@ Leverera koden med en kort lista över vad som ännu måste fyllas i av ägaren.
    `/llms.txt` (bara för informationsraden). Filer: läs HTML direkt och kör
    `validate_schema.py`. Går en URL inte att nå: säg det rakt ut, gissa aldrig innehållet,
    be om HTML eller skärmdumpar.
-2. **Avgör sajttyp**: lokalt företag, e-handel, publicist, SaaS, byrå. Lokala avsnittet
+2. **Använd specialister om de finns**: i Claude Code `/seo audit` eller `/seo page`; i
+   båda miljöerna marketingskills `seo-audit` eller `ai-seo`. Kör deras utdata genom
+   konfliktregeln.
+3. **Avgör sajttyp**: lokalt företag, e-handel, publicist, SaaS, byrå. Lokala avsnittet
    gäller bara lokala företag.
-3. **Gå igenom avsnitten** ovan i ordning: crawlers, teknik, strukturerad data, lokalt,
+4. **Gå igenom avsnitten** ovan i ordning: crawlers, teknik, strukturerad data, lokalt,
    innehåll, mätning. Det du inte kan mäta (CWV-fältdata, Search Console, profiler) listas
    som "kräver ägarens data", inte som fel.
-4. **Klassa varje fynd** med tagg och allvarlighet enligt regeln överst.
-5. **Skriv rapporten** enligt `references/rapportmall.md`, med de fem viktigaste
+5. **Klassa varje fynd** med tagg och allvarlighet enligt regeln överst.
+6. **Skriv rapporten** enligt `references/rapportmall.md`, med de fem viktigaste
    åtgärderna först och en rad om vad granskningen inte kunde bedöma.
 
 ## Referensfiler
 
-Läs vid behov, inte alla på en gång. Filerna är kopierade ordagrant från claude-seo-repot
-och är på engelska. Där de nämner `scripts/...`, `/seo`-kommandon eller andra repofiler
-gäller det repot; de finns inte här.
+Läs vid behov, inte alla på en gång. De svenska filerna är skrivna för den här skillen.
+De engelska är kopierade ordagrant från claude-seo-repot; där de nämner `scripts/...`,
+`/seo`-kommandon eller andra repofiler gäller det repot och Claude Code.
 
 | Fil | Läs när |
 |-----|---------|
+| `references/skapa-fas.md` | Du går igenom en fas i skapa-läget |
+| `references/skill-karta.md` | Du väljer skill för en fas eller skillen saknas |
+| `references/faktablad-mall.md` | Fas 0: brief och faktainsamling |
+| `references/qa-grind.md` | Fas 7: kontroll före lansering |
+| `references/renovera.md` | Renoveringsläget |
+| `references/exempel-bygge.md` | Du vill se hur fasernas leveranser ser ut |
 | `references/rapportmall.md` | Du skriver en granskningsrapport |
 | `references/geo-evidence.md` | Du behöver källan till ett AI-sökpåstående eller vill citera en siffra |
 | `references/geo-examples.md` | Du formulerar AI-sökfynd eller robots.txt |

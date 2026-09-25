@@ -17,7 +17,7 @@ metadata:
 
 Before analysis, detect available data sources:
 
-1. **DataForSEO MCP** (premium): Check if `dataforseo_backlinks_summary` tool is available
+1. **DataForSEO MCP** (premium): detected when the `dataforseo` server's `api_request` tool is present (v3, `dataforseo-mcp-server` 3.x) or the deprecated v2 tool `backlinks_summary`. On v3 call POST paths below with `api_request`; on v2 use the tool name in parentheses. If neither is present, say "DataForSEO not detected" in the source list
 2. **Moz API** (free signup): `python scripts/backlinks_auth.py --check moz --json`
 3. **Bing Webmaster** (free signup): `python scripts/backlinks_auth.py --check bing --json`
 4. **Common Crawl** (always available): Domain-level graph with PageRank
@@ -47,7 +47,7 @@ Produce all 7 sections below. Each section lists data sources in preference orde
 
 ### 1. Profile Overview
 
-**DataForSEO:** `dataforseo_backlinks_summary` → total backlinks, referring domains, domain rank, follow ratio, trend.
+**DataForSEO:** `/v3/backlinks/summary/live` (v2: `backlinks_summary`) → total backlinks, referring domains, domain rank, follow ratio, trend.
 
 **Moz API:** `python scripts/moz_api.py metrics <url> --json` → Domain Authority, Page Authority, Spam Score, linking root domains, external links.
 
@@ -64,7 +64,7 @@ Produce all 7 sections below. Each section lists data sources in preference orde
 
 ### 2. Anchor Text Distribution
 
-**DataForSEO:** `dataforseo_backlinks_anchors`
+**DataForSEO:** `/v3/backlinks/anchors/live` (v2: `backlinks_anchors`)
 
 **Moz API:** `python scripts/moz_api.py anchors <url> --json`
 
@@ -85,7 +85,7 @@ Flag if exact-match anchors exceed 15% -- this is a Google Penguin risk signal.
 
 ### 3. Referring Domain Quality
 
-**DataForSEO:** `dataforseo_backlinks_referring_domains`
+**DataForSEO:** `/v3/backlinks/referring_domains/live` (v2: `backlinks_referring_domains`)
 
 **Moz API:** `python scripts/moz_api.py domains <url> --json` → domains with DA scores
 
@@ -99,7 +99,7 @@ Analyze:
 
 ### 4. Toxic Link Detection
 
-**DataForSEO:** `dataforseo_backlinks_bulk_spam_score` + toxic patterns from reference
+**DataForSEO:** `/v3/backlinks/bulk_spam_score/live` (v2: `backlinks_bulk_spam_score`) + toxic patterns from reference
 
 **Moz API:** Spam Score from `python scripts/moz_api.py metrics <url> --json` (1-17% scale, >11% = high risk)
 
@@ -123,7 +123,7 @@ Load `references/backlink-quality.md` for the full 30 toxic patterns and disavow
 
 ### 5. Top Pages by Backlinks
 
-**DataForSEO:** `dataforseo_backlinks_backlinks` with target type "page"
+**DataForSEO:** `/v3/backlinks/backlinks/live` (v2: `backlinks_backlinks`) with a page URL as `target`
 
 **Moz API:** `python scripts/moz_api.py pages <domain> --json`
 
@@ -135,7 +135,7 @@ Find:
 
 ### 6. Competitor Gap Analysis
 
-**DataForSEO:** `dataforseo_backlinks_referring_domains` for both domains, then compare
+**DataForSEO:** `/v3/backlinks/domain_intersection/live` (v2: `backlinks_domain_intersection`), or `/v3/backlinks/referring_domains/live` for both domains, then compare
 
 **Bing Webmaster:** `python scripts/bing_webmaster.py compare <url1> <url2> --json` — only when both sites are verified in the user's Bing Webmaster account (the API has no competitor-comparison method and returns link data only for verified sites). Otherwise it returns status `error` with no gap computed; use DataForSEO or Moz for real competitor gap analysis
 
@@ -149,7 +149,7 @@ Output:
 
 ### 7. New and Lost Backlinks
 
-**DataForSEO only:** `dataforseo_backlinks_backlinks` with date filters for 30/60/90 day changes
+**DataForSEO only:** `/v3/backlinks/timeseries_new_lost_summary/live` (v2: `backlinks_timeseries_new_lost_summary`) for 30/60/90 day new/lost counts; `/v3/backlinks/backlinks/live` with date filters for the link list
 
 **Verification Crawler:** For known links, verify current status with `python scripts/verify_backlinks.py`
 

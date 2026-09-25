@@ -7,24 +7,24 @@ echo "Removing Firecrawl extension..."
 rm -rf "${HOME}/.claude/skills/seo-firecrawl"
 echo "v Removed skill files"
 
-# Remove MCP entry from settings.json
-SETTINGS_FILE="${HOME}/.claude/settings.json"
-if [ -f "${SETTINGS_FILE}" ]; then
-    python3 -c "
-import json, os
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+MCP_HELPER=""
+for candidate in "${SCRIPT_DIR}/../claude_mcp_config.py" "${SCRIPT_DIR}/extensions/claude_mcp_config.py"; do
+    if [ -f "${candidate}" ]; then MCP_HELPER="${candidate}"; break; fi
+done
 
-settings_path = '${SETTINGS_FILE}'
-with open(settings_path, 'r') as f:
-    settings = json.load(f)
-
-if 'mcpServers' in settings and 'firecrawl-mcp' in settings['mcpServers']:
-    del settings['mcpServers']['firecrawl-mcp']
-    with open(settings_path, 'w') as f:
-        json.dump(settings, f, indent=2)
-    print('v Removed MCP server from settings.json')
-else:
-    print('  MCP server not found in settings.json (already removed)')
-" || echo "  Warning: Could not update settings.json automatically."
+# Unregister the MCP server: `claude mcp remove firecrawl-mcp --scope user` (or
+# ~/.claude.json directly without the CLI), plus the legacy entry that
+# installers up to v1.8.1 wrote to ~/.claude/settings.json.
+if [ -n "${MCP_HELPER}" ] && command -v python3 >/dev/null 2>&1; then
+    python3 "${MCP_HELPER}" uninstall --name firecrawl-mcp || \
+        echo "  Warning: Could not unregister the MCP server. Run: claude mcp remove firecrawl-mcp --scope user"
+elif command -v claude >/dev/null 2>&1; then
+    claude mcp remove firecrawl-mcp --scope user >/dev/null 2>&1 || true
+    echo "  Ran: claude mcp remove 'firecrawl-mcp' --scope user. Also delete any mcpServers.firecrawl-mcp"
+    echo "  entry from ~/.claude/settings.json by hand (old installers wrote one there)."
+else
+    echo "  Warning: Could not unregister the MCP server. Run: claude mcp remove firecrawl-mcp --scope user"
 fi
 
 echo ""

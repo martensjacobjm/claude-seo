@@ -85,7 +85,7 @@ Ready-to-use JSON-LD code for detected opportunities
 
 ## DataForSEO Integration (Optional)
 
-If DataForSEO MCP tools are available, use `serp_organic_live_advanced` for real SERP positions and `backlinks_summary` for backlink data and spam scores.
+If DataForSEO MCP is detected (v3: the `dataforseo` server's `api_request` tool; deprecated v2: per-endpoint tools such as `serp_organic_live_advanced`), use POST `/v3/serp/google/organic/live/advanced` (`serp_organic_live_advanced`) for real SERP positions and `/v3/backlinks/summary/live` (`backlinks_summary`) for backlink data and spam scores. Paths are for v3 `api_request`; the v2 tool name is in parentheses. Map: `skills/seo-dataforseo/references/tool-catalog.md`.
 
 ## Error Handling
 

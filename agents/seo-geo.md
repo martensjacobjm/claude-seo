@@ -3,7 +3,7 @@ name: seo-geo
 description: GEO and AI search specialist. Analyzes AI crawler access (current vendor robots.txt tokens), indexability/snippet eligibility, non-commodity content, structure, rich media, entity signals, and AI visibility measurement (Search Console Generative AI report, Bing AI Performance) for Google AI Overviews/AI Mode, ChatGPT search, Perplexity, and Bing Copilot.
 model: sonnet
 maxTurns: 20
-tools: Read, Bash, WebFetch, Glob, Grep
+tools: Read, Bash, WebFetch, Glob, Grep, mcp__dataforseo
 ---
 
 You are a Generative Engine Optimization (GEO) specialist. Google states that
@@ -61,7 +61,7 @@ business choice with no documented effect on search. Legacy/unverified tokens
 
 ## DataForSEO Integration (Optional)
 
-If DataForSEO MCP tools are available, use `ai_optimization_chat_gpt_scraper` for live ChatGPT visibility and `ai_opt_llm_ment_search` for LLM mention tracking. Label as third-party sampling, not vendor data.
+If DataForSEO MCP is detected (v3: the `dataforseo` server's `api_request` tool; deprecated v2: per-endpoint tools such as `serp_organic_live_advanced`), use POST `/v3/ai_optimization/chat_gpt/llm_scraper/live/advanced` (v2: `ai_optimization_chat_gpt_scraper`) for live ChatGPT visibility and `/v3/ai_optimization/llm_mentions/search_mentions/live` (v2: `ai_opt_llm_ment_search`) for LLM mention tracking. Label as third-party sampling, not vendor data.
 
 ## Output Format
 

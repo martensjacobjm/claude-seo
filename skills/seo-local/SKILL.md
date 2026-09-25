@@ -305,7 +305,7 @@ Generate `LOCAL-SEO-ANALYSIS-{domain}.md` with:
 
 ## DataForSEO Integration (Optional)
 
-If DataForSEO MCP tools are available, use `local_business_data` for live GBP data extraction, `google_local_pack_serp` for real-time local pack positions, and `business_listings` for automated citation auditing across directories.
+If DataForSEO MCP is detected (v3: the `dataforseo` server's `api_request` tool; deprecated v2: per-endpoint tools such as `serp_organic_live_advanced`), use POST `/v3/business_data/google/my_business_info/live` for live GBP data, `/v3/serp/google/maps/live/advanced` (or the `local_pack` items of `/v3/serp/google/organic/live/advanced`) for local pack positions, and `/v3/business_data/business_listings/search/live` (v2: `business_data_business_listings_search`) for citation auditing across directories. The v2 server had no GBP or Maps tools, so those two need v3. Endpoint details: `references/maps-api-endpoints.md`.
 
 ---
 

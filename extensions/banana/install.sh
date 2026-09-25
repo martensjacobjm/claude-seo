@@ -8,7 +8,6 @@ main() {
     SKILL_DIR="${HOME}/.claude/skills/seo-image-gen"
     AGENT_DIR="${HOME}/.claude/agents"
     SEO_SKILL_DIR="${HOME}/.claude/skills/seo"
-    SETTINGS_FILE="${HOME}/.claude/settings.json"
 
     echo "════════════════════════════════════════"
     echo "║  Banana Image Gen - SEO Extension    ║"
@@ -44,8 +43,26 @@ main() {
     fi
     echo "✓ npx detected"
 
-    # Determine script directory (works for both ./install.sh and repo-relative paths)
+    # python3 runs the shared MCP registration helper (extensions/claude_mcp_config.py)
+    if ! command -v python3 >/dev/null 2>&1; then
+        echo "✗ python3 is required to register the MCP server."
+        exit 1
+    fi
     SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    MCP_HELPER=""
+    for candidate in "${SCRIPT_DIR}/../claude_mcp_config.py" "${SCRIPT_DIR}/extensions/claude_mcp_config.py"; do
+        if [ -f "${candidate}" ]; then MCP_HELPER="${candidate}"; break; fi
+    done
+    if [ -z "${MCP_HELPER}" ]; then
+        echo "✗ Cannot find extensions/claude_mcp_config.py."
+        echo "  Run this script from the claude-seo repo: ./extensions/banana/install.sh"
+        exit 1
+    fi
+    if command -v claude >/dev/null 2>&1; then
+        echo "✓ claude CLI detected (MCP server will be added with: claude mcp add --scope user)"
+    else
+        echo "ℹ claude CLI not on PATH: the MCP server will be written to ~/.claude.json directly"
+    fi
 
     # Check if running from repo or standalone
     if [ -f "${SCRIPT_DIR}/skills/seo-image-gen/SKILL.md" ]; then
@@ -58,75 +75,49 @@ main() {
         exit 1
     fi
 
-    # Check if nanobanana-mcp is already configured
-    MCP_CONFIGURED=false
-    if [ -f "${SETTINGS_FILE}" ]; then
-        if python3 -c "
-import json
-with open('${SETTINGS_FILE}', 'r') as f:
-    settings = json.load(f)
-if 'mcpServers' in settings and 'nanobanana-mcp' in settings['mcpServers']:
-    exit(0)
-else:
-    exit(1)
-" 2>/dev/null; then
-            MCP_CONFIGURED=true
-            echo "✓ nanobanana-mcp already configured in settings.json"
-        fi
-    fi
-
-    # If MCP not configured, prompt for API key
-    if [ "${MCP_CONFIGURED}" = false ]; then
+    # Claude Code reads user-scope MCP servers from ~/.claude.json (written by
+    # `claude mcp add --scope user`), never from ~/.claude/settings.json, where
+    # installers up to v1.8.1 (and older standalone banana installs) wrote them.
+    if python3 "${MCP_HELPER}" status --name nanobanana-mcp; then
+        echo "✓ nanobanana-mcp already registered at user scope (~/.claude.json)"
+        # Only clean up a leftover legacy settings.json entry, if any.
+        python3 "${MCP_HELPER}" remove-legacy --name nanobanana-mcp || true
+    elif python3 "${MCP_HELPER}" has-legacy --name nanobanana-mcp --env-keys GOOGLE_AI_API_KEY; then
+        echo "→ Migrating nanobanana-mcp from ~/.claude/settings.json (never loaded there)..."
+        python3 "${MCP_HELPER}" install --name nanobanana-mcp --reuse-legacy \
+            --env-keys GOOGLE_AI_API_KEY --secret-keys GOOGLE_AI_API_KEY \
+            -- npx -y @ycse/nanobanana-mcp@latest || {
+            echo "✗ Could not register the MCP server."
+            echo "  See: extensions/banana/docs/BANANA-SETUP.md"
+            exit 1
+        }
+    else
         echo ""
         echo "Google AI API key required for image generation."
         echo "Get a free key at: https://aistudio.google.com/apikey"
         echo ""
 
-        read -rsp "Google AI API key (GOOGLE_AI_API_KEY): " GOOGLE_AI_API_KEY
+        read -rsp "Google AI API key (GOOGLE_AI_API_KEY): " BANANA_API_KEY
         echo ""
-        if [ -z "${GOOGLE_AI_API_KEY}" ]; then
+        if [ -z "${BANANA_API_KEY}" ]; then
             echo "✗ API key cannot be empty."
             exit 1
         fi
 
-        # Configure MCP server
-        echo "→ Configuring nanobanana-mcp server..."
-        python3 -c "
-import json, os
-
-settings_path = '${SETTINGS_FILE}'
-
-# Read existing settings or create new
-if os.path.exists(settings_path):
-    with open(settings_path, 'r') as f:
-        settings = json.load(f)
-else:
-    settings = {}
-
-# Ensure mcpServers key exists
-if 'mcpServers' not in settings:
-    settings['mcpServers'] = {}
-
-# Add nanobanana-mcp server config
-settings['mcpServers']['nanobanana-mcp'] = {
-    'command': 'npx',
-    'args': ['-y', '@ycse/nanobanana-mcp@latest'],
-    'env': {
-        'GOOGLE_AI_API_KEY': '''${GOOGLE_AI_API_KEY}'''
-    }
-}
-
-# Write back
-os.makedirs(os.path.dirname(settings_path), exist_ok=True)
-with open(settings_path, 'w') as f:
-    json.dump(settings, f, indent=2)
-
-print('  ✓ nanobanana-mcp configured in settings.json')
-" || {
-            echo "✗ Could not auto-configure MCP server."
+        # The key reaches the helper through the environment only: never argv,
+        # never string interpolation into code, never echoed.
+        echo "→ Registering nanobanana-mcp server (user scope)..."
+        GOOGLE_AI_API_KEY="${BANANA_API_KEY}" \
+        python3 "${MCP_HELPER}" install --name nanobanana-mcp \
+            --env-keys GOOGLE_AI_API_KEY --secret-keys GOOGLE_AI_API_KEY \
+            -- npx -y @ycse/nanobanana-mcp@latest || {
+            echo "✗ Could not register the MCP server. Run:"
+            echo "     claude mcp add --env GOOGLE_AI_API_KEY=<key> --transport stdio --scope user \\"
+            echo "       nanobanana-mcp -- npx -y @ycse/nanobanana-mcp@latest"
             echo "  See: extensions/banana/docs/BANANA-SETUP.md"
             exit 1
         }
+        unset BANANA_API_KEY
     fi
 
     # Install skill

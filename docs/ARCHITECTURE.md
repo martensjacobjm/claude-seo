@@ -198,16 +198,18 @@ Extensions are opt-in add-ons that integrate external data sources via MCP serve
 
 ```
 extensions/
+├── claude_mcp_config.py      # Shared helper: claude mcp add/remove --scope user, ~/.claude.json fallback, legacy settings.json cleanup
 ├── dataforseo/               # DataForSEO MCP integration
 │   ├── README.md                  # Extension documentation
 │   ├── install.sh                 # Unix installer
 │   ├── install.ps1                # Windows installer
 │   ├── uninstall.sh               # Unix uninstaller
 │   ├── uninstall.ps1              # Windows uninstaller
-│   ├── field-config.json          # API response field filtering
+│   ├── field-config.json          # v3 field filter (keyed by endpoint path)
 │   ├── skills/
 │   │   └── seo-dataforseo/
-│   │       └── SKILL.md           # Sub-skill (22 commands)
+│   │       ├── SKILL.md           # Sub-skill (23 commands)
+│   │       └── references/tool-catalog.md  # v2 tool name -> v3 endpoint map
 │   ├── agents/
 │   │   └── seo-dataforseo.md      # Subagent
 │   └── docs/
@@ -228,7 +230,7 @@ extensions/
     │   ├── batch.py               # CSV batch workflow
     │   ├── cost_tracker.py        # Usage and cost tracking
     │   ├── presets.py             # Brand preset management
-    │   ├── setup_mcp.py           # MCP configuration
+    │   ├── setup_mcp.py           # MCP registration (user scope, ~/.claude.json)
     │   └── validate_setup.py      # Installation verification
     ├── references/                # On-demand knowledge
     │   ├── prompt-engineering.md  # 6-component Reasoning Brief
@@ -246,7 +248,7 @@ extensions/
 
 | Extension | Package | What it Adds |
 |-----------|---------|-------------|
-| **DataForSEO** | `dataforseo-mcp-server` | 22 commands: live SERP, keywords, backlinks, on-page analysis, content analysis, business listings, AI visibility, LLM mentions |
+| **DataForSEO** | `dataforseo-mcp-server@3` | 23 commands via v3 `api_request`: live SERP (organic, images, YouTube), keywords, backlinks, on-page analysis, content analysis, business listings, AI visibility, LLM mentions |
 | **Banana Image Gen** | `@ycse/nanobanana-mcp` | 6 commands: OG image, hero image, product photo, infographic, custom, and batch generation via Gemini AI |
 
 ### Extension Convention
@@ -257,4 +259,7 @@ Each extension follows this pattern:
 3. Own `uninstall.sh` and `uninstall.ps1` that cleanly reverse installation
 4. Installs skill to `~/.claude/skills/seo-<name>/`
 5. Installs agent to `~/.claude/agents/seo-<name>.md`
-6. Merges MCP config into `~/.claude/settings.json` (non-destructive)
+6. Registers the MCP server at user scope via `extensions/claude_mcp_config.py`:
+   `claude mcp add --scope user` when the CLI is on PATH, otherwise a non-destructive merge
+   into `~/.claude.json` (Claude Code does not read `mcpServers` from `~/.claude/settings.json`);
+   removes a legacy `settings.json` entry left by v1.8.1 and earlier

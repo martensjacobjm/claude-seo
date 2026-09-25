@@ -24,6 +24,41 @@ HEMSIDA_COPIES = {
     "scripts/validate_schema.py": "hooks/validate-schema.py",
 }
 
+# Hand-written Swedish references that live in the source folder (not canonical copies).
+HEMSIDA_AUTHORED = [
+    "references/rapportmall.md",
+    "references/skapa-fas.md",
+    "references/skill-karta.md",
+    "references/faktablad-mall.md",
+    "references/qa-grind.md",
+    "references/renovera.md",
+    "references/exempel-bygge.md",
+]
+
+HEMSIDA_PHASES = [
+    "Fas 0 Brief och fakta", "Fas 1 Strategi", "Fas 2 Innehåll", "Fas 3 Bygge",
+    "Fas 4 Teknisk SEO och AI-sök", "Fas 5 Lokalt", "Fas 6 Konvertering och mätning",
+    "Fas 7 QA-grind", "Fas 8 Lansering och uppföljning",
+]
+
+# Every skill hemsida may delegate to; each must appear in the skill map.
+DELEGATED_SKILLS = [
+    # claude-seo (Claude Code plugin)
+    "seo", "seo-audit", "seo-page", "seo-technical", "seo-content", "seo-schema", "seo-sitemap",
+    "seo-images", "seo-geo", "seo-local", "seo-maps", "seo-plan", "seo-programmatic",
+    "seo-hreflang", "seo-google", "seo-backlinks", "seo-competitor-pages", "seo-dataforseo",
+    "seo-image-gen",
+    # marketingskills
+    "ai-seo", "schema-markup", "site-architecture", "programmatic-seo", "page-cro", "form-cro",
+    "copywriting", "copy-editing", "content-strategy", "product-marketing-context",
+    "analytics-tracking", "competitor-alternatives", "pricing-strategy", "signup-flow-cro",
+    "popup-cro", "social-content", "marketing-psychology",
+    # Jacob's claude.ai skills
+    "astro", "react", "vue", "web-artifacts-builder", "webapp-testing", "theme-factory",
+    "canvas-design", "brand-guidelines", "skill-evidens", "doc-coauthoring", "pdf", "xlsx",
+    "scrapling", "article-extractor",
+]
+
 
 def _build(*args):
     proc = subprocess.run([sys.executable, BUILD, *args], capture_output=True, text=True, timeout=120)
@@ -53,7 +88,9 @@ def test_hemsida_package_contents(tmp_path):
         assert fm["name"] == "hemsida"
         desc = fm["description"]
         assert 0 < len(desc) <= 1024 and "<" not in desc and ">" not in desc
-        for word in ("hemsida", "webbplats", "sökoptimering", "Google Business Profile", "website audit"):
+        for word in ("hemsida", "webbplats", "sökoptimering", "Google Business Profile", "website audit",
+                     "skapa hemsida", "bygga webbplats", "ny sajt", "landningssida", "granska hemsida",
+                     "AI-sök", "lokal SEO", "website build", "site launch"):
             assert word in desc
         assert set(fm) <= {"name", "description", "license", "allowed-tools", "metadata", "compatibility"}
         assert len(skill_md.splitlines()) < 500
@@ -62,8 +99,68 @@ def test_hemsida_package_contents(tmp_path):
             with open(os.path.join(ROOT, source), "rb") as fh:
                 assert zf.read(f"hemsida/{dest}") == fh.read(), dest
             assert f"`{dest}`" in skill_md or dest.startswith("scripts/"), f"{dest} not referenced"
-        assert "hemsida/references/rapportmall.md" in names
+        for rel in HEMSIDA_AUTHORED:
+            assert f"hemsida/{rel}" in names, rel
         assert sum(1 for n in names if n.endswith("/SKILL.md")) == 1
+
+
+def _hemsida(rel):
+    return open(os.path.join(SRC, "hemsida", rel), encoding="utf-8").read()
+
+
+def test_hemsida_frontmatter_is_valid_yaml():
+    yaml = __import__("pytest").importorskip("yaml")
+    text = _hemsida("SKILL.md")
+    data = yaml.safe_load(re.match(r"^---\n(.*?)\n---\n", text, re.DOTALL).group(1))
+    assert data["name"] == "hemsida"
+    assert isinstance(data["description"], str) and len(data["description"]) <= 1024
+
+
+def test_hemsida_mentions_every_phase_and_mode():
+    skill_md = _hemsida("SKILL.md")
+    phases = _hemsida("references/skapa-fas.md")
+    for phase in HEMSIDA_PHASES:
+        assert phase in skill_md, phase
+        assert f"## {phase}" in phases, phase
+    for mode in ("## Renoveringsläget", "## Granskningsläget", "### Konfliktregel"):
+        assert mode in skill_md, mode
+
+
+def test_hemsida_authored_references_are_linked():
+    skill_md = _hemsida("SKILL.md")
+    for rel in HEMSIDA_AUTHORED:
+        assert os.path.isfile(os.path.join(SRC, "hemsida", rel)), rel
+        assert rel not in HEMSIDA_COPIES
+        assert f"`{rel}`" in skill_md, f"{rel} not referenced in SKILL.md"
+
+
+def test_skill_map_lists_every_delegated_skill():
+    skill_map = _hemsida("references/skill-karta.md")
+    for name in DELEGATED_SKILLS:
+        assert f"`{name}`" in skill_map, name
+    # Every skill named in SKILL.md's phase table is in the map, and every /seo command
+    # maps to a claude-seo sub-skill listed there.
+    skill_md = _hemsida("SKILL.md")
+    for row in re.findall(r"^\| \*\*Fas \d.*$", skill_md, re.MULTILINE):
+        for token in re.findall(r"`([^`]+)`", row):
+            if token.startswith("/seo"):
+                sub = token.split()[1]
+                assert f"`seo-{sub}`" in skill_map, token
+            elif not token.endswith((".md", ".py")):
+                assert token in DELEGATED_SKILLS and f"`{token}`" in skill_map, token
+
+
+def test_claude_seo_skills_in_map_exist_in_repo():
+    for name in DELEGATED_SKILLS:
+        if name == "seo" or name.startswith("seo-"):
+            assert os.path.isfile(os.path.join(ROOT, "skills", name, "SKILL.md")), name
+
+
+def test_hemsida_example_is_labeled_invented():
+    text = _hemsida("references/exempel-bygge.md")
+    assert "Påhittat exempel" in text
+    for mistake in ('action="#"', "aggregateRating", "Googlebot", "REPLACE_ME", "[Phone]", "live"):
+        assert mistake in text, mistake
 
 
 def test_canonical_copies_are_not_duplicated_in_source():
@@ -86,7 +183,7 @@ def test_line_limits_for_authored_files():
 
 
 def test_swedish_writing_rules():
-    for rel in ("hemsida/SKILL.md", "hemsida/references/rapportmall.md", "README.md"):
+    for rel in ["hemsida/SKILL.md", "README.md"] + [f"hemsida/{r}" for r in HEMSIDA_AUTHORED]:
         text = open(os.path.join(SRC, rel), encoding="utf-8").read()
         assert "—" not in text, f"em dash in {rel}"
         assert " – " not in text, f"en dash as punctuation in {rel}"

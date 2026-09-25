@@ -8,7 +8,6 @@ main() {
     SKILL_DIR="${HOME}/.claude/skills/seo-firecrawl"
     AGENT_DIR="${HOME}/.claude/agents"
     SEO_SKILL_DIR="${HOME}/.claude/skills/seo"
-    SETTINGS_FILE="${HOME}/.claude/settings.json"
 
     echo "════════════════════════════════════════"
     echo "║   Firecrawl Extension - Installer    ║"
@@ -44,6 +43,27 @@ main() {
     fi
     echo "v npx detected"
 
+    # python3 runs the shared MCP registration helper (extensions/claude_mcp_config.py)
+    if ! command -v python3 >/dev/null 2>&1; then
+        echo "x python3 is required to register the MCP server."
+        exit 1
+    fi
+    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    MCP_HELPER=""
+    for candidate in "${SCRIPT_DIR}/../claude_mcp_config.py" "${SCRIPT_DIR}/extensions/claude_mcp_config.py"; do
+        if [ -f "${candidate}" ]; then MCP_HELPER="${candidate}"; break; fi
+    done
+    if [ -z "${MCP_HELPER}" ]; then
+        echo "x Cannot find extensions/claude_mcp_config.py."
+        echo "  Run this script from the claude-seo repo: ./extensions/firecrawl/install.sh"
+        exit 1
+    fi
+    if command -v claude >/dev/null 2>&1; then
+        echo "v claude CLI detected (MCP server will be added with: claude mcp add --scope user)"
+    else
+        echo "i claude CLI not on PATH: the MCP server will be written to ~/.claude.json directly"
+    fi
+
     # Prompt for credentials
     echo ""
     echo "Firecrawl API key required."
@@ -57,9 +77,6 @@ main() {
         echo "x API key cannot be empty."
         exit 1
     fi
-
-    # Determine script directory (works for both ./install.sh and curl|bash)
-    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
     # Check if running from repo or standalone
     if [ -f "${SCRIPT_DIR}/skills/seo-firecrawl/SKILL.md" ]; then
@@ -78,46 +95,23 @@ main() {
     mkdir -p "${SKILL_DIR}"
     cp "${SOURCE_DIR}/skills/seo-firecrawl/SKILL.md" "${SKILL_DIR}/SKILL.md"
 
-    # Merge MCP config into settings.json
-    echo "-> Configuring MCP server..."
+    # Register the MCP server at user scope. Claude Code reads user-scope MCP
+    # servers from ~/.claude.json (via `claude mcp add --scope user`), never
+    # from ~/.claude/settings.json, where installers up to v1.8.1 wrote them.
+    echo "-> Registering MCP server (user scope)..."
 
-    python3 -c "
-import json, os, sys
-
-settings_path = '${SETTINGS_FILE}'
-api_key = '''${FIRECRAWL_API_KEY}'''
-
-# Read existing settings or create new
-if os.path.exists(settings_path):
-    with open(settings_path, 'r') as f:
-        settings = json.load(f)
-else:
-    settings = {}
-
-# Ensure mcpServers key exists
-if 'mcpServers' not in settings:
-    settings['mcpServers'] = {}
-
-# Add Firecrawl server config
-settings['mcpServers']['firecrawl-mcp'] = {
-    'command': 'npx',
-    'args': ['-y', 'firecrawl-mcp'],
-    'env': {
-        'FIRECRAWL_API_KEY': api_key
-    }
-}
-
-# Write back
-os.makedirs(os.path.dirname(settings_path), exist_ok=True)
-with open(settings_path, 'w') as f:
-    json.dump(settings, f, indent=2)
-
-print('  v MCP server configured in settings.json')
-" || {
-        echo "  Warning: Could not auto-configure MCP server."
-        echo "  Add the firecrawl-mcp server manually to ~/.claude/settings.json"
+    # The API key reaches the helper through the environment only: never argv,
+    # never string interpolation into code, never echoed.
+    FIRECRAWL_API_KEY="${FIRECRAWL_API_KEY}" \
+    python3 "${MCP_HELPER}" install --name firecrawl-mcp \
+        --env-keys FIRECRAWL_API_KEY --secret-keys FIRECRAWL_API_KEY \
+        -- npx -y firecrawl-mcp || {
+        echo "  Warning: Could not register the MCP server automatically. Run:"
+        echo "     claude mcp add --env FIRECRAWL_API_KEY=<key> --transport stdio --scope user \\"
+        echo "       firecrawl-mcp -- npx -y firecrawl-mcp"
         echo "  See: extensions/firecrawl/docs/FIRECRAWL-SETUP.md"
     }
+    unset FIRECRAWL_API_KEY
 
     # Pre-warm npx package
     echo "-> Pre-downloading firecrawl-mcp..."
