@@ -1,4 +1,4 @@
-<!-- Updated: 2026-03-23 -->
+<!-- Updated: 2026-09-25 -->
 # Geo-Grid Rank Tracking Algorithm
 
 ## Concept
@@ -27,19 +27,25 @@ For each row i (0 to grid_size-1) and column j (0 to grid_size-1):
   new_lng = center_lng + (dx / (111.32 * cos(center_lat * pi/180)))
 ```
 
-Where `center_index = (grid_size - 1) / 2` and `111.32 km = 1 degree latitude`.
+Where `center_index = (grid_size - 1) / 2` and `111.32 km = 1 degree latitude`
+(equirectangular approximation; accurate enough at grid scale).
+
+Grid points go to DataForSEO as coordinates. Never reverse-geocode grid points through the
+public Nominatim server: its usage policy forbids "reverse queries in a grid".
 
 ### Grid Sizes and Use Cases
 
-| Grid | Points | Typical Radius | Best For | Est. Cost (Live) |
+Sizes and radii are heuristics [H]; costs are Maps SERP live prices [V] (2026-09-25).
+
+| Grid | Points | Typical Radius [H] | Best For [H] | Est. Cost (Live) |
 |------|--------|---------------|----------|-----------------|
 | 3x3 | 9 | 2 km | Quick snapshot, low budget | $0.018/keyword |
 | 5x5 | 25 | 3 km | Standard urban audit | $0.050/keyword |
-| **7x7** | **49** | **5 km** | **Default. Best balance of coverage and cost** | **$0.098/keyword** |
+| **7x7** | **49** | **5 km** | **Default (editorial choice)** | **$0.098/keyword** |
 | 9x9 | 81 | 8 km | Suburban/wide service area | $0.162/keyword |
 | 13x13 | 169 | 15 km | Rural or large metro | $0.338/keyword |
 
-**Radius guidelines:** Urban dense = 2-5 km, suburban = 5-10 km, rural = 10-25 km.
+**Radius guidelines (heuristic):** Urban dense = 2-5 km, suburban = 5-10 km, rural = 10-25 km.
 
 ---
 
@@ -57,17 +63,22 @@ Use the Google Maps SERP API with `location_coordinate` parameter:
 }
 ```
 
-For each grid point, fire one API call with the point's lat/lng. Parse the
-`items` array to find the target business rank (position in results).
+For each grid point, send one task with the point's lat/lng. Find the target business
+(match `cid` or `place_id`) among `maps_search` items and use its `rank_group`; skip
+`maps_paid_item` ads.
 
-**Rate optimization:** DataForSEO allows up to 100 tasks per POST. For a 7x7
-grid, batch all 49 tasks into a single request to minimize HTTP overhead.
+**Batching:** a **live** call carries only one task, so a live 7x7 grid is 49 calls (limit
+2,000 calls/min). To batch, use the standard queue: `/v3/serp/google/maps/task_post` accepts
+up to 100 tasks per POST (all 49 in one request), then collect results with `task_get`.
+Standard is cheaper ($0.0006 vs $0.002) but can take up to 45 minutes.
 
 ---
 
 ## Share of Local Voice (SoLV)
 
-Metric pioneered by Local Falcon. Measures visibility across the grid.
+SoLV® is Local Falcon's registered trademark. Local Falcon defines it as how often a
+business ranks in the top three positions across a scan [V Local Falcon KB32, updated
+2025-11-20]. Other tools may define it differently.
 
 ### Calculation
 
@@ -75,20 +86,24 @@ Metric pioneered by Local Falcon. Measures visibility across the grid.
 SoLV = (points_in_top_3 / total_grid_points) * 100
 ```
 
-### Interpretation
+### Interpretation (heuristic bands [H])
+
+Neither Google nor Local Falcon publishes SoLV bands. These are editorial cut-offs: label them
+"heuristic" in output and cap any finding based on them at Medium. Compare against competitors
+in the same scan (Local Falcon's own advice), not against a fixed scale.
 
 | SoLV | Interpretation |
 |------|---------------|
-| 80-100% | Dominant. Business owns the local area. |
-| 60-79% | Strong. Visible in most of the service area. |
-| 40-59% | Moderate. Significant gaps in coverage. |
-| 20-39% | Weak. Competitors dominate most areas. |
-| 0-19% | Critical. Nearly invisible in maps results. |
+| 80-100% | Dominant in the scanned area |
+| 60-79% | Strong: visible in most of the area |
+| 40-59% | Moderate: significant gaps |
+| 20-39% | Weak: competitors lead most points |
+| 0-19% | Very weak: rarely in the top 3 |
 
 ### Extended Metrics
 
 - **Average Rank**: Mean position across all grid points (lower = better)
-- **Visibility Score**: Weighted average where top 3 = 3pts, 4-10 = 1pt, 10+ = 0pts
+- **Visibility Score** [H]: Weighted average where top 3 = 3pts, 4-10 = 1pt, 11+ = 0pts
 - **Worst Quadrant**: Identify which compass direction has weakest rankings
 
 ---
@@ -112,9 +127,11 @@ Geo-Grid: "dentist" (7x7, 5km radius, center: 30.267, -97.743)
   S  -  8  5  4  5  9  -
 
 Legend: [1]=center, 1-3=top 3 (strong), 4-10=visible, -=not ranked
-SoLV: 57% (28/49 grid points in top 3)
-Avg Rank: 3.4 | Weakest: NE quadrant (avg rank 7.2)
+SoLV: 59% (29/49 grid points in top 3)
+Avg Rank: 3.6 (45 ranked points) | Weakest: south row (avg rank 6.2, 2 points unranked)
 ```
+
+(Invented example data; the summary lines are computed from this grid.)
 
 ### Color Mapping (for enhanced output)
 
@@ -136,7 +153,7 @@ For comprehensive analysis, scan 2-3 keywords on the same grid:
 2. Brand + location (e.g., "Smith Dental Austin")
 3. Long-tail intent (e.g., "emergency dentist near me")
 
-**Cost for 3-keyword 7x7 scan:** 147 API calls = ~$0.29 (live) or ~$0.088 (standard)
+**Cost for 3-keyword 7x7 scan:** 147 tasks = ~$0.29 (live) or ~$0.088 (standard queue, up to 45 min)
 
 ---
 
