@@ -201,7 +201,7 @@ No platform citation-share percentages are used (none verified from a primary so
 
 ### DataForSEO Integration (Optional)
 
-If DataForSEO MCP tools are available, use `ai_optimization_chat_gpt_scraper` to check what ChatGPT web search returns for target queries and `ai_opt_llm_ment_search` with `ai_opt_llm_ment_top_domains` for LLM mention tracking across AI platforms. Label results "third-party sampling, not vendor data".
+If DataForSEO MCP is detected (v3: the `dataforseo` server's `api_request` tool; deprecated v2: per-endpoint tools such as `serp_organic_live_advanced`), use POST `/v3/ai_optimization/chat_gpt/llm_scraper/live/advanced` (`ai_optimization_chat_gpt_scraper`) to check what ChatGPT web search returns for target queries, and `/v3/ai_optimization/llm_mentions/search_mentions/live` (`ai_opt_llm_ment_search`) with `/v3/ai_optimization/llm_mentions/top_mentioned_domains/live` (`ai_opt_llm_ment_top_domains`) for LLM mention tracking. LLM Mentions costs $0.1 per request plus $0.001 per row (DataForSEO pricing, 2026-09-25): confirm before large pulls. Label results "third-party sampling, not vendor data".
 
 ---
 

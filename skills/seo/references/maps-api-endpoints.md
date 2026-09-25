@@ -11,11 +11,14 @@ pages, fetched 2026-09-25. Sources, dates and removed claims: `local-eeat-eviden
 
 - `dataforseo-mcp-server` 3.x (npm `latest` is 3.1.1, 2026-08-25) exposes four generic tools:
   `api_request`, `docs_search`, `docs_index`, `docs_list_sections`. Call endpoints by path,
-  e.g. `api_request` with path `/v3/serp/google/maps/live/advanced`. It uses `.ai` paths by
-  default; set `noAiMode: true` for the standard path.
+  e.g. `api_request` with path `/v3/serp/google/maps/live/advanced` and the task in `data`.
+  It uses `.ai` paths by default (cropped response, no `cost`, `depth` defaults to 10); set
+  `noAiMode: true` for the standard path, for `cost`, and for `task_post` calls (DataForSEO
+  documents `.ai` for Live and Task GET endpoints only).
 - The deprecated v2 server exposed one tool per endpoint, e.g.
   `business_data_business_listings_search`. Detect either.
-- `extensions/dataforseo/install.sh` installs the unpinned package, so new installs get v3.
+- `extensions/dataforseo/install.sh` installs `dataforseo-mcp-server@3` (major pinned), so new
+  installs get v3 and a future 4.x cannot replace it silently. v3.1.x needs Node.js 22+.
 
 ---
 

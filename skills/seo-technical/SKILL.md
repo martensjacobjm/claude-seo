@@ -167,7 +167,7 @@ Google updated its JavaScript SEO documentation in December 2025 with critical c
 
 ## DataForSEO Integration (Optional)
 
-If DataForSEO MCP tools are available, use `on_page_instant_pages` for real page analysis (status codes, page timing, broken links, on-page checks), `on_page_lighthouse` for Lighthouse audits (performance, accessibility, SEO scores), and `domain_analytics_technologies_domain_technologies` for technology stack detection.
+If DataForSEO MCP is detected (v3: the `dataforseo` server's `api_request` tool; deprecated v2: per-endpoint tools such as `serp_organic_live_advanced`), use POST `/v3/on_page/instant_pages` (`on_page_instant_pages`) for real page analysis (status codes, page timing, broken links, on-page checks), `/v3/on_page/lighthouse/live/json` (`on_page_lighthouse`) for Lighthouse audits (performance, accessibility, SEO scores), and `/v3/domain_analytics/technologies/domain_technologies/live` (`domain_analytics_technologies_domain_technologies`) for technology stack detection. Paths are for v3 `api_request`; the v2 tool name is in parentheses. Map: `skills/seo-dataforseo/references/tool-catalog.md`.
 
 ## Google API Integration (Optional)
 

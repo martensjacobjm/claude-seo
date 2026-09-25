@@ -204,10 +204,11 @@ extensions/
 │   ├── install.ps1                # Windows installer
 │   ├── uninstall.sh               # Unix uninstaller
 │   ├── uninstall.ps1              # Windows uninstaller
-│   ├── field-config.json          # API response field filtering
+│   ├── field-config.json          # v3 field filter (keyed by endpoint path)
 │   ├── skills/
 │   │   └── seo-dataforseo/
-│   │       └── SKILL.md           # Sub-skill (22 commands)
+│   │       ├── SKILL.md           # Sub-skill (23 commands)
+│   │       └── references/tool-catalog.md  # v2 tool name -> v3 endpoint map
 │   ├── agents/
 │   │   └── seo-dataforseo.md      # Subagent
 │   └── docs/
@@ -246,7 +247,7 @@ extensions/
 
 | Extension | Package | What it Adds |
 |-----------|---------|-------------|
-| **DataForSEO** | `dataforseo-mcp-server` | 22 commands: live SERP, keywords, backlinks, on-page analysis, content analysis, business listings, AI visibility, LLM mentions |
+| **DataForSEO** | `dataforseo-mcp-server@3` | 23 commands via v3 `api_request`: live SERP (organic, images, YouTube), keywords, backlinks, on-page analysis, content analysis, business listings, AI visibility, LLM mentions |
 | **Banana Image Gen** | `@ycse/nanobanana-mcp` | 6 commands: OG image, hero image, product photo, infographic, custom, and batch generation via Gemini AI |
 
 ### Extension Convention

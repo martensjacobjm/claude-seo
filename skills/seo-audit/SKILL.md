@@ -118,7 +118,7 @@ Delay between requests: 1 second
 
 ## DataForSEO Integration (Optional)
 
-If DataForSEO MCP tools are available, spawn the `seo-dataforseo` agent alongside existing subagents to enrich the audit with live data: real SERP positions, backlink profiles with spam scores, on-page analysis (Lighthouse), business listings, and AI visibility checks (ChatGPT scraper, LLM mentions).
+If DataForSEO MCP is detected (v3: the `dataforseo` server's `api_request` tool; deprecated v2: per-endpoint tools such as `serp_organic_live_advanced`), spawn the `seo-dataforseo` agent alongside existing subagents to enrich the audit with live data: real SERP positions, backlink profiles with spam scores, on-page analysis (Lighthouse), business listings, and AI visibility checks (ChatGPT scraper, LLM mentions).
 
 ## Google API Integration (Optional)
 

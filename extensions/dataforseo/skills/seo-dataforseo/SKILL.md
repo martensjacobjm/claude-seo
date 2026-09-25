@@ -24,7 +24,7 @@ metadata:
 Live search data via the DataForSEO MCP server. Provides real-time SERP results
 (organic + images), keyword metrics, backlink profiles, on-page analysis, content
 analysis, business listings, AI visibility checking, and LLM mention tracking
-across 10 DataForSEO APIs, called by endpoint path.
+across 9 DataForSEO APIs, called by endpoint path.
 
 ## Prerequisites
 
@@ -367,7 +367,7 @@ Track how LLMs mention brands, domains, and topics. Critical for GEO. Measures a
 
 **Output:** LLM mention count, top cited domains with frequency, top cited pages, mention trends over time, cross-platform visibility scores.
 
-**Advanced:** `multi_target_metrics/live` (v2: `ai_opt_llm_ment_cross_agg_metrics`) for multi-target comparison (how mentions differ across ChatGPT, Claude, Perplexity, etc.).
+**Advanced:** POST `/v3/ai_optimization/llm_mentions/multi_target_metrics/live` (v2: `ai_opt_llm_ment_cross_agg_metrics`) for multi-target comparison (how mentions differ across ChatGPT, Claude, Perplexity, etc.).
 
 ---
 

@@ -295,7 +295,7 @@ Optional add-ons that integrate external data sources via MCP servers.
 
 ### DataForSEO
 
-Live SERP data, keyword research, backlinks, on-page analysis, content analysis, business listings, AI visibility checking, and LLM mention tracking. 22 commands across 9 API modules.
+Live SERP data, keyword research, backlinks, on-page analysis, content analysis, business listings, AI visibility checking, and LLM mention tracking. 23 commands across 9 DataForSEO APIs, via `dataforseo-mcp-server@3` (its `api_request` tool; the deprecated v2 per-endpoint tools still work as a fallback).
 
 ```bash
 # Install (requires DataForSEO account)

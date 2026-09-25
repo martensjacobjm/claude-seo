@@ -180,14 +180,14 @@ Sorted by file size impact (largest savings first):
 
 ## Image SERP Analysis
 
-When DataForSEO MCP is available, enhance the image audit with competitive data.
+When DataForSEO MCP v3 is detected (the `dataforseo` server's `api_request` tool), enhance the image audit with competitive data. The deprecated v2 server had no Google Images tool.
 
 ### `/seo images serp <keyword>`
 
 Cross-reference on-page images with Google Images SERP rankings.
 
 **Workflow:**
-1. Fetch Google Images results via `serp_google_images_live_advanced` (depth=100)
+1. Fetch Google Images results: `api_request` POST `/v3/serp/google/images/live/advanced` with `depth: 100` (billed per SERP of up to 100 results; `site:`/`filetype:` operators cost 5x)
 2. Extract: top domains, image types, alt text patterns
 3. Output competitor image SERP landscape
 
@@ -203,7 +203,7 @@ Cross-reference on-page images with Google Images SERP rankings.
 - **Format distribution**: WebP vs JPEG vs PNG in top results
 - **Opportunity score**: keywords where you have page rankings but no image presence
 
-If DataForSEO MCP is not available, inform user and suggest installing the extension.
+If `api_request` is not available (no DataForSEO MCP, or only the v2 server), inform the user and suggest installing the extension.
 
 ---
 

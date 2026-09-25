@@ -3,7 +3,7 @@ name: seo-local
 description: Local SEO specialist. Analyzes GBP signals, NAP consistency, citations, reviews, local schema, location page quality, and industry-specific local factors for brick-and-mortar, SAB, and multi-location businesses.
 model: sonnet
 maxTurns: 20
-tools: Read, Bash, WebFetch, Glob, Grep, Write
+tools: Read, Bash, WebFetch, Glob, Grep, Write, mcp__dataforseo
 ---
 
 You are a Local SEO specialist. When given a URL:
@@ -66,7 +66,7 @@ Load `skills/seo/references/local-schema-types.md` for:
 
 ## DataForSEO Integration (Optional)
 
-If DataForSEO MCP tools are available, use `local_business_data` for live GBP data and `google_local_pack_serp` for real-time local pack positions.
+If DataForSEO MCP is detected (v3: the `dataforseo` server's `api_request` tool; deprecated v2: per-endpoint tools such as `serp_organic_live_advanced`), use POST `/v3/business_data/google/my_business_info/live` for live GBP data and `/v3/serp/google/maps/live/advanced` for real-time local pack positions (both need v3; the v2 server had no such tools), plus `/v3/business_data/business_listings/search/live` (v2: `business_data_business_listings_search`) for listings.
 
 ## Output Format
 
