@@ -32,7 +32,7 @@ claude-seo/
     seo-images/SKILL.md          # Image optimization analysis
     seo-geo/                     # AI search / GEO optimization
       SKILL.md
-      references/                # Evidence register (1 file: geo-evidence.md)
+      references/                # Evidence register + worked examples (geo-evidence.md, geo-examples.md)
     seo-local/SKILL.md           # Local SEO (GBP, citations, reviews, map pack)
     seo-maps/SKILL.md            # Maps intelligence (geo-grid, GBP audit, reviews, competitors)
     seo-plan/SKILL.md            # Strategic SEO planning
@@ -89,6 +89,7 @@ claude-seo/
     mobile_analysis.py           # Mobile rendering analysis (gitignored, dev-only)
     generate_setup_guide.py      # Setup guide generator (gitignored, dev-only)
   schema/                          # Schema.org JSON-LD templates
+  tests/                           # pytest suite + synthetic fixtures (run: python -m pytest tests/)
   extensions/                      # Optional add-on install helpers
     dataforseo/                  # DataForSEO MCP install scripts
     firecrawl/                   # Firecrawl MCP install scripts
