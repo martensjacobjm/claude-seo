@@ -79,6 +79,10 @@ GENERIC_EXTS = {
     ".properties", ".xml", ".html", ".htm", ".rb", ".config",
 }
 
+# Programming languages: an unquoted right-hand side is code, not a literal.
+CODE_EXTS = {".py", ".js", ".mjs", ".cjs", ".ts", ".php", ".rb", ".ps1", ".psm1",
+             ".html", ".htm"}
+
 # --- Known token formats -----------------------------------------------------
 # (rule id, regex, severity, capture group holding the secret)
 TOKEN_RULES: List[Tuple[str, "re.Pattern[str]", str, int]] = [
@@ -108,11 +112,11 @@ URL_CRED_RE = re.compile(
 # Command-line credentials.
 CLI_RULES: List[Tuple[str, "re.Pattern[str]", str]] = [
     ("curl-user-password", re.compile(
-        r"\bcurl\b[^\n|;&]*?(?:\s-u\s*|\s--user[\s=]+)[\"']?[^\s:\"']+:([^\s\"']+)"), "high"),
-    ("sshpass-password", re.compile(r"\bsshpass\s+-p\s*[\"']?([^\s\"']+)"), "high"),
-    ("lftp-user-password", re.compile(r"\blftp\b[^\n]*?\s-u\s+[\"']?[^\s,\"']+,([^\s\"']+)"), "high"),
-    ("putty-pw-flag", re.compile(r"\b(?:pscp|plink|psftp)(?:\.exe)?\b[^\n]*?\s-pw\s+[\"']?([^\s\"']+)"), "high"),
-    ("winscp-password", re.compile(r"(?i)/password=[\"']?([^\s\"']+)"), "high"),
+        r"\bcurl\b[^\n|;&]*?(?:\s-u\s*|\s--user[\s=]+)[\"']?[^\s:\"'`]+:([^\s\"'`]+)"), "high"),
+    ("sshpass-password", re.compile(r"\bsshpass\s+-p\s*[\"']?([^\s\"'`]+)"), "high"),
+    ("lftp-user-password", re.compile(r"\blftp\b[^\n]*?\s-u\s+[\"']?[^\s,\"'`]+,([^\s\"'`]+)"), "high"),
+    ("putty-pw-flag", re.compile(r"\b(?:pscp|plink|psftp)(?:\.exe)?\b[^\n]*?\s-pw\s+[\"']?([^\s\"'`]+)"), "high"),
+    ("winscp-password", re.compile(r"(?i)/password=[\"']?([^\s\"'`]+)"), "high"),
 ]
 CURL_INSECURE_RE = re.compile(r"\bcurl\b[^\n|;&]*?(?:\s--insecure\b|\s-[a-zA-Z]*k[a-zA-Z]*\b)")
 
@@ -171,6 +175,13 @@ def is_placeholder(value: str) -> bool:
         return True
     if PLACEHOLDER_RE.match(v):
         return True
+    low = v.lower()
+    if "xxx" in low or "..." in v or "\u2026" in v or "***" in v:
+        return True  # "mozscape-xxxxxxxx", "AIzaSy...", "ab***cd"
+    if ("{" in v and "}" in v) or "${" in v or "%(" in v or "{{" in v:
+        return True  # template / f-string interpolation
+    if re.search(r"[\[\]()\\]", v) and not re.search(r"[A-Za-z0-9]{6,}[^A-Za-z0-9\s]*$", v):
+        return True  # regex / code fragments
     return False
 
 
@@ -228,8 +239,13 @@ def key_is_credential_name(key: str) -> bool:
     return False
 
 
-def _grade_generic(key: str, value: str) -> Optional[str]:
+def _grade_generic(key: str, value: str, path: str = "") -> Optional[str]:
     """Return severity for a generic key/value pair, or None to drop it."""
+    quoted_lit = value[:1] in "\"'`"
+    if not quoted_lit and os.path.splitext(path.lower())[1] in CODE_EXTS:
+        return None  # `password = get_password()`, `api_key: Optional[str]`
+    if quoted_lit and value.strip("\"'`").count(" ") >= 2:
+        return None  # prose such as `should pass: "Would this page be worth ..."`
     if not key_is_credential_name(key.strip("$*`\"'")):
         return None
     quoted = value[:1] in "\"'`"
@@ -283,6 +299,8 @@ def scan_text(text: str, path: str, registry: SecretRegistry,
 
         for rule, rx, sev, grp in TOKEN_RULES:
             for m in rx.finditer(line):
+                if rule == "private-key-block" and ("..." in line or "\u2026" in line):
+                    continue  # documentation sample: "-----BEGIN PRIVATE KEY-----\n...\n"
                 add(rule, sev, m.group(grp), m.start(grp), m.end(grp))
         for m in URL_CRED_RE.finditer(line):
             pw = m.group(3)
@@ -303,7 +321,7 @@ def scan_text(text: str, path: str, registry: SecretRegistry,
         if generic_ok:
             for m in GENERIC_RE.finditer(line):
                 key, val = m.group("key"), m.group("val")
-                sev = _grade_generic(key, val)
+                sev = _grade_generic(key, val, path)
                 if not sev:
                     continue
                 raw = val.strip("\"'`").strip()

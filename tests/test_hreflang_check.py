@@ -35,7 +35,7 @@ def test_code_tables_and_rules():
     assert hc.validate_code("en-uk")[0][0] == "error"          # reserved, use GB
     assert hc.validate_code("es-419")[0][0] == "error"         # not supported by Google
     assert hc.validate_code("eng")[0][0] == "error"            # ISO 639-2
-    assert hc.validate_code("SE")[0][0] == "warning"           # Northern Sami, not Sweden
+    assert hc.validate_code("SE")[0][0] == "info"              # Northern Sami, not Sweden
     assert hc.validate_code("US")[0][0] == "error"             # region alone
     assert hc.validate_code("en-gb")[0][0] == "info"           # case-insensitive
 

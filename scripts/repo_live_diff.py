@@ -649,6 +649,7 @@ def decide(result: dict, git: dict) -> Tuple[str, List[str]]:
     """Turn per-page states and date/year signals into a verdict + evidence."""
     s = result["summary"]
     ev: List[str] = []
+    result["signals"] = {"live_newer": 0, "local_newer": 0}
     if not (s["differing"] or s["only_local"] or s["only_live"]):
         return "in sync", [f"All {s['identical']} local pages match the live site "
                            "(meta fields and visible-text hash)."]
@@ -683,6 +684,12 @@ def decide(result: dict, git: dict) -> Tuple[str, List[str]]:
     if git.get("is_repo") and git.get("head_date"):
         ev.append(f"Local HEAD {git.get('head_commit')} committed {git['head_date']} "
                   "(commit dates show when files were committed, not when content was written).")
+    result["signals"] = {"live_newer": older, "local_newer": newer}
+    if older and newer:
+        lean = ("mostly older" if older >= 2 * newer else
+                "mostly newer" if newer >= 2 * older else "mixed")
+        ev.insert(0, f"Signals: {older} say the live site is newer, {newer} say the repo is newer "
+                     f"({lean}). Diverged means a blind upload would overwrite live-only changes.")
     if older and not newer:
         return "repo appears older", ev
     if newer and not older:

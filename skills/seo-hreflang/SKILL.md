@@ -20,21 +20,28 @@ Validate existing hreflang implementations or generate correct hreflang tags
 for multi-language and multi-region sites. Supports HTML, HTTP header, and
 XML sitemap implementations.
 
+**Script:** `python scripts/hreflang_check.py <url> [--crawl-sitemap]` collects
+hreflang from all three sources and runs checks 1-7 below plus duplicate codes,
+relative URLs and target status codes (JSON; exit 1 on errors). Rules follow
+Google's [localized versions](https://developers.google.com/search/docs/specialty/international/localized-versions)
+page; see `skills/seo/references/site-safety-tools.md`.
+
 ## Validation Checks
 
 ### 1. Self-Referencing Tags
-- Every page must include an hreflang tag pointing to itself
+- Every page must include an hreflang tag pointing to itself ("each language
+  version must list itself as well as all other language versions", Google)
 - The self-referencing URL must exactly match the page's canonical URL
-- Missing self-referencing tags cause Google to ignore the entire hreflang set
+- URLs must be fully qualified (`https://example.com/foo`, not `/foo` or `//example.com/foo`)
 
 ### 2. Return Tags
 - If page A links to page B with hreflang, page B must link back to page A
 - Every hreflang relationship must be bidirectional (A→B and B→A)
-- Missing return tags invalidate the hreflang signal for both pages
+- Pairs without return tags are ignored; Google still processes the pairs that do link back
 - Check all language versions reference each other (full mesh)
 
 ### 3. x-default Tag
-- Required: designates the fallback page for unmatched languages/regions
+- Recommended (not required by Google): designates the fallback page for unmatched languages/regions
 - Typically points to the language selector page or English version
 - Only one x-default per set of alternates
 - Must also have return tags from all other language versions
@@ -44,14 +51,15 @@ XML sitemap implementations.
 - Common errors:
   - `eng` instead of `en` (ISO 639-2, not valid for hreflang)
   - `jp` instead of `ja` (incorrect code for Japanese)
-  - `zh` without region qualifier (ambiguous; use `zh-Hans` or `zh-Hant`)
+  - `zh` without script or region (ambiguous; use `zh-Hans`/`zh-Hant` (ISO 15924 script) or `zh-TW`)
+  - `se` for Sweden (`se` is Northern Sami; Swedish is `sv`, e.g. `sv-SE`)
 
 ### 5. Region Code Validation
 - Optional region qualifier uses ISO 3166-1 Alpha-2 (e.g., `en-US`, `en-GB`, `pt-BR`)
-- Format: `language-REGION` (lowercase language, uppercase region)
+- Format: `language[-Script]-REGION`; values are case-insensitive, uppercase region is convention
 - Common errors:
-  - `en-uk` instead of `en-GB` (UK is not a valid ISO 3166-1 code)
-  - `es-LA` (Latin America is not a country; use specific countries)
+  - `en-uk` instead of `en-GB` (UK is reserved; Google ignores it, as `EU` and `UN`)
+  - `es-LA` or `es-419` (not ISO 3166-1 alpha-2 countries; Google does not support them)
   - Region without language prefix
 
 ### 6. Canonical URL Alignment
@@ -77,7 +85,7 @@ XML sitemap implementations.
 |-------|----------|-----|
 | Missing self-referencing tag | Critical | Add hreflang pointing to same page URL |
 | Missing return tags (A→B but no B→A) | Critical | Add matching return tags on all alternates |
-| Missing x-default | High | Add x-default pointing to fallback/selector page |
+| Missing x-default | Low (recommended) | Add x-default pointing to fallback/selector page |
 | Invalid language code (e.g., `eng`) | High | Use ISO 639-1 two-letter codes |
 | Invalid region code (e.g., `en-uk`) | High | Use ISO 3166-1 Alpha-2 codes |
 | Hreflang on non-canonical URL | High | Move hreflang to canonical URL only |

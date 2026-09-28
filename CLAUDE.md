@@ -22,7 +22,7 @@ claude-seo/
   skills/                            # 19 skills (auto-discovered)
     seo/                           # Main orchestrator skill
       SKILL.md                     # Entry point, routing table, core rules
-      references/                  # On-demand knowledge files (14 files, incl. ranking-signals.md, local-eeat-evidence.md)
+      references/                  # On-demand knowledge files (17 files, incl. ranking-signals.md, local-eeat-evidence.md, site-crawler.md, free-keyword-sources.md, site-safety-tools.md)
     seo-audit/SKILL.md            # Full site audit with parallel agents
     seo-page/SKILL.md            # Deep single-page analysis
     seo-technical/SKILL.md       # Technical SEO (9 categories)
@@ -63,7 +63,7 @@ claude-seo/
     seo-image-gen.md             # SEO image audit analyst
   hooks/                           # Quality gate hooks
     hooks.json                   # PostToolUse schema validation (validate-schema.py reads the hook event on stdin)
-  scripts/                         # Python execution scripts (22 tracked + 2 dev-only)
+  scripts/                         # Python execution scripts (27 tracked + 2 dev-only)
     google_auth.py               # Credential management (OAuth, SA, API key, 4-tier detection)
     backlinks_auth.py            # Backlink API credential management (Moz, Bing)
     moz_api.py                   # Moz Link Explorer API (DA/PA, spam, domains, anchors)
@@ -84,6 +84,11 @@ claude-seo/
     keyword_planner.py           # Google Ads Keyword Planner
     fetch_page.py                # Page fetcher with UA rotation
     parse_html.py                # HTML parser for SEO elements
+    site_crawl.py                # Free built-in crawler: map/crawl/scrape (Firecrawl alternative, SSRF-safe, robots-aware)
+    free_keyword_data.py         # Free keyword data (GSC, Bing Webmaster, Keyword Planner; Trends status; Wikipedia proxy)
+    secret_scan.py               # Credential scanner (working tree + git history, masked output)
+    repo_live_diff.py            # Local site repo vs live site diff (pre-deploy gate) + SafeFetcher
+    hreflang_check.py            # Hreflang validator (HTML, Link header, sitemap)
     capture_screenshot.py        # Playwright screenshots
     analyze_visual.py            # Visual analysis helper
     mobile_analysis.py           # Mobile rendering analysis (gitignored, dev-only)
@@ -125,6 +130,10 @@ claude-seo/
 | `/seo backlinks setup` | Setup instructions for free backlink APIs |
 | `/seo backlinks verify <url>` | Verify known backlinks still exist |
 | `/seo backlinks ai-performance [<url>] --file <export>` | Parse a Bing Webmaster Tools AI Performance CSV/Excel export (not a backlink metric) |
+| `python scripts/site_crawl.py map\|crawl\|scrape <url>` | Free built-in crawl (used when Firecrawl MCP is absent) |
+| `python scripts/free_keyword_data.py sources` | Free keyword data sources, checked before paid DataForSEO |
+| `python scripts/secret_scan.py <path> --git-history` | Find committed credentials (run before publishing or deploying) |
+| `python scripts/repo_live_diff.py <dir> <url>` | Compare a site repo with the live site (deploy gate, exit 1 unless in sync) |
 | `/seo firecrawl [command] <url>` | Full-site crawling and site mapping (extension) |
 | `/seo dataforseo [command]` | Live SEO data via DataForSEO MCP (extension) |
 | `/seo image-gen [use-case] <desc>` | AI image generation for SEO assets (extension) |

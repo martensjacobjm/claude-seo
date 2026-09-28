@@ -92,6 +92,7 @@ Allow: /
   - X-Content-Type-Options
   - Referrer-Policy
 - HSTS preload: check preload list inclusion for high-security sites
+- Site repo available locally? Before any deploy or renovation run `python scripts/secret_scan.py <dir> --git-history` (committed SFTP/API credentials) and `python scripts/repo_live_diff.py <dir> <url>` (repo older than live site). Exit 1 = stop. See `skills/seo/references/site-safety-tools.md`
 
 ### 4. URL Structure
 - Clean URLs: descriptive, hyphenated, no query parameters for content

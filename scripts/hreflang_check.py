@@ -107,8 +107,6 @@ AMBIGUOUS_LANG = {
     "se": "'se' is Northern Sami; Swedish is 'sv' (Sweden as region: sv-SE)",
     "be": "'be' is Belarusian; Belgium is a region, e.g. nl-BE/fr-BE/de-BE",
     "ee": "'ee' is Ewe; Estonian is 'et'", "si": "'si' is Sinhala; Slovenian is 'sl'",
-    "ca": "'ca' is Catalan; for Canada use en-CA/fr-CA",
-    "ar": "'ar' is Arabic; for Argentina use es-AR",
 }
 
 
@@ -136,7 +134,7 @@ def validate_code(code: str) -> List[Tuple[str, str]]:
                                 + (f"; did you mean {hint}?" if hint else "")))
         return issues
     if len(parts) == 1 and lang in AMBIGUOUS_LANG:
-        issues.append(("warning", f"'{raw}': {AMBIGUOUS_LANG[lang]}"))
+        issues.append(("info", f"'{raw}': {AMBIGUOUS_LANG[lang]}"))
     rest = parts[1:]
     if rest and len(rest[0]) == 4 and rest[0].isalpha():
         script = rest[0].title()
