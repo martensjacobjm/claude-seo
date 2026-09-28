@@ -8,10 +8,9 @@ Usage:
 """
 
 import argparse
-import ipaddress
-import socket
+import os
 import sys
-from typing import Optional
+from typing import Callable, Optional
 from urllib.parse import urlparse
 
 try:
@@ -19,6 +18,9 @@ try:
 except ImportError:
     print("Error: requests library required. Install with: pip install requests")
     sys.exit(1)
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from safe_fetch import MAX_BODY_BYTES, safe_request  # noqa: E402
 
 
 DEFAULT_USER_AGENT = (
@@ -50,6 +52,7 @@ def fetch_page(
     follow_redirects: bool = True,
     max_redirects: int = 5,
     user_agent: Optional[str] = None,
+    validator: Optional[Callable[[str], bool]] = None,
 ) -> dict:
     """
     Fetch a web page and return response details.
@@ -59,6 +62,9 @@ def fetch_page(
         timeout: Request timeout in seconds
         follow_redirects: Whether to follow redirects
         max_redirects: Maximum number of redirects to follow
+        user_agent: Custom User-Agent string
+        validator: URL check for every hop (default: validate_url with DNS
+            resolution); injectable for tests, never relaxed by env vars
 
     Returns:
         Dictionary with:
@@ -89,54 +95,54 @@ def fetch_page(
         result["error"] = f"Invalid URL scheme: {parsed.scheme}"
         return result
 
-    # SSRF prevention: block private/internal IPs
-    try:
-        resolved_ip = socket.gethostbyname(parsed.hostname)
-        ip = ipaddress.ip_address(resolved_ip)
-        if ip.is_private or ip.is_loopback or ip.is_reserved:
-            result["error"] = f"Blocked: URL resolves to private/internal IP ({resolved_ip})"
-            return result
-    except (socket.gaierror, ValueError):
-        pass  # DNS resolution failure handled by requests below
+    # SSRF prevention: redirects are followed manually and every hop is
+    # checked with validate_url(url, resolve=True) (or the injected validator)
+    # before it is requested, so a public URL cannot bounce to 127.0.0.1,
+    # 169.254.169.254 or an RFC 1918 address.
+    headers = dict(DEFAULT_HEADERS)
+    if user_agent:
+        headers["User-Agent"] = user_agent
 
-    try:
-        session = requests.Session()
-        session.max_redirects = max_redirects
+    res = safe_request(
+        url,
+        session=requests.Session(),
+        headers=headers,
+        timeout=timeout,
+        max_redirects=max_redirects,
+        max_bytes=MAX_BODY_BYTES,
+        validator=validator,
+        follow_redirects=follow_redirects,
+    )
 
-        headers = dict(DEFAULT_HEADERS)
-        if user_agent:
-            headers["User-Agent"] = user_agent
-
-        response = session.get(
-            url,
-            headers=headers,
-            timeout=timeout,
-            allow_redirects=follow_redirects,
-        )
-
-        result["url"] = response.url
-        result["status_code"] = response.status_code
-        result["content"] = response.text
-        result["headers"] = dict(response.headers)
+    if res.error_kind == "blocked":
+        result["error"] = f"Blocked: {res.final_url} is not a public address (SSRF protection)"
+    elif res.error_kind == "too_many_redirects":
+        result["error"] = f"Too many redirects (max {max_redirects})"
+    elif res.error_kind == "request":
+        e = res.exception
+        if isinstance(e, requests.exceptions.Timeout):
+            result["error"] = f"Request timed out after {timeout} seconds"
+        elif isinstance(e, requests.exceptions.SSLError):
+            result["error"] = f"SSL error: {e}"
+        elif isinstance(e, requests.exceptions.ConnectionError):
+            result["error"] = f"Connection error: {e}"
+        else:
+            result["error"] = f"Request failed: {e}"
+    elif res.error_kind == "read":
+        result["error"] = f"Request failed: {res.exception}"
+    else:
+        result["url"] = res.final_url
+        result["status_code"] = res.status
+        result["content"] = res.text
+        result["headers"] = res.headers
 
         # Track redirect chain with status codes
-        if response.history:
-            result["redirect_chain"] = [r.url for r in response.history]
+        if res.hops:
+            result["redirect_chain"] = [h["url"] for h in res.hops]
             result["redirect_details"] = [
-                {"url": r.url, "status_code": r.status_code}
-                for r in response.history
+                {"url": h["url"], "status_code": h["status"]}
+                for h in res.hops
             ]
-
-    except requests.exceptions.Timeout:
-        result["error"] = f"Request timed out after {timeout} seconds"
-    except requests.exceptions.TooManyRedirects:
-        result["error"] = f"Too many redirects (max {max_redirects})"
-    except requests.exceptions.SSLError as e:
-        result["error"] = f"SSL error: {e}"
-    except requests.exceptions.ConnectionError as e:
-        result["error"] = f"Connection error: {e}"
-    except requests.exceptions.RequestException as e:
-        result["error"] = f"Request failed: {e}"
 
     return result
 

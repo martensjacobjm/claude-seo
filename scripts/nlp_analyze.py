@@ -14,7 +14,7 @@ Usage:
 import argparse
 import json
 import sys
-from typing import Optional
+from typing import Callable, Optional
 
 try:
     import requests
@@ -23,11 +23,13 @@ except ImportError:
     sys.exit(1)
 
 try:
-    from google_auth import get_api_key, validate_url
+    from google_auth import get_api_key
+    from safe_fetch import safe_request
 except ImportError:
     import os
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-    from google_auth import get_api_key, validate_url
+    from google_auth import get_api_key
+    from safe_fetch import safe_request
 
 NLP_ENDPOINT = "https://language.googleapis.com/v2/documents:annotateText"
 
@@ -190,6 +192,7 @@ def analyze_url(
     url: str,
     features: Optional[list] = None,
     api_key: Optional[str] = None,
+    validator: Optional[Callable[[str], bool]] = None,
 ) -> dict:
     """
     Fetch a URL's text content and analyze it.
@@ -198,22 +201,27 @@ def analyze_url(
         url: URL to fetch and analyze.
         features: NLP features to extract.
         api_key: API key override.
+        validator: URL check for every redirect hop (default: validate_url
+            with DNS resolution); injectable for tests.
 
     Returns:
         Dictionary with NLP analysis results.
     """
-    if not validate_url(url):
+    # Fetch the page text (manual redirects, every hop SSRF-validated)
+    res = safe_request(url, timeout=30, validator=validator, headers={
+        "User-Agent": "Mozilla/5.0 (compatible; ClaudeSEO/1.7 NLP Analyzer)"
+    })
+    if res.error_kind == "blocked" and res.hops:
+        return {"error": f"Redirect to a non-public address blocked: {res.final_url}"}
+    if res.error_kind == "blocked":
         return {"error": "Invalid URL. Only http/https URLs to public hosts are accepted."}
-
-    # Fetch the page text
+    if res.error:
+        return {"error": f"Could not fetch URL: {res.exception or res.error}"}
     try:
-        resp = requests.get(url, timeout=30, headers={
-            "User-Agent": "Mozilla/5.0 (compatible; ClaudeSEO/1.7 NLP Analyzer)"
-        })
-        resp.raise_for_status()
-        html = resp.text
+        res.response.raise_for_status()
     except requests.exceptions.RequestException as e:
         return {"error": f"Could not fetch URL: {e}"}
+    html = res.text
 
     # Extract text from HTML (simple approach)
     try:

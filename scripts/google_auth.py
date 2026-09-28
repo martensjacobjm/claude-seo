@@ -363,37 +363,69 @@ def _exchange_code(client: dict, code: str):
         sys.exit(1)
 
 
-def validate_url(url: str) -> bool:
+def _ip_is_public(ip) -> bool:
+    """True for a globally routable unicast address (IPv4-mapped IPv6 unwrapped)."""
+    mapped = getattr(ip, "ipv4_mapped", None)
+    if mapped is not None:
+        ip = mapped
+    return not (not ip.is_global or ip.is_private or ip.is_loopback or ip.is_link_local
+                or ip.is_reserved or ip.is_multicast or ip.is_unspecified)
+
+
+def validate_url(url: str, resolve: bool = False) -> bool:
     """
     Validate a URL for use with Google APIs. Rejects private/loopback addresses.
 
     Args:
         url: URL string to validate.
+        resolve: Also resolve the hostname (DNS) and reject it when any address
+            is private, loopback, link-local, reserved, multicast or otherwise
+            not globally routable. Use this before fetching the URL yourself.
+            A name that does not resolve passes; the request then fails on its own.
 
     Returns:
         True if the URL is a valid public http/https URL, False otherwise.
     """
+    import ipaddress
+    import socket
     from urllib.parse import urlparse
 
-    parsed = urlparse(url)
+    try:
+        parsed = urlparse(url)
+        hostname = parsed.hostname
+    except ValueError:
+        return False
     if parsed.scheme not in ("http", "https"):
         return False
-    if not parsed.hostname:
+    if not hostname:
         return False
+    host = hostname.rstrip(".").lower()
     blocked = [
         "localhost", "127.0.0.1", "0.0.0.0", "::1",
         "metadata.google.internal",
     ]
-    if parsed.hostname in blocked:
+    if host in blocked or host.endswith(".localhost"):
         return False
-    # Block private IP ranges (10.x, 172.16-31.x, 192.168.x)
+    # Block private, loopback, link-local, reserved and multicast IP literals
     try:
-        import ipaddress
-        ip = ipaddress.ip_address(parsed.hostname)
-        if ip.is_private or ip.is_loopback or ip.is_link_local:
+        ip = ipaddress.ip_address(host.split("%", 1)[0])
+        if not _ip_is_public(ip):
             return False
     except ValueError:
         pass  # Not an IP address (hostname), which is fine
+    if not resolve:
+        return True
+    try:
+        infos = socket.getaddrinfo(host, None)
+    except (socket.gaierror, UnicodeError, OSError):
+        return True
+    for info in infos:
+        try:
+            ip = ipaddress.ip_address(str(info[4][0]).split("%", 1)[0])
+        except ValueError:
+            return False
+        if not _ip_is_public(ip):
+            return False
     return True
 
 

@@ -44,11 +44,9 @@ Politeness defaults:
 from __future__ import annotations
 
 import argparse
-import ipaddress
 import json
 import os
 import re
-import socket
 import sys
 import threading
 import time
@@ -65,7 +63,7 @@ PLUGIN_ROOT = os.path.dirname(SCRIPT_DIR)
 if SCRIPT_DIR not in sys.path:
     sys.path.insert(0, SCRIPT_DIR)
 
-from google_auth import validate_url  # noqa: E402  (stdlib-only import)
+from safe_fetch import default_validator  # noqa: E402  (validate_url(url, resolve=True))
 
 try:
     import requests
@@ -107,27 +105,6 @@ def default_user_agent() -> str:
 # --------------------------------------------------------------------------
 # URL safety and normalization
 # --------------------------------------------------------------------------
-
-def _ip_is_public(ip_text: str) -> bool:
-    try:
-        ip = ipaddress.ip_address(ip_text.split("%")[0])
-    except ValueError:
-        return False
-    return not (ip.is_private or ip.is_loopback or ip.is_link_local
-                or ip.is_reserved or ip.is_multicast or ip.is_unspecified)
-
-
-def default_validator(url: str) -> bool:
-    """validate_url() plus DNS resolution: every resolved address must be public."""
-    if not validate_url(url):
-        return False
-    host = urlparse(url).hostname or ""
-    try:
-        infos = socket.getaddrinfo(host, None)
-    except (socket.gaierror, UnicodeError, OSError):
-        return True  # unresolvable: the request itself will fail harmlessly
-    return all(_ip_is_public(info[4][0]) for info in infos)
-
 
 def ensure_scheme(url: str) -> str:
     """Add https:// when the user typed a bare host."""

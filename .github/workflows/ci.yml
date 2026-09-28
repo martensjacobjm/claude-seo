@@ -21,6 +21,7 @@ jobs:
       - name: Check Python syntax
         run: |
           python3 -m py_compile scripts/fetch_page.py
+          python3 -m py_compile scripts/safe_fetch.py
           python3 -m py_compile scripts/parse_html.py
           python3 -m py_compile scripts/analyze_visual.py
           python3 -m py_compile scripts/capture_screenshot.py

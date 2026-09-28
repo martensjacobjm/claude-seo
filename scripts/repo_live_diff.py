@@ -44,11 +44,9 @@ import argparse
 import difflib
 import fnmatch
 import hashlib
-import ipaddress
 import json
 import os
 import re
-import socket
 import subprocess
 import sys
 import time
@@ -69,43 +67,16 @@ _SCRIPTS_DIR = os.path.dirname(os.path.abspath(__file__))
 if _SCRIPTS_DIR not in sys.path:
     sys.path.insert(0, _SCRIPTS_DIR)
 from google_auth import validate_url  # noqa: E402
+from safe_fetch import MAX_BODY_BYTES, default_validator, safe_request  # noqa: E402
 
 USER_AGENT = ("Mozilla/5.0 (compatible; ClaudeSEO-SiteSafety/1.0; "
               "+https://github.com/AgriciDaniel/claude-seo)")
-REDIRECT_CODES = {301, 302, 303, 307, 308}
-MAX_BODY_BYTES = 5_000_000
 SKIP_DIRS = {".git", "node_modules", ".venv", "venv", "__pycache__", ".github"}
 
 
 # --- safe fetching ---------------------------------------------------------------
-
-def resolves_public(url: str) -> bool:
-    """True unless the host resolves to a non-public address.
-
-    DNS failures return True so the request itself reports the error; the
-    string-level validate_url() check has already run.
-    """
-    host = urlparse(url).hostname
-    if not host:
-        return False
-    try:
-        infos = socket.getaddrinfo(host, None)
-    except (socket.gaierror, UnicodeError, OSError):
-        return True
-    for info in infos:
-        try:
-            ip = ipaddress.ip_address(info[4][0].split("%", 1)[0])
-        except ValueError:
-            continue
-        if not ip.is_global or ip.is_multicast:
-            return False
-    return True
-
-
-def default_validator(url: str) -> bool:
-    """validate_url() from google_auth.py plus a resolved-IP check."""
-    return validate_url(url) and resolves_public(url)
-
+# The redirect loop and the validator live in safe_fetch.py (shared with
+# fetch_page.py, verify_backlinks.py and nlp_analyze.py).
 
 class SafeFetcher:
     """HTTP GET with per-hop URL validation, polite delay and a body cap.
@@ -136,47 +107,25 @@ class SafeFetcher:
                 time.sleep(remaining)
         self._last[host] = time.monotonic()
 
+    def _before_request(self, url: str) -> None:
+        self._wait(urlparse(url).netloc)
+        self.requests_made += 1
+
     def get(self, url: str) -> dict:
         """Fetch url following redirects manually; every hop is validated."""
-        result = {"url": url, "final_url": url, "status": None, "headers": {}, "text": "",
-                  "hops": [], "error": None, "blocked": False}
-        current = url
-        for _ in range(self.max_redirects + 1):
-            if not self.validator(current):
-                result.update(final_url=current, blocked=True,
-                              error=f"blocked: {current} failed URL validation "
-                                    "(private, loopback, link-local or metadata address)")
-                return result
-            self._wait(urlparse(current).netloc)
-            try:
-                self.requests_made += 1
-                resp = self.session.get(current, headers=self.headers, timeout=self.timeout,
-                                        allow_redirects=False, stream=True)
-            except requests.RequestException as exc:
-                result.update(final_url=current, error=f"{type(exc).__name__}: {exc}"[:300])
-                return result
-            loc = resp.headers.get("Location")
-            if resp.status_code in REDIRECT_CODES and loc:
-                nxt = urljoin(current, loc)
-                result["hops"].append({"url": current, "status": resp.status_code, "location": nxt})
-                resp.close()
-                current = nxt
-                continue
-            body = b""
-            try:
-                for chunk in resp.iter_content(65536):
-                    body += chunk
-                    if len(body) > MAX_BODY_BYTES:
-                        break
-            except requests.RequestException as exc:
-                result["error"] = f"read error: {exc}"[:300]
-            finally:
-                resp.close()
-            result.update(final_url=current, status=resp.status_code,
-                          headers={k.lower(): v for k, v in resp.headers.items()},
-                          text=_decode(body, resp.headers.get("Content-Type", "")))
-            return result
-        result.update(final_url=current, error=f"too many redirects (> {self.max_redirects})")
+        res = safe_request(url, session=self.session, headers=self.headers,
+                           timeout=self.timeout, max_redirects=self.max_redirects,
+                           max_bytes=MAX_BODY_BYTES, validator=self.validator,
+                           before_request=self._before_request)
+        result = {"url": url, "final_url": res.final_url, "status": res.status,
+                  "headers": {k.lower(): v for k, v in res.headers.items()},
+                  "text": "", "hops": res.hops, "error": res.error,
+                  "blocked": res.error_kind == "blocked"}
+        if res.error_kind == "blocked":
+            result["error"] = (f"blocked: {res.final_url} failed URL validation "
+                               "(private, loopback, link-local or metadata address)")
+        if res.status is not None:
+            result["text"] = _decode(res.body, res.headers.get("Content-Type", ""))
         return result
 
 

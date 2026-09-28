@@ -490,6 +490,11 @@ def fetch_wikipedia(keyword: str, project: str, months: int) -> dict:
     """Resolve keyword to the top Wikipedia article and fetch monthly user pageviews."""
     if requests is None:
         return {"error": "requests library not installed"}
+    # The language code becomes the host name, so only accept "<lang>.wikipedia"
+    # (a value such as "localhost:8080/?" would otherwise point the request at a
+    # local service).
+    if not re.fullmatch(r"[a-z][a-z0-9-]{0,31}\.wikipedia", project or ""):
+        return {"error": f"invalid Wikipedia project {project!r} (expected e.g. en.wikipedia)"}
     headers = {"User-Agent": USER_AGENT}
     lang = project.split(".")[0]
     try:
