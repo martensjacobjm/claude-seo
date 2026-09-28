@@ -63,7 +63,7 @@ claude-seo/
     seo-image-gen.md             # SEO image audit analyst
   hooks/                           # Quality gate hooks
     hooks.json                   # PostToolUse schema validation (validate-schema.py reads the hook event on stdin)
-  scripts/                         # Python execution scripts (27 tracked + 2 dev-only)
+  scripts/                         # Python execution scripts (28 tracked + 2 dev-only)
     google_auth.py               # Credential management (OAuth, SA, API key, 4-tier detection)
     backlinks_auth.py            # Backlink API credential management (Moz, Bing)
     moz_api.py                   # Moz Link Explorer API (DA/PA, spam, domains, anchors)
@@ -83,6 +83,7 @@ claude-seo/
     nlp_analyze.py               # Cloud Natural Language API
     keyword_planner.py           # Google Ads Keyword Planner
     fetch_page.py                # Page fetcher with UA rotation
+    safe_fetch.py                # SSRF-safe fetching: validate_public_url (literal + DNS), SafeFetcher (per-hop redirects, body cap, IP pinning)
     parse_html.py                # HTML parser for SEO elements
     site_crawl.py                # Free built-in crawler: map/crawl/scrape (Firecrawl alternative, SSRF-safe, robots-aware)
     free_keyword_data.py         # Free keyword data (GSC, Bing Webmaster, Keyword Planner; Trends status; Wikipedia proxy)
@@ -151,7 +152,7 @@ claude-seo/
 ## Security Rules
 
 - **Never commit credentials**: `.env`, `client_secret*.json`, `oauth-token.json`, `service_account*.json` are all in `.gitignore`
-- **URL validation**: All scripts that accept user URLs must call `validate_url()` from `google_auth.py` before making API calls. This blocks private IPs, loopback, and GCP metadata endpoints (SSRF protection).
+- **URL validation**: Scripts that only pass a user URL to a vendor API call `validate_url()` from `google_auth.py`. Scripts that connect to a user URL themselves must use `scripts/safe_fetch.py` (`validate_public_url()` / `SafeFetcher`): every redirect hop is validated, any resolved private, loopback, link-local or metadata address (incl. IPv4-mapped IPv6) is refused, and direct connections are pinned to the validated IP. Known limits: behind an HTTP(S) proxy the proxy resolves the target, and Playwright filters by URL only.
 - **OAuth tokens**: Never store `client_secret` in the token file. Read it from the client_secret.json file at runtime.
 - **No hardcoded paths**: Use `os.path.dirname(os.path.abspath(__file__))` for relative paths, never `/home/username/...`
 - **Config location**: `~/.config/claude-seo/google-api.json` and `~/.config/claude-seo/backlinks-api.json` (user-space, not in repo). Optional `bigquery_project_id` key in google-api.json sets the billing project for `crux_bigquery.py` (auth: service account or Application Default Credentials)

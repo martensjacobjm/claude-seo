@@ -491,6 +491,10 @@ def fetch_wikipedia(keyword: str, project: str, months: int) -> dict:
     if requests is None:
         return {"error": "requests library not installed"}
     headers = {"User-Agent": USER_AGENT}
+    # The project becomes part of a hostname (<lang>.wikipedia.org) and an API
+    # path, so accept only "<lang>.<project>" (e.g. en.wikipedia, sv.wiktionary).
+    if not re.fullmatch(r"[a-z][a-z0-9-]{0,34}\.[a-z]{2,20}", project or ""):
+        return {"error": f"invalid Wikimedia project: {project!r} (expected e.g. en.wikipedia)"}
     lang = project.split(".")[0]
     try:
         s = requests.get(f"https://{lang}.wikipedia.org/w/api.php",

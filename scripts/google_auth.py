@@ -406,37 +406,108 @@ def _exchange_code(client: dict, code: str):
         sys.exit(1)
 
 
-def validate_url(url: str) -> bool:
+# Hostnames that are never public targets (cloud metadata services, loopback).
+BLOCKED_HOSTNAMES = frozenset({
+    "localhost", "localhost.localdomain", "ip6-localhost", "ip6-loopback",
+    "metadata", "metadata.google.internal", "metadata.goog",
+    "instance-data", "instance-data.ec2.internal",
+})
+BLOCKED_HOST_SUFFIXES = (".localhost", ".internal")
+
+
+def ip_is_public(ip) -> bool:
+    """
+    True only for a globally routable unicast address.
+
+    Rejects private (RFC 1918, ULA fc00::/7), loopback, link-local (incl.
+    169.254.169.254), shared/CGNAT, reserved, multicast and unspecified
+    addresses, and IPv6 forms that embed one of those IPv4 addresses:
+    IPv4-mapped (::ffff:a.b.c.d), 6to4 (2002::/16) and NAT64 (64:ff9b::/96).
+    Teredo (2001::/32) and IPv4-compatible (::a.b.c.d) addresses are rejected.
+
+    Args:
+        ip: ipaddress.IPv4Address/IPv6Address or an address string
+            (an IPv6 zone id such as "%eth0" is ignored).
+
+    Returns:
+        True if the address is public, False otherwise (or if unparseable).
+    """
+    import ipaddress
+
+    if isinstance(ip, str):
+        try:
+            ip = ipaddress.ip_address(ip.strip("[]").split("%", 1)[0])
+        except ValueError:
+            return False
+    if ip.version == 6:
+        if ip.teredo:
+            return False
+        embedded = None
+        if ip.ipv4_mapped is not None:
+            embedded = ip.ipv4_mapped
+        elif ip.sixtofour is not None:
+            embedded = ip.sixtofour
+        elif ip in ipaddress.ip_network("64:ff9b::/96"):
+            embedded = ipaddress.IPv4Address(int(ip) & 0xFFFFFFFF)
+        if embedded is not None:
+            return ip_is_public(embedded)
+    if (ip.is_private or ip.is_loopback or ip.is_link_local or ip.is_reserved
+            or ip.is_multicast or ip.is_unspecified):
+        return False
+    return bool(ip.is_global)
+
+
+def validate_url(url: str, resolve: bool = False) -> bool:
     """
     Validate a URL for use with Google APIs. Rejects private/loopback addresses.
 
+    Literal checks only by default: http/https scheme, a host, not a blocked
+    hostname (localhost, *.localhost, *.internal, cloud metadata names), and,
+    when the host is an IP literal (including forms such as 2130706433 or
+    0x7f.1 that inet_aton accepts), a public address per ip_is_public().
+
+    This is enough for URLs that are only passed to a vendor API as data.
+    Code that itself connects to a user-supplied URL must use
+    safe_fetch.validate_public_url() / safe_fetch.SafeFetcher instead, which
+    also resolve the host and validate every redirect hop.
+
     Args:
         url: URL string to validate.
+        resolve: Also resolve the hostname (DNS) and reject it if any
+            resolved address is non-public (delegates to safe_fetch).
 
     Returns:
         True if the URL is a valid public http/https URL, False otherwise.
     """
+    import ipaddress
+    import socket
     from urllib.parse import urlparse
 
-    parsed = urlparse(url)
+    try:
+        parsed = urlparse(url)
+        hostname = parsed.hostname
+    except (ValueError, AttributeError, TypeError):
+        return False
     if parsed.scheme not in ("http", "https"):
         return False
-    if not parsed.hostname:
+    if not hostname:
         return False
-    blocked = [
-        "localhost", "127.0.0.1", "0.0.0.0", "::1",
-        "metadata.google.internal",
-    ]
-    if parsed.hostname in blocked:
+    host = hostname.rstrip(".").lower()
+    if not host or host in BLOCKED_HOSTNAMES or host.endswith(BLOCKED_HOST_SUFFIXES):
         return False
-    # Block private IP ranges (10.x, 172.16-31.x, 192.168.x)
+    literal = None
     try:
-        import ipaddress
-        ip = ipaddress.ip_address(parsed.hostname)
-        if ip.is_private or ip.is_loopback or ip.is_link_local:
-            return False
+        literal = ipaddress.ip_address(host)
     except ValueError:
-        pass  # Not an IP address (hostname), which is fine
+        try:  # legacy numeric forms: 2130706433, 0x7f.1, 127.1, 017700000001
+            literal = ipaddress.IPv4Address(socket.inet_aton(host))
+        except (OSError, ValueError):
+            literal = None  # an ordinary hostname
+    if literal is not None and not ip_is_public(literal):
+        return False
+    if resolve:
+        from safe_fetch import check_public_url  # lazy: avoids a hard requests dependency here
+        return check_public_url(url, resolve=True) is None
     return True
 
 

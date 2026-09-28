@@ -120,6 +120,16 @@ python scripts/repo_live_diff.py . https://example.com --allow-newer >/dev/null 
 - All user URLs and every redirect hop pass `validate_url()` from
   `google_auth.py` plus a resolved-IP check (private, loopback, link-local,
   metadata addresses such as `169.254.169.254` are refused).
+- Shared implementation: `scripts/safe_fetch.py` (`validate_public_url()`,
+  `SafeFetcher`), also used by `fetch_page.py`, `verify_backlinks.py`,
+  `nlp_analyze.py` and `site_crawl.py`. Any resolved address that is private,
+  loopback, link-local, reserved, multicast or an IPv4-mapped/6to4/NAT64 form
+  of one blocks the URL. `python scripts/safe_fetch.py check <url>` explains
+  a refusal.
+- DNS rebinding: direct connections are pinned to the IP that passed the
+  check (SNI, certificate and Host header keep the hostname). Behind an
+  HTTP(S) proxy the proxy resolves the target, so only the pre-request check
+  applies; the Playwright scripts filter browser requests by URL only.
 - Output is JSON by default (`--text` for a readable summary on the first two).
 - Secrets are never printed unmasked, including in `--text` mode.
 - Only scan sites and repos you own or have permission to check.

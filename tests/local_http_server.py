@@ -15,6 +15,12 @@ class _Handler(BaseHTTPRequestHandler):
     routes: Dict[str, Route] = {}
 
     def do_GET(self):  # noqa: N802 - http.server API
+        self._respond(send_body=True)
+
+    def do_HEAD(self):  # noqa: N802 - http.server API
+        self._respond(send_body=False)
+
+    def _respond(self, send_body: bool):
         status, headers, body = self.server.routes.get(
             self.path, (404, {"Content-Type": "text/html"}, "<h1>Not found</h1>"))
         data = body.encode("utf-8")
@@ -23,7 +29,8 @@ class _Handler(BaseHTTPRequestHandler):
             self.send_header(k, v)
         self.send_header("Content-Length", str(len(data)))
         self.end_headers()
-        self.wfile.write(data)
+        if send_body:
+            self.wfile.write(data)
 
     def log_message(self, *args):  # keep pytest output clean
         pass

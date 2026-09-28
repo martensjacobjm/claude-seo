@@ -41,6 +41,7 @@ jobs:
           python3 -m py_compile scripts/bing_webmaster.py
           python3 -m py_compile scripts/commoncrawl_graph.py
           python3 -m py_compile scripts/verify_backlinks.py
+          python3 -m py_compile scripts/safe_fetch.py
           python3 -m py_compile scripts/site_crawl.py
           python3 -m py_compile scripts/free_keyword_data.py
           python3 -m py_compile scripts/secret_scan.py
