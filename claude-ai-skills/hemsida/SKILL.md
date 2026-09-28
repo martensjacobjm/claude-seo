@@ -3,8 +3,8 @@ name: hemsida
 description: Skapa, renovera och granska hemsidor med belagd SEO. Leder ett bygge i nio faser från brief och faktablad via strategi, innehåll, bygge, teknisk SEO, lokal närvaro och mätning till QA-grind, lansering och uppföljning. Använder andra skills när de finns (claude-seo, marketingskills, astro med flera) och fungerar ensam när de saknas. Trigga på skapa hemsida, bygga webbplats, ny sajt, ny hemsida, landningssida, renovera sajt, göra om hemsidan, granska hemsida, granska sajt, SEO, sökoptimering, synas på Google, AI-sök, AI Overviews, AI Mode, ChatGPT-sök, lokal SEO, Google Business Profile, Företagsprofil på Google, Bing Places, schema, JSON-LD, robots.txt, Core Web Vitals, Search Console, lansera sajt, och på engelska website build, build a website, new site, landing page, site launch, site redesign, website audit, SEO audit, technical SEO, GEO och llms.txt. Varje råd bär en evidensnivå, och bara leverantörsdokumenterade fynd får klassas som kritiska eller höga.
 license: MIT
 metadata:
-  version: "2.0.0"
-  updated: "2026-09-25"
+  version: "2.0.1"
+  updated: "2026-09-28"
   source: "claude-seo (skills/seo, skills/seo-geo, hooks/validate-schema.py)"
 ---
 
@@ -122,13 +122,13 @@ exempel för ett litet lokalt tjänsteföretag: `references/exempel-bygge.md`.
 
 | Fas | Använd om den finns | Reserv | Leverans |
 |-----|---------------------|--------|----------|
-| **Fas 0 Brief och fakta** | `product-marketing-context`, `doc-coauthoring` | `references/faktablad-mall.md` | Ifyllt faktablad med källa per rad, lista över det som saknas |
+| **Fas 0 Brief och fakta** | `product-marketing`, `doc-coauthoring` | `references/faktablad-mall.md` | Ifyllt faktablad med källa per rad, lista över det som saknas |
 | **Fas 1 Strategi** | `/seo plan`, `site-architecture`, `content-strategy`, `/seo dataforseo`, `/seo google keywords` | Fas 1 i `skapa-fas.md` | Sidkarta: URL, sökavsikt, målgrupp och tjänst per sida |
 | **Fas 2 Innehåll** | `copywriting`, `copy-editing`, `/seo content`, `marketing-psychology` | Avsnittet Innehåll nedan | Text per sida; varje faktapåstående spårbart till faktabladet |
 | **Fas 3 Bygge** | `astro`, `react`, `vue`, `theme-factory`, `/seo images`, `seo-image-gen` | Teknisk checklista nedan | Kod, prestandabudget, tillgänglighetskontroll, mobil |
-| **Fas 4 Teknisk SEO och AI-sök** | `/seo technical`, `/seo schema`, `/seo sitemap`, `/seo geo`, `/seo hreflang`, `schema-markup`, `ai-seo` | Crawlers, Strukturerad data, `validate_schema.py` | robots.txt, sitemap, canonical, JSON-LD som passerar validering |
+| **Fas 4 Teknisk SEO och AI-sök** | `/seo technical`, `/seo schema`, `/seo sitemap`, `/seo geo`, `/seo hreflang`, `schema`, `ai-seo` | Crawlers, Strukturerad data, `validate_schema.py` | robots.txt, sitemap, canonical, JSON-LD som passerar validering |
 | **Fas 5 Lokalt** | `/seo local`, `/seo maps` | Avsnittet Lokalt företag | NAP-tabell, profilchecklista för Google, Bing och Apple |
-| **Fas 6 Konvertering och mätning** | `page-cro`, `form-cro`, `analytics-tracking`, `/seo google` | Avsnittet Mätning | Formulär som når fram, mätplan, Search Console och Bing klara |
+| **Fas 6 Konvertering och mätning** | `cro`, `analytics`, `/seo google` | Avsnittet Mätning | Formulär som når fram, mätplan, Search Console och Bing klara |
 | **Fas 7 QA-grind före lansering** | `webapp-testing`, `/seo audit`, `/seo page`, `/seo google pagespeed` | `references/qa-grind.md` | Ifylld QA-tabell; alla blockerande rader pass |
 | **Fas 8 Lansering och uppföljning** | `/seo google` (inspect, sitemaps, gen-ai-report), `/seo backlinks ai-performance` | Fas 8 i `skapa-fas.md` | Lanseringslogg, baslinjeexporter, uppföljningsplan |
 
@@ -286,8 +286,10 @@ python3 scripts/validate_schema.py sida.html --json
 
 Status `block` (exit 2) betyder avvecklad typ eller kvarglömd platshållare som `REPLACE_ME`
 eller `[Phone]` och ska rättas. `warn` (exit 1) gäller till exempel FAQPage eller en
-exempeldomän som `example.se`; före lansering ska även den vara borta. Svenska hakparenteser
-som `[TELEFON]` fångas inte, så använd `REPLACE_ME`. I Claude Code med claude-seo installerat
+exempeldomän som `example.se`; före lansering ska även den vara borta. Svenska mallord i
+hakparentes som `[FÖRETAGSNAMN]`, `[Telefon]` eller `[Ditt område]` blockeras också (oavsett
+skiftläge), medan fotnoter som `[1]` släpps igenom. Markera ändå luckor med `REPLACE_ME`, som
+fångas i alla språk. I Claude Code med claude-seo installerat
 kör samma kontroll automatiskt som hook efter varje filändring. Hänvisa dessutom ägaren
 till Googles Rich Results Test och validator.schema.org, som skriptet inte ersätter.
 
