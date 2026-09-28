@@ -49,10 +49,10 @@ DELEGATED_SKILLS = [
     "seo-hreflang", "seo-google", "seo-backlinks", "seo-competitor-pages", "seo-dataforseo",
     "seo-image-gen",
     # marketingskills
-    "ai-seo", "schema-markup", "site-architecture", "programmatic-seo", "page-cro", "form-cro",
-    "copywriting", "copy-editing", "content-strategy", "product-marketing-context",
-    "analytics-tracking", "competitor-alternatives", "pricing-strategy", "signup-flow-cro",
-    "popup-cro", "social-content", "marketing-psychology",
+    "ai-seo", "schema", "site-architecture", "programmatic-seo", "cro",
+    "copywriting", "copy-editing", "content-strategy", "product-marketing",
+    "analytics", "competitors", "pricing", "signup",
+    "popups", "social", "marketing-psychology",
     # Jacob's claude.ai skills
     "astro", "react", "vue", "web-artifacts-builder", "webapp-testing", "theme-factory",
     "canvas-design", "brand-guidelines", "skill-evidens", "doc-coauthoring", "pdf", "xlsx",
@@ -231,3 +231,30 @@ def test_bundled_validator_runs_standalone(tmp_path):
                            str(page), "--json"], capture_output=True, text=True, timeout=30)
     assert proc.returncode == 2
     assert json.loads(proc.stdout)["status"] == "block"
+
+
+# marketingskills v1 names, renamed in v2 (2026). They may appear only in the alias note
+# of the skill map, never as the name hemsida looks for.
+MARKETINGSKILLS_V1 = [
+    "page-cro", "form-cro", "analytics-tracking", "schema-markup", "product-marketing-context",
+    "competitor-alternatives", "pricing-strategy", "signup-flow-cro", "popup-cro", "social-content",
+]
+
+
+def test_skill_map_uses_current_marketingskills_names():
+    hemsida = os.path.join(os.path.dirname(BUILD), "hemsida")
+    skill = open(os.path.join(hemsida, "SKILL.md"), encoding="utf-8").read()
+    karta = open(os.path.join(hemsida, "references", "skill-karta.md"), encoding="utf-8").read()
+    tabellrader = "\n".join(r for r in karta.splitlines() if r.startswith("|"))
+    for old in MARKETINGSKILLS_V1:
+        assert f"`{old}`" not in skill, old
+        assert f"`{old}`" not in tabellrader, old
+        assert f"`{old}`" in karta, f"alias note must mention {old}"
+
+
+def test_placeholder_doc_matches_validator():
+    # The bundled validator blocks Swedish bracket tokens; the docs must not say otherwise.
+    hemsida = os.path.join(os.path.dirname(BUILD), "hemsida")
+    skill = open(os.path.join(hemsida, "SKILL.md"), encoding="utf-8").read()
+    assert "fångas inte" not in skill
+    assert "[FÖRETAGSNAMN]" in skill

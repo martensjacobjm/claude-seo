@@ -24,7 +24,7 @@ som följer med är schemavalideringen, eftersom den bara använder Pythons stan
 `hemsida` är byggd för att fungera ensam, men använder andra skills när de finns i miljön:
 claude-seo-pluginens `/seo`-kommandon i Claude Code (till exempel `/seo plan`, `/seo schema`,
 `/seo audit`, `/seo google`), marketingskills (till exempel `copywriting`, `site-architecture`,
-`form-cro`, `analytics-tracking`) och Jacobs claude.ai-skills (till exempel `astro`,
+`cro`, `analytics`) och Jacobs claude.ai-skills (till exempel `astro`,
 `webapp-testing`, `theme-factory`). Kartan per fas, med reserv när en skill saknas och vad
 fasen ska leverera, står i `hemsida/references/skill-karta.md`.
 
