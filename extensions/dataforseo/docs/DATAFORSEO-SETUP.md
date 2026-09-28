@@ -36,6 +36,7 @@ DataForSEO uses a credit-based system:
 | Endpoint | Price |
 |--------------|-----------------|
 | Google Organic SERP | $0.002 per SERP of 10 results |
+| Google Images SERP | $0.002 per SERP of up to 100 results; `site:`/`filetype:` etc. x5 |
 | Google Ads search volume | $0.09 per task (up to 1,000 keywords) |
 | DataForSEO Labs (most endpoints) | $0.012 per task + $0.00012 per item |
 | Backlinks (summary, list, anchors...) | $0.024 per request + $0.000036 per row |
