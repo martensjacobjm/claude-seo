@@ -113,9 +113,20 @@ Load from `assets/` directory:
 - Dependencies identified
 - Risk mitigation strategies
 
+## Keyword Data: Free Sources First
+
+For keyword research, start with free documented sources via
+`python scripts/free_keyword_data.py`: `sources` (what is configured), `own-queries
+<gsc-property>` (real queries, positions, heuristic striking-distance and low-CTR flags),
+`ideas <seeds...>` and `volume <keywords...>` (Keyword Planner and/or Bing, unit stated per
+row). Report the source and unit of every number and never add Google monthly searches to
+Bing impressions. Competitor keyword gaps, keyword difficulty and rankings for arbitrary
+keywords have no free legal source: use DataForSEO below if available, otherwise mark them
+as not measured. Details: `skills/seo/references/free-keyword-sources.md`.
+
 ## DataForSEO Integration (Optional)
 
-If DataForSEO MCP is detected (v3: the `dataforseo` server's `api_request` tool; deprecated v2: per-endpoint tools such as `serp_organic_live_advanced`), use POST `/v3/dataforseo_labs/google/competitors_domain/live` (`dataforseo_labs_google_competitors_domain`) and `/v3/dataforseo_labs/google/domain_intersection/live` (`dataforseo_labs_google_domain_intersection`) for competitive intelligence, `/v3/dataforseo_labs/google/bulk_traffic_estimation/live` (`dataforseo_labs_bulk_traffic_estimation`) for traffic estimates, `/v3/keywords_data/google_ads/search_volume/live` (`kw_data_google_ads_search_volume`) and `/v3/dataforseo_labs/google/bulk_keyword_difficulty/live` (`dataforseo_labs_bulk_keyword_difficulty`) for keyword research, and `/v3/business_data/business_listings/search/live` (`business_data_business_listings_search`) for local business data. Paths are for v3 `api_request`; the v2 tool name is in parentheses. Map: `skills/seo-dataforseo/references/tool-catalog.md`. If neither is detected, say so in the plan's data sources.
+If DataForSEO MCP is detected (v3: the `dataforseo` server's `api_request` tool; deprecated v2: per-endpoint tools such as `serp_organic_live_advanced`), use POST `/v3/dataforseo_labs/google/competitors_domain/live` (`dataforseo_labs_google_competitors_domain`) and `/v3/dataforseo_labs/google/domain_intersection/live` (`dataforseo_labs_google_domain_intersection`) for competitive intelligence, `/v3/dataforseo_labs/google/bulk_traffic_estimation/live` (`dataforseo_labs_bulk_traffic_estimation`) for traffic estimates, `/v3/keywords_data/google_ads/search_volume/live` (`kw_data_google_ads_search_volume`, only when the free sources above are not configured) and `/v3/dataforseo_labs/google/bulk_keyword_difficulty/live` (`dataforseo_labs_bulk_keyword_difficulty`) for keyword research, and `/v3/business_data/business_listings/search/live` (`business_data_business_listings_search`) for local business data. Paths are for v3 `api_request`; the v2 tool name is in parentheses. Map: `skills/seo-dataforseo/references/tool-catalog.md`. If neither is detected, say so in the plan's data sources.
 
 ## Error Handling
 

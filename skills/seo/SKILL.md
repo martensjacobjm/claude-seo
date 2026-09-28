@@ -40,7 +40,7 @@ e-commerce, publishers, agencies). Orchestrates 16 specialized sub-skills and 11
 | `/seo hreflang [url]` | Hreflang/i18n SEO audit and generation |
 | `/seo google [command] [url]` | Google SEO APIs (GSC, PageSpeed, CrUX, Indexing, GA4); also `crux-bq`, `crux-benchmark` (CrUX on BigQuery) and `gen-ai-report` (Search Console Generative AI report, manual export) |
 | `/seo backlinks <url>` | Backlink profile analysis (free: Moz, Bing, CC; premium: DataForSEO); `ai-performance --file <export>` parses a Bing AI Performance export |
-| `/seo firecrawl [command] <url>` | Full-site crawling and site mapping (extension) |
+| `/seo firecrawl [command] <url>` | Full-site crawling and site mapping (extension; without Firecrawl MCP use free `scripts/site_crawl.py map\|crawl\|scrape`) |
 | `/seo dataforseo [command]` | Live SEO data via DataForSEO (extension) |
 | `/seo image-gen [use-case] <description>` | AI image generation for SEO assets (extension) |
 
@@ -53,7 +53,7 @@ When the user invokes `/seo audit`, delegate to subagents in parallel:
 4. If local business detected, also spawn seo-local agent
 5. If local business detected AND DataForSEO MCP available, also spawn seo-maps agent
 6. If backlink APIs detected (`python scripts/backlinks_auth.py --check`), also spawn seo-backlinks agent
-7. If Firecrawl MCP available, use `firecrawl_map` to discover all site URLs before analysis
+7. Discover site URLs before analysis: `firecrawl_map` if Firecrawl MCP is available, else `python scripts/site_crawl.py map <url> --json` (free, built-in; `crawl` adds broken links, redirects, duplicates, orphans; see `references/site-crawler.md`)
 8. Collect results and generate unified report with SEO Health Score (0-100)
 9. Create prioritized action plan (Critical -> High -> Medium -> Low)
 10. **Offer PDF report**: "Generate a professional PDF report? Use `/seo google report full`"
@@ -91,6 +91,7 @@ Load these on-demand as needed (do NOT load all at startup):
 - `references/local-seo-signals.md`: Google's local ranking statements, labeled practitioner surveys, review policy and law, citation tiers, GBP changes
 - `references/local-schema-types.md`: LocalBusiness subtypes, industry-specific schema and citation sources
 - `references/local-eeat-evidence.md`: Evidence register (sources, Removed claims) for the E-E-A-T and local references; add a row before adding a claim
+- `references/site-crawler.md`: Free built-in crawler (`scripts/site_crawl.py` map/crawl/scrape): flags, output fields, Firecrawl mapping, politeness, limits
 - `references/ranking-signals.md`: Evidence-graded map of Google systems (DOJ v. Google record) and 2024 Content Warehouse API leak attributes to audit checks; context only, not scoring (the leak shows attributes exist, not weights)
 - `references/free-backlink-sources.md`, `references/backlink-quality.md`: Backlink source comparison and toxic-link patterns (loaded by seo-backlinks)
 
@@ -138,7 +139,7 @@ This skill orchestrates 15 specialized sub-skills (+ 2 extensions):
 14. **seo-maps** -- Maps intelligence (geo-grid, GBP audit, reviews, competitor radius)
 15. **seo-google** -- Google SEO APIs (GSC, PageSpeed, CrUX, CrUX on BigQuery, Indexing API, GA4, Generative AI report export)
 16. **seo-backlinks** -- Backlink profile analysis (free: Moz, Bing, CC; premium: DataForSEO)
-17. **seo-firecrawl** -- Full-site crawling and site mapping via Firecrawl MCP (extension)
+17. **seo-firecrawl** -- Full-site crawling and site mapping via Firecrawl MCP (extension; if the MCP is absent, route `/seo firecrawl crawl|map|scrape` to `scripts/site_crawl.py`)
 18. **seo-dataforseo** -- Live SEO data via DataForSEO MCP (extension)
 19. **seo-image-gen** -- AI image generation for SEO assets via Gemini (extension)
 

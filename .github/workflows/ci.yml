@@ -41,10 +41,15 @@ jobs:
           python3 -m py_compile scripts/bing_webmaster.py
           python3 -m py_compile scripts/commoncrawl_graph.py
           python3 -m py_compile scripts/verify_backlinks.py
+          python3 -m py_compile scripts/site_crawl.py
+          python3 -m py_compile scripts/free_keyword_data.py
+          python3 -m py_compile scripts/secret_scan.py
+          python3 -m py_compile scripts/repo_live_diff.py
+          python3 -m py_compile scripts/hreflang_check.py
           python3 -m py_compile hooks/validate-schema.py
           echo "All scripts passed syntax check"
 
       - name: Run unit tests
         run: |
-          python3 -m pip install --quiet pytest
+          python3 -m pip install --quiet pytest requests beautifulsoup4 lxml
           python3 -m pytest tests -q

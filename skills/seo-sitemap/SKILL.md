@@ -24,7 +24,7 @@ metadata:
 - `<lastmod>` dates are accurate (not all identical)
 - No deprecated tags: `<priority>` and `<changefreq>` are ignored by Google
 - Sitemap referenced in robots.txt
-- Compare crawled pages vs sitemap; flag missing pages
+- Compare crawled pages vs sitemap; flag missing pages (`python scripts/site_crawl.py crawl <url> --json`: `orphan_candidates`, `sitemap_url_issues`; `map <url>` lists sitemap URLs incl. indexes and .xml.gz)
 
 ### Quality Signals
 - Sitemap index file if >50k URLs
