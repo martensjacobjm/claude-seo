@@ -16,7 +16,7 @@ metadata:
 
 1. **Fetch homepage**: use `scripts/fetch_page.py` to retrieve HTML
 2. **Detect business type**: analyze homepage signals per seo orchestrator
-3. **Crawl site**: follow internal links up to 500 pages, respect robots.txt
+3. **Crawl site**: follow internal links up to 500 pages, respect robots.txt (Firecrawl MCP if installed, else free built-in `python scripts/site_crawl.py crawl <url> --max-pages 500 --jsonl pages.jsonl --json`; report keys in `skills/seo/references/site-crawler.md`)
 4. **Delegate to subagents** (if available, otherwise run inline sequentially):
    - `seo-technical` -- robots.txt, sitemaps, canonicals, Core Web Vitals, security headers
    - `seo-content` -- E-E-A-T, readability, thin content, AI search visibility (Google AI optimization guide)
