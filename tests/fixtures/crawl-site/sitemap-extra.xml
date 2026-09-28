@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Served gzipped as /sitemap-extra.xml.gz by the test server -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>{{ORIGIN}}/orphan.html</loc></url>
+  <url><loc>{{ORIGIN}}/blog/post-2.html</loc></url>
+</urlset>

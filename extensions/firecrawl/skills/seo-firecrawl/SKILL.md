@@ -196,7 +196,11 @@ When Firecrawl is available during `/seo audit`:
 | `408 Timeout` | Page too slow to render | Increase `timeout`, try without JS rendering |
 | `403 Forbidden` | Site blocks crawling | Check robots.txt, may need to skip this site |
 
-**Graceful fallback:** If Firecrawl is unavailable, inform the user and suggest:
-1. Use `fetch_page.py` for single-page analysis (no API cost)
-2. Use `WebFetch` tool for basic HTML retrieval
-3. Install Firecrawl: `./extensions/firecrawl/install.sh`
+**Graceful fallback:** If Firecrawl is unavailable, use the free built-in crawler
+(no API key; see `skills/seo/references/site-crawler.md`):
+1. `map` -> `python scripts/site_crawl.py map <url> --json`
+2. `crawl` -> `python scripts/site_crawl.py crawl <url> --max-pages 100 --json`
+3. `scrape` -> `python scripts/site_crawl.py scrape <url> [--render] --json`
+4. `search` has no built-in equivalent: use `map --search <term>` or WebSearch with `site:`
+Install Firecrawl only if you need anti-bot handling or hosted JS rendering at scale:
+`./extensions/firecrawl/install.sh`

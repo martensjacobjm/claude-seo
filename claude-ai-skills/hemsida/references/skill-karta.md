@@ -3,7 +3,14 @@
 Hemsida är dirigenten. Tabellerna nedan säger vilken skill som tar en fas djupare om den
 finns, vad hemsida gör själv om den saknas, och vad fasen alltid ska leverera. Skillnamnen
 står exakt som de heter; i en miljö kan de ha ett prefix (`marketingskills:`,
-`anthropic-skills:`, `claude-seo:`). Status per 2026-09-25.
+`anthropic-skills:`, `claude-seo:`). Status per 2026-09-28.
+
+marketingskills bytte namn på tio skills i version 2 (2026). Kartan använder de nya namnen.
+Finns bara ett äldre namn i miljön är det samma skill: `cro` (äldre `page-cro`, `form-cro`),
+`analytics` (`analytics-tracking`), `schema` (`schema-markup`), `product-marketing`
+(`product-marketing-context`), `competitors` (`competitor-alternatives`), `pricing`
+(`pricing-strategy`), `signup` (`signup-flow-cro`), `popups` (`popup-cro`), `social`
+(`social-content`).
 
 ## Upptäckt: gör så här varje gång
 
@@ -30,7 +37,7 @@ står exakt som de heter; i en miljö kan de ha ett prefix (`marketingskills:`,
 
 | Skill | Källa | Används till |
 |-------|-------|--------------|
-| `product-marketing-context` | marketingskills | Positionering, målgrupp och erbjudande som ett återanvändbart dokument |
+| `product-marketing` | marketingskills | Positionering, målgrupp och erbjudande som ett återanvändbart dokument |
 | `doc-coauthoring` | claude.ai | Skriva briefen tillsammans med ägaren |
 | `pdf`, `xlsx` | claude.ai | Läsa ägarens prislistor, intyg och kundlistor |
 
@@ -44,12 +51,12 @@ som saknas. Fakta om företaget kommer bara från ägaren, oavsett vad en skill 
 | `seo-plan` (`/seo plan`) | claude-seo | Branschmall, arkitektur, innehållsplan |
 | `site-architecture` | marketingskills | Sidhierarki, URL-struktur, navigering, internlänkar |
 | `content-strategy` | marketingskills | Ämnen och innehållspelare |
-| `seo-dataforseo` (`/seo dataforseo`) | claude-seo (tillägg) | Sökvolym, avsikt, SERP. Följ skillens egna verktygsnamn; MCP-servern byts mot v3 |
+| `seo-dataforseo` (`/seo dataforseo`) | claude-seo (tillägg) | Sökvolym, avsikt, SERP. Kräver DataForSEO MCP v3 (`api_request`); saknas servern säger skillen det i stället för att gissa. Kostar per anrop, fråga först |
 | `seo-google` (`/seo google keywords`) | claude-seo | Keyword Planner, kräver Google Ads-konto |
 | `seo-programmatic` (`/seo programmatic`), `programmatic-seo` | claude-seo, marketingskills | Bara om sajten ska ha många mallsidor |
-| `seo-competitor-pages`, `competitor-alternatives` | claude-seo, marketingskills | Jämförelsesidor, bara med verifierbara uppgifter om konkurrenten |
+| `seo-competitor-pages`, `competitors` | claude-seo, marketingskills | Jämförelsesidor, bara med verifierbara uppgifter om konkurrenten |
 | `seo-hreflang` (`/seo hreflang`) | claude-seo | Planera språk och regioner om sajten blir flerspråkig |
-| `pricing-strategy` | marketingskills | Prissida, bara om ägaren vill ha stöd i prissättningen |
+| `pricing` | marketingskills | Prissida, bara om ägaren vill ha stöd i prissättningen |
 | `scrapling`, `article-extractor` | claude.ai | Läsa konkurrenters sidor; respektera robots.txt och villkor |
 
 Reserv: fas 1 i `skapa-fas.md`. Leverans: sidkarta (URL, sökavsikt, målgrupp, tjänst,
@@ -63,7 +70,7 @@ ort) och en rad om hur sökvolym togs fram eller att den saknas. Hitta aldrig p�
 | `copy-editing` | marketingskills | Putsa befintlig text |
 | `seo-content` (`/seo content`) | claude-seo | E-E-A-T och tunt innehåll |
 | `marketing-psychology` | marketingskills | Framing och socialt bevis, bara med sanna uppgifter |
-| `social-content` | marketingskills | Delningstexter vid lansering |
+| `social` | marketingskills | Delningstexter vid lansering |
 
 Reserv: avsnittet Innehåll i SKILL.md och `eeat-framework.md`. Leverans: text per sida där
 varje faktapåstående går att spåra till faktabladet.
@@ -89,7 +96,7 @@ prestandabudget, tillgänglighetskontroll, mobilkontroll.
 |-------|-------|--------------|
 | `seo-technical` (`/seo technical`) | claude-seo | Crawlning, indexering, säkerhet, JavaScript-rendering |
 | `seo-schema` (`/seo schema`) | claude-seo | Generera och validera JSON-LD |
-| `schema-markup` | marketingskills | JSON-LD i båda miljöerna |
+| `schema` | marketingskills | JSON-LD i båda miljöerna |
 | `seo-sitemap` (`/seo sitemap generate`) | claude-seo | XML-sitemap |
 | `seo-geo` (`/seo geo`) | claude-seo | AI-crawlers, utdrag, mätning i AI-sök |
 | `ai-seo` | marketingskills | AI-sök i båda miljöerna |
@@ -112,11 +119,10 @@ profilchecklista.
 
 | Skill | Källa | Används till |
 |-------|-------|--------------|
-| `page-cro` | marketingskills | Startsida och landningssidor |
-| `form-cro` | marketingskills | Kontakt- och offertformulär |
-| `signup-flow-cro` | marketingskills | Bara om sajten har konton eller provperiod |
-| `popup-cro` | marketingskills | Bara om ägaren vill ha popup; inget som täcker innehållet på mobil |
-| `analytics-tracking` | marketingskills | Mätplan, händelser, samtycke |
+| `cro` | marketingskills | Startsida, landningssidor, kontakt- och offertformulär |
+| `signup` | marketingskills | Bara om sajten har konton eller provperiod |
+| `popups` | marketingskills | Bara om ägaren vill ha popup; inget som täcker innehållet på mobil |
+| `analytics` | marketingskills | Mätplan, händelser, samtycke |
 | `seo-google` (`/seo google`) | claude-seo | Search Console, GA4 |
 
 Reserv: avsnittet Mätning. Leverans: formulär testat hela vägen, mätplan, Search Console
@@ -162,10 +168,10 @@ uppföljning.
 - `brand-guidelines` är Anthropics egen färg- och typsnittsprofil. Använd den aldrig för
   en kunds sajt; använd `theme-factory` eller ägarens egen profil.
 - `seo-plan` nämner "domain authority". Det är ett tredjepartsmått, inget Google använder.
-- `marketing-psychology`, `popup-cro`: brådska, knapphet och nedräkning bara när de är sanna.
-- `page-cro`, `form-cro`, `copywriting`: omdömen bara om de är verkliga, med källa och
+- `marketing-psychology`, `popups`: brådska, knapphet och nedräkning bara när de är sanna.
+- `cro`, `copywriting`: omdömen bara om de är verkliga, med källa och
   samtycke.
-- `schema-markup`, `seo-schema`: inga egna stjärnbetyg i markup, ingen FAQPage eller HowTo
+- `schema`, `seo-schema`: inga egna stjärnbetyg i markup, ingen FAQPage eller HowTo
   för rich results.
 - `ai-seo`, `seo-geo`: `llms.txt` är information, inte en åtgärd.
 - `seo-dataforseo`, `seo-maps`: kostar pengar per anrop. Fråga först.

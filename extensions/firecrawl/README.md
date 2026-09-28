@@ -2,6 +2,13 @@
 
 Full-site crawling, scraping, and site mapping powered by [Firecrawl](https://www.firecrawl.dev/). Enables comprehensive site-wide SEO analysis with JavaScript rendering support.
 
+> **Free alternative:** Claude SEO ships a built-in crawler, `scripts/site_crawl.py`
+> (`map`, `crawl`, `scrape`, optional `--render` via Playwright). It needs no API key or
+> credits, respects robots.txt and validates every URL and redirect hop against SSRF.
+> Skills fall back to it automatically when the Firecrawl MCP is not installed. It does
+> not bypass anti-bot protection and has no site `search`. Details:
+> [`skills/seo/references/site-crawler.md`](../../skills/seo/references/site-crawler.md).
+
 ## Prerequisites
 
 - [Claude SEO](https://github.com/AgriciDaniel/claude-seo) installed
@@ -84,7 +91,7 @@ When installed, other Claude SEO skills automatically leverage Firecrawl:
 **Site blocking crawls?**
 - Some sites block automated crawling via robots.txt or Cloudflare
 - Try `scrape` (single page) instead of `crawl` (full site)
-- Fall back to `fetch_page.py` for basic HTML retrieval
+- Fall back to `scripts/site_crawl.py` (built-in) or `fetch_page.py` for basic HTML retrieval
 
 ## Uninstall
 

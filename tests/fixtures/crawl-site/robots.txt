@@ -1,0 +1,5 @@
+# Fixture robots.txt for tests/test_site_crawl.py ({{ORIGIN}} is filled in by the test server)
+User-agent: *
+Disallow: /private/
+
+Sitemap: {{ORIGIN}}/sitemap.xml

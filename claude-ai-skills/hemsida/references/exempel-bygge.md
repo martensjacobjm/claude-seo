@@ -23,7 +23,7 @@ förfrågningar om badrumsrenovering och akuta läckor. Ingen sajt finns i dag.
 | AI-träning | ägaren vill inte bidra | beslut 2026-09-20 |
 
 Saknas: telefon, organisationsnummer, intyg för behörighet, priser.
-Skills: använde `product-marketing-context`; `doc-coauthoring` saknades, reserv användes.
+Skills: använde `product-marketing`; `doc-coauthoring` saknades, reserv användes.
 
 ## Fas 1 Strategi: sidkarta
 

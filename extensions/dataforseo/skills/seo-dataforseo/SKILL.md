@@ -43,6 +43,18 @@ If neither is present, say so visibly ("DataForSEO MCP not detected") and give t
 install command. Never fall back silently to WebSearch or free APIs as if they were
 DataForSEO data.
 
+## Free Alternatives First
+
+Before spending DataForSEO credits on keyword data, check the free documented sources:
+`python scripts/free_keyword_data.py sources` (then `own-queries <gsc-property>`,
+`ideas <seeds...>`, `volume <keywords...>`). They cover own-site queries and positions
+(Search Console, Bing Webmaster), Google Ads Keyword Planner volumes (Basic access token)
+and Bing keyword research. The official Google Trends API is an application-gated alpha,
+so `trends` returns "not available". No free legal source exists for rankings of
+arbitrary keywords, competitor keyword gaps, keyword difficulty, full backlink indexes or
+LLM mentions: use DataForSEO for those and say it is paid. Never scrape Google or Bing
+result pages. Map and evidence: `skills/seo/references/free-keyword-sources.md`.
+
 ## Calling Convention (v3)
 
 ```
