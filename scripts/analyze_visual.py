@@ -7,9 +7,8 @@ Usage:
 """
 
 import argparse
-import ipaddress
+import os
 import json
-import socket
 import sys
 from urllib.parse import ParseResult, urlparse
 
@@ -18,6 +17,9 @@ try:
 except ImportError:
     print("Error: playwright required. Install with: pip install playwright && playwright install chromium")
     sys.exit(1)
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import safe_fetch  # noqa: E402  (SSRF-safe URL validation)
 
 
 def normalize_url(url: str) -> tuple[str, ParseResult]:
@@ -76,22 +78,22 @@ def analyze_visual(url: str, timeout: int = 30000) -> dict:
         result["error"] = str(e)
         return result
 
-    # SSRF prevention: block private/internal IPs
-    try:
-        resolved_ip = socket.gethostbyname(parsed.hostname)
-        ip = ipaddress.ip_address(resolved_ip)
-        if ip.is_private or ip.is_loopback or ip.is_reserved:
-            result["error"] = f"Blocked: URL resolves to private/internal IP ({resolved_ip})"
-            return result
-    except socket.gaierror:
-        pass
+    # SSRF prevention: literal host + every resolved IP must be public.
+    # Every browser request (redirect hops, subresources) is re-checked by the
+    # route guard below; Chromium resolves DNS itself, so no IP pinning here.
+    reason = safe_fetch.check_public_url(url)
+    if reason:
+        result["error"] = f"Blocked: {reason}"
+        return result
 
     try:
         with sync_playwright() as p:
             browser = p.chromium.launch(headless=True)
 
             # Desktop analysis
-            desktop = browser.new_context(viewport={"width": 1920, "height": 1080})
+            desktop = browser.new_context(viewport={"width": 1920, "height": 1080},
+                                        service_workers="block")
+            desktop.route("**/*", safe_fetch.playwright_route_guard())
             page = desktop.new_page()
             page.goto(url, wait_until="networkidle", timeout=timeout)
 
@@ -145,7 +147,9 @@ def analyze_visual(url: str, timeout: int = 30000) -> dict:
             desktop.close()
 
             # Mobile analysis
-            mobile = browser.new_context(viewport={"width": 375, "height": 812})
+            mobile = browser.new_context(viewport={"width": 375, "height": 812},
+                                        service_workers="block")
+            mobile.route("**/*", safe_fetch.playwright_route_guard())
             page = mobile.new_page()
             page.goto(url, wait_until="networkidle", timeout=timeout)
 

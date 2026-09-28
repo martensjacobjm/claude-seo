@@ -9,9 +9,7 @@ Usage:
 """
 
 import argparse
-import ipaddress
 import os
-import socket
 import sys
 from urllib.parse import ParseResult, urlparse
 
@@ -20,6 +18,9 @@ try:
 except ImportError:
     print("Error: playwright required. Install with: pip install playwright && playwright install chromium")
     sys.exit(1)
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import safe_fetch  # noqa: E402  (SSRF-safe URL validation)
 
 
 VIEWPORTS = {
@@ -84,15 +85,13 @@ def capture_screenshot(
         result["error"] = str(e)
         return result
 
-    # SSRF prevention: block private/internal IPs
-    try:
-        resolved_ip = socket.gethostbyname(parsed.hostname)
-        ip = ipaddress.ip_address(resolved_ip)
-        if ip.is_private or ip.is_loopback or ip.is_reserved:
-            result["error"] = f"Blocked: URL resolves to private/internal IP ({resolved_ip})"
-            return result
-    except socket.gaierror:
-        pass
+    # SSRF prevention: literal host + every resolved IP must be public.
+    # Every browser request (redirect hops, subresources) is re-checked by the
+    # route guard below; Chromium resolves DNS itself, so no IP pinning here.
+    reason = safe_fetch.check_public_url(url)
+    if reason:
+        result["error"] = f"Blocked: {reason}"
+        return result
 
     vp = VIEWPORTS[viewport]
 
@@ -102,7 +101,9 @@ def capture_screenshot(
             context = browser.new_context(
                 viewport={"width": vp["width"], "height": vp["height"]},
                 device_scale_factor=2 if viewport == "mobile" else 1,
+                service_workers="block",
             )
+            context.route("**/*", safe_fetch.playwright_route_guard())
             page = context.new_page()
 
             # Navigate and wait for network idle

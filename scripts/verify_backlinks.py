@@ -6,6 +6,10 @@ Verifies whether known backlinks still exist by fetching source pages and
 checking if the target URL appears in their outbound links. Uses HTTP HEAD
 for fast existence checks and full GET + HTML parsing for link verification.
 
+SSRF protection: source URLs and every redirect hop (HEAD and GET) are
+validated with safe_fetch.validate_public_url() (literal host + resolved-IP
+checks) and connections are pinned to the validated IP (see safe_fetch.py).
+
 Usage:
     python verify_backlinks.py --target https://example.com --links links.json --json
     python verify_backlinks.py --target https://example.com --links links.json --head-only --json
@@ -20,7 +24,7 @@ from typing import Optional
 from urllib.parse import urlparse
 
 try:
-    import requests
+    import requests  # noqa: F401  (required by safe_fetch)
 except ImportError:
     print("Error: requests library required. Install with: pip install requests")
     sys.exit(1)
@@ -32,6 +36,7 @@ try:
     from fetch_page import fetch_page
     from parse_html import parse_html
     from google_auth import validate_url
+    import safe_fetch
 except ImportError as e:
     print(f"Error: Required scripts not found in scripts/: {e}", file=sys.stderr)
     sys.exit(1)
@@ -51,30 +56,35 @@ def _polite_delay(domain: str):
     _domain_last_request[domain] = time.time()
 
 
-def _head_check(url: str, timeout: int = 15) -> dict:
+def _head_check(url: str, timeout: int = 15,
+                fetcher: Optional["safe_fetch.SafeFetcher"] = None) -> dict:
     """
     Quick HTTP HEAD check to see if a page exists.
+
+    Redirects are followed manually and every hop is validated (SSRF-safe).
 
     Returns:
         Dict with status_code, exists (bool), redirect_url (if redirected).
     """
-    try:
-        resp = requests.head(
-            url,
-            timeout=timeout,
-            allow_redirects=True,
-            headers={"User-Agent": "ClaudeSEO/1.8.0 BacklinkVerifier"},
-        )
-        return {
-            "status_code": resp.status_code,
-            "exists": resp.status_code == 200,
-            "redirect_url": str(resp.url) if str(resp.url) != url else None,
-            "error": None,
-        }
-    except requests.exceptions.Timeout:
+    fetcher = fetcher or safe_fetch.SafeFetcher(timeout=timeout, max_redirects=10)
+    res = fetcher.fetch(url, method="HEAD",
+                        headers={"User-Agent": "ClaudeSEO/1.8.0 BacklinkVerifier"})
+    if res["error_kind"] == "timeout":
         return {"status_code": None, "exists": False, "redirect_url": None, "error": "timeout"}
-    except requests.exceptions.RequestException as e:
-        return {"status_code": None, "exists": False, "redirect_url": None, "error": str(e)}
+    if res["error"] and res["status"] is None:
+        error = res["error"]
+        if res["error_kind"] == "blocked":
+            error = f"Redirect target blocked by SSRF protection: {res['error']}"
+        elif res.get("exception") is not None:
+            error = str(res["exception"])
+        return {"status_code": None, "exists": False, "redirect_url": None, "error": error}
+    final = res["final_url"]
+    return {
+        "status_code": res["status"],
+        "exists": res["status"] == 200,
+        "redirect_url": final if final != url else None,
+        "error": None,
+    }
 
 
 def _normalize_url(url: str) -> str:
@@ -85,7 +95,8 @@ def _normalize_url(url: str) -> str:
 
 
 def verify_single_backlink(source_url: str, target_url: str,
-                            head_only: bool = False, timeout: int = 30) -> dict:
+                            head_only: bool = False, timeout: int = 30,
+                            fetcher: Optional["safe_fetch.SafeFetcher"] = None) -> dict:
     """
     Verify a single backlink by checking if target_url appears on source_url page.
 
@@ -94,6 +105,7 @@ def verify_single_backlink(source_url: str, target_url: str,
         target_url: The URL that should be linked to.
         head_only: If True, only check page existence (no link verification).
         timeout: Request timeout.
+        fetcher: Optional safe_fetch.SafeFetcher (tests inject a validator/session).
 
     Returns:
         Verification result dict.
@@ -110,8 +122,9 @@ def verify_single_backlink(source_url: str, target_url: str,
         "error": None,
     }
 
-    # SSRF protection
-    if not validate_url(source_url):
+    # SSRF protection (literal host + resolved IPs; redirect hops are checked per hop)
+    check = fetcher.validator if fetcher is not None else safe_fetch.validate_public_url
+    if not check(source_url):
         result["status"] = "error"
         result["error"] = "Source URL blocked by SSRF protection"
         return result
@@ -120,7 +133,7 @@ def verify_single_backlink(source_url: str, target_url: str,
     _polite_delay(source_domain)
 
     # Step 1: HEAD check
-    head_result = _head_check(source_url, timeout=min(timeout, 15))
+    head_result = _head_check(source_url, timeout=min(timeout, 15), fetcher=fetcher)
     result["http_status"] = head_result["status_code"]
 
     if not head_result["exists"]:
@@ -144,7 +157,7 @@ def verify_single_backlink(source_url: str, target_url: str,
 
     # Step 2: Full GET + parse
     _polite_delay(source_domain)
-    page_data = fetch_page(source_url, timeout=timeout)
+    page_data = fetch_page(source_url, timeout=timeout, fetcher=fetcher)
 
     if page_data.get("error"):
         result["status"] = "error"
@@ -228,7 +241,8 @@ def verify_single_backlink(source_url: str, target_url: str,
 
 
 def verify_backlinks(target_url: str, links: list, head_only: bool = False,
-                      timeout: int = 30) -> dict:
+                      timeout: int = 30,
+                      fetcher: Optional["safe_fetch.SafeFetcher"] = None) -> dict:
     """
     Verify a batch of backlinks.
 
@@ -237,6 +251,7 @@ def verify_backlinks(target_url: str, links: list, head_only: bool = False,
         links: List of dicts with 'source_url' and optional 'expected_anchor'.
         head_only: Only check page existence.
         timeout: Per-request timeout.
+        fetcher: Optional safe_fetch.SafeFetcher shared by all checks (tests).
 
     Returns:
         Standard response dict with verification results and summary.
@@ -252,7 +267,8 @@ def verify_backlinks(target_url: str, links: list, head_only: bool = False,
 
         summary["total"] += 1
         result = verify_single_backlink(source_url, target_url,
-                                         head_only=head_only, timeout=timeout)
+                                         head_only=head_only, timeout=timeout,
+                                         fetcher=fetcher)
         results.append(result)
 
         status = result.get("status", "error")

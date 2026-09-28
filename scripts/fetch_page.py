@@ -2,14 +2,18 @@
 """
 Fetch a web page with proper headers and error handling.
 
+SSRF protection: the URL and every redirect hop are validated with
+safe_fetch.validate_public_url() (google_auth.validate_url() literal checks
+plus a resolved-IP check) before they are requested, redirects are followed
+manually, and connections are pinned to the validated IP (see safe_fetch.py).
+
 Usage:
     python fetch_page.py https://example.com
     python fetch_page.py https://example.com --output page.html
 """
 
 import argparse
-import ipaddress
-import socket
+import os
 import sys
 from typing import Optional
 from urllib.parse import urlparse
@@ -19,6 +23,9 @@ try:
 except ImportError:
     print("Error: requests library required. Install with: pip install requests")
     sys.exit(1)
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import safe_fetch  # noqa: E402
 
 
 DEFAULT_USER_AGENT = (
@@ -44,12 +51,23 @@ DEFAULT_HEADERS = {
 }
 
 
+def _prepared_url(url: str) -> str:
+    """URL as requests sends it (adds "/" path, IDNA host, percent-encoding)."""
+    try:
+        prep = requests.models.PreparedRequest()
+        prep.prepare_url(url, None)
+        return prep.url
+    except requests.exceptions.RequestException:
+        return url
+
+
 def fetch_page(
     url: str,
     timeout: int = 30,
     follow_redirects: bool = True,
     max_redirects: int = 5,
     user_agent: Optional[str] = None,
+    fetcher: Optional["safe_fetch.SafeFetcher"] = None,
 ) -> dict:
     """
     Fetch a web page and return response details.
@@ -59,6 +77,9 @@ def fetch_page(
         timeout: Request timeout in seconds
         follow_redirects: Whether to follow redirects
         max_redirects: Maximum number of redirects to follow
+        user_agent: Custom User-Agent string
+        fetcher: Optional safe_fetch.SafeFetcher (tests inject a validator/session);
+            when given, its own timeout is used.
 
     Returns:
         Dictionary with:
@@ -67,6 +88,7 @@ def fetch_page(
             - content: Response body
             - headers: Response headers
             - redirect_chain: List of redirect URLs
+            - redirect_details: List of {url, status_code} per redirect hop
             - error: Error message if failed
     """
     result = {
@@ -89,55 +111,48 @@ def fetch_page(
         result["error"] = f"Invalid URL scheme: {parsed.scheme}"
         return result
 
-    # SSRF prevention: block private/internal IPs
-    try:
-        resolved_ip = socket.gethostbyname(parsed.hostname)
-        ip = ipaddress.ip_address(resolved_ip)
-        if ip.is_private or ip.is_loopback or ip.is_reserved:
-            result["error"] = f"Blocked: URL resolves to private/internal IP ({resolved_ip})"
-            return result
-    except (socket.gaierror, ValueError):
-        pass  # DNS resolution failure handled by requests below
+    headers = dict(DEFAULT_HEADERS)
+    if user_agent:
+        headers["User-Agent"] = user_agent
 
-    try:
-        session = requests.Session()
-        session.max_redirects = max_redirects
+    # SSRF prevention: start URL and every redirect hop are validated
+    # (literal host + resolved IPs) and connections are pinned.
+    fetcher = fetcher or safe_fetch.SafeFetcher(timeout=timeout, max_redirects=max_redirects)
+    res = fetcher.fetch(url, headers=headers, follow_redirects=follow_redirects,
+                        max_redirects=max_redirects)
 
-        headers = dict(DEFAULT_HEADERS)
-        if user_agent:
-            headers["User-Agent"] = user_agent
+    # Track redirect chain with status codes (hops actually requested),
+    # URLs in the same normalized form requests' Response.url used.
+    result["redirect_chain"] = [_prepared_url(h["url"]) for h in res["hops"]]
+    result["redirect_details"] = [
+        {"url": _prepared_url(h["url"]), "status_code": h["status"]} for h in res["hops"]
+    ]
 
-        response = session.get(
-            url,
-            headers=headers,
-            timeout=timeout,
-            allow_redirects=follow_redirects,
-        )
-
-        result["url"] = response.url
-        result["status_code"] = response.status_code
-        result["content"] = response.text
-        result["headers"] = dict(response.headers)
-
-        # Track redirect chain with status codes
-        if response.history:
-            result["redirect_chain"] = [r.url for r in response.history]
-            result["redirect_details"] = [
-                {"url": r.url, "status_code": r.status_code}
-                for r in response.history
-            ]
-
-    except requests.exceptions.Timeout:
-        result["error"] = f"Request timed out after {timeout} seconds"
-    except requests.exceptions.TooManyRedirects:
+    if res["error_kind"] == "blocked":
+        reason = safe_fetch.check_public_url(res["final_url"]) or res["error"]
+        result["error"] = f"Blocked: {reason}"
+        return result
+    if res["error_kind"] == "too_many_redirects":
         result["error"] = f"Too many redirects (max {max_redirects})"
-    except requests.exceptions.SSLError as e:
-        result["error"] = f"SSL error: {e}"
-    except requests.exceptions.ConnectionError as e:
-        result["error"] = f"Connection error: {e}"
-    except requests.exceptions.RequestException as e:
-        result["error"] = f"Request failed: {e}"
+        return result
+    exc = res.get("exception")
+    if res["error_kind"] == "timeout":
+        result["error"] = f"Request timed out after {timeout} seconds"
+        return result
+    if res["error_kind"] == "ssl":
+        result["error"] = f"SSL error: {exc}"
+        return result
+    if res["error_kind"] == "connection":
+        result["error"] = f"Connection error: {exc}"
+        return result
+    if res["error_kind"] in ("request", "read"):
+        result["error"] = f"Request failed: {exc or res['error']}"
+        return result
 
+    result["url"] = _prepared_url(res["final_url"])
+    result["status_code"] = res["status"]
+    result["content"] = safe_fetch.requests_text(res["body"], res["header_items"])
+    result["headers"] = res["header_items"]
     return result
 
 

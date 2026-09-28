@@ -12,8 +12,9 @@ What it does:
    -> ``/dir/``, ``foo.html`` -> ``/foo.html`` (with ``--clean-urls`` both
    ``/foo`` and ``/foo.html`` are tried, clean form first).
 2. Fetches each live URL politely (``--delay`` between requests, default 1 s)
-   and validates EVERY redirect hop with ``validate_url()`` from
-   ``google_auth.py`` plus a DNS check that the host resolves to a public IP
+   through ``safe_fetch.SafeFetcher``: EVERY redirect hop is validated with
+   ``validate_url()`` from ``google_auth.py`` plus a DNS check that the host
+   resolves to a public IP, and connections are pinned to the validated IP
    (SSRF protection: private, loopback, link-local and metadata addresses
    such as 169.254.169.254 are refused).
 3. Compares per page: live status, title, meta description, canonical, H1,
@@ -44,14 +45,11 @@ import argparse
 import difflib
 import fnmatch
 import hashlib
-import ipaddress
 import json
 import os
 import re
-import socket
 import subprocess
 import sys
-import time
 import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta, timezone
 from email.utils import parsedate_to_datetime
@@ -69,132 +67,42 @@ _SCRIPTS_DIR = os.path.dirname(os.path.abspath(__file__))
 if _SCRIPTS_DIR not in sys.path:
     sys.path.insert(0, _SCRIPTS_DIR)
 from google_auth import validate_url  # noqa: E402
+import safe_fetch as _sf  # noqa: E402
 
 USER_AGENT = ("Mozilla/5.0 (compatible; ClaudeSEO-SiteSafety/1.0; "
               "+https://github.com/AgriciDaniel/claude-seo)")
-REDIRECT_CODES = {301, 302, 303, 307, 308}
-MAX_BODY_BYTES = 5_000_000
+REDIRECT_CODES = _sf.REDIRECT_CODES
+MAX_BODY_BYTES = _sf.MAX_BODY_BYTES
 SKIP_DIRS = {".git", "node_modules", ".venv", "venv", "__pycache__", ".github"}
 
 
-# --- safe fetching ---------------------------------------------------------------
+# --- safe fetching (shared implementation in safe_fetch.py) ------------------------
 
 def resolves_public(url: str) -> bool:
-    """True unless the host resolves to a non-public address.
-
-    DNS failures return True so the request itself reports the error; the
-    string-level validate_url() check has already run.
-    """
+    """True unless the host resolves to a non-public address (DNS failure -> True)."""
     host = urlparse(url).hostname
     if not host:
         return False
-    try:
-        infos = socket.getaddrinfo(host, None)
-    except (socket.gaierror, UnicodeError, OSError):
-        return True
-    for info in infos:
-        try:
-            ip = ipaddress.ip_address(info[4][0].split("%", 1)[0])
-        except ValueError:
-            continue
-        if not ip.is_global or ip.is_multicast:
-            return False
-    return True
+    addrs = _sf.resolve_host(host)
+    return addrs is None or all(_sf.is_public_ip(a) for a in addrs)
 
 
-def default_validator(url: str) -> bool:
-    """validate_url() from google_auth.py plus a resolved-IP check."""
-    return validate_url(url) and resolves_public(url)
+default_validator = _sf.validate_public_url  # validate_url() + resolved-IP check
 
 
-class SafeFetcher:
-    """HTTP GET with per-hop URL validation, polite delay and a body cap.
-
-    ``validator`` and ``session`` are injectable so tests can talk to a local
-    http.server without weakening the production validator.
-    """
+class SafeFetcher(_sf.SafeFetcher):
+    """safe_fetch.SafeFetcher with this script's defaults (1 s delay, site-safety UA)."""
 
     def __init__(self, validator: Optional[Callable[[str], bool]] = None,
                  delay: float = 1.0, timeout: float = 20.0, max_redirects: int = 5,
                  session: Optional["requests.Session"] = None,
                  user_agent: str = USER_AGENT) -> None:
-        self.validator = validator or default_validator
-        self.delay = max(0.0, delay)
-        self.timeout = timeout
-        self.max_redirects = max_redirects
-        self.session = session or requests.Session()
-        self.headers = {"User-Agent": user_agent,
-                        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"}
-        self._last: Dict[str, float] = {}
-        self.requests_made = 0
-
-    def _wait(self, host: str) -> None:
-        last = self._last.get(host)
-        if last is not None and self.delay:
-            remaining = self.delay - (time.monotonic() - last)
-            if remaining > 0:
-                time.sleep(remaining)
-        self._last[host] = time.monotonic()
-
-    def get(self, url: str) -> dict:
-        """Fetch url following redirects manually; every hop is validated."""
-        result = {"url": url, "final_url": url, "status": None, "headers": {}, "text": "",
-                  "hops": [], "error": None, "blocked": False}
-        current = url
-        for _ in range(self.max_redirects + 1):
-            if not self.validator(current):
-                result.update(final_url=current, blocked=True,
-                              error=f"blocked: {current} failed URL validation "
-                                    "(private, loopback, link-local or metadata address)")
-                return result
-            self._wait(urlparse(current).netloc)
-            try:
-                self.requests_made += 1
-                resp = self.session.get(current, headers=self.headers, timeout=self.timeout,
-                                        allow_redirects=False, stream=True)
-            except requests.RequestException as exc:
-                result.update(final_url=current, error=f"{type(exc).__name__}: {exc}"[:300])
-                return result
-            loc = resp.headers.get("Location")
-            if resp.status_code in REDIRECT_CODES and loc:
-                nxt = urljoin(current, loc)
-                result["hops"].append({"url": current, "status": resp.status_code, "location": nxt})
-                resp.close()
-                current = nxt
-                continue
-            body = b""
-            try:
-                for chunk in resp.iter_content(65536):
-                    body += chunk
-                    if len(body) > MAX_BODY_BYTES:
-                        break
-            except requests.RequestException as exc:
-                result["error"] = f"read error: {exc}"[:300]
-            finally:
-                resp.close()
-            result.update(final_url=current, status=resp.status_code,
-                          headers={k.lower(): v for k, v in resp.headers.items()},
-                          text=_decode(body, resp.headers.get("Content-Type", "")))
-            return result
-        result.update(final_url=current, error=f"too many redirects (> {self.max_redirects})")
-        return result
+        super().__init__(validator=validator, delay=delay, timeout=timeout,
+                         max_redirects=max_redirects, session=session,
+                         user_agent=user_agent, max_bytes=MAX_BODY_BYTES)
 
 
-def _decode(body: bytes, content_type: str) -> str:
-    m = re.search(r"charset=([\w\-]+)", content_type or "", re.I)
-    if m:
-        try:
-            return body.decode(m.group(1), errors="replace")
-        except LookupError:
-            pass
-    head = body[:2048].decode("ascii", errors="ignore")
-    m = re.search(r"<meta[^>]+charset=[\"']?([\w\-]+)", head, re.I)
-    for enc in ([m.group(1)] if m else []) + ["utf-8"]:
-        try:
-            return body.decode(enc)
-        except (LookupError, UnicodeDecodeError):
-            continue
-    return body.decode("latin-1", errors="replace")
+_decode = _sf.decode_body
 
 
 # --- HTML extraction --------------------------------------------------------------

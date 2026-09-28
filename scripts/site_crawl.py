@@ -23,8 +23,10 @@ Usage:
 Safety:
     Every URL (start URL, each redirect hop, each discovered URL, sitemap files,
     external HEAD checks, and every request made by the Playwright renderer) is
-    checked with validate_url() from google_auth.py plus a DNS check that rejects
-    hosts resolving to private, loopback, link-local or reserved addresses.
+    checked with safe_fetch.validate_public_url(): validate_url() from
+    google_auth.py plus a DNS check that rejects hosts resolving to private,
+    loopback, link-local or reserved addresses (incl. IPv4-mapped IPv6), and
+    direct connections are pinned to the validated IP (DNS rebinding).
     Redirects are followed manually so each hop is validated. Responses are
     capped (--max-bytes). Only http/https. Crawling never leaves the start host
     (after the start URL's own redirects); external links are only counted, or
@@ -44,11 +46,9 @@ Politeness defaults:
 from __future__ import annotations
 
 import argparse
-import ipaddress
 import json
 import os
 import re
-import socket
 import sys
 import threading
 import time
@@ -65,7 +65,7 @@ PLUGIN_ROOT = os.path.dirname(SCRIPT_DIR)
 if SCRIPT_DIR not in sys.path:
     sys.path.insert(0, SCRIPT_DIR)
 
-from google_auth import validate_url  # noqa: E402  (stdlib-only import)
+import safe_fetch  # noqa: E402  (shared SSRF-safe validation + pinned sessions)
 
 try:
     import requests
@@ -108,25 +108,9 @@ def default_user_agent() -> str:
 # URL safety and normalization
 # --------------------------------------------------------------------------
 
-def _ip_is_public(ip_text: str) -> bool:
-    try:
-        ip = ipaddress.ip_address(ip_text.split("%")[0])
-    except ValueError:
-        return False
-    return not (ip.is_private or ip.is_loopback or ip.is_link_local
-                or ip.is_reserved or ip.is_multicast or ip.is_unspecified)
-
-
-def default_validator(url: str) -> bool:
-    """validate_url() plus DNS resolution: every resolved address must be public."""
-    if not validate_url(url):
-        return False
-    host = urlparse(url).hostname or ""
-    try:
-        infos = socket.getaddrinfo(host, None)
-    except (socket.gaierror, UnicodeError, OSError):
-        return True  # unresolvable: the request itself will fail harmlessly
-    return all(_ip_is_public(info[4][0]) for info in infos)
+_ip_is_public = safe_fetch.is_public_ip
+# validate_url() plus DNS resolution: every resolved address must be public.
+default_validator = safe_fetch.validate_public_url
 
 
 def ensure_scheme(url: str) -> str:
@@ -203,7 +187,8 @@ class Fetcher:
     def _session(self):
         s = getattr(self._local, "session", None)
         if s is None:
-            s = requests.Session()
+            # Connections are pinned to an address that passed the same check.
+            s = safe_fetch.make_session(safe_fetch.address_check_for(self.validator))
             s.trust_env = True
             s.headers.update({
                 "User-Agent": self.user_agent,

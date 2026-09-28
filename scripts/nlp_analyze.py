@@ -24,10 +24,12 @@ except ImportError:
 
 try:
     from google_auth import get_api_key, validate_url
+    import safe_fetch
 except ImportError:
     import os
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
     from google_auth import get_api_key, validate_url
+    import safe_fetch
 
 NLP_ENDPOINT = "https://language.googleapis.com/v2/documents:annotateText"
 
@@ -205,15 +207,16 @@ def analyze_url(
     if not validate_url(url):
         return {"error": "Invalid URL. Only http/https URLs to public hosts are accepted."}
 
-    # Fetch the page text
-    try:
-        resp = requests.get(url, timeout=30, headers={
-            "User-Agent": "Mozilla/5.0 (compatible; ClaudeSEO/1.7 NLP Analyzer)"
-        })
-        resp.raise_for_status()
-        html = resp.text
-    except requests.exceptions.RequestException as e:
-        return {"error": f"Could not fetch URL: {e}"}
+    # Fetch the page text (SSRF-safe: every redirect hop is validated and
+    # the connection is pinned to a validated public IP; see safe_fetch.py)
+    res = safe_fetch.SafeFetcher(timeout=30).fetch(url, headers={
+        "User-Agent": "Mozilla/5.0 (compatible; ClaudeSEO/1.7 NLP Analyzer)"
+    })
+    if res["error"] and res["status"] is None:
+        return {"error": f"Could not fetch URL: {res.get('exception') or res['error']}"}
+    if res["status"] >= 400:
+        return {"error": f"Could not fetch URL: HTTP {res['status']} for url: {res['final_url']}"}
+    html = safe_fetch.requests_text(res["body"], res["header_items"])
 
     # Extract text from HTML (simple approach)
     try:

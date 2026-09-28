@@ -28,8 +28,10 @@ rel=canonical points elsewhere, alternates that redirect or return non-200,
 duplicate codes pointing at different URLs, mixed http/https, and
 inconsistent sets between HTML, headers and sitemap.
 
-All fetches go through repo_live_diff.SafeFetcher: every redirect hop is
-validated with validate_url() from google_auth.py and a resolved-IP check.
+All fetches go through repo_live_diff.SafeFetcher (the shared
+safe_fetch.SafeFetcher with a 1 s default delay): every redirect hop is
+validated with validate_url() from google_auth.py and a resolved-IP check,
+and connections are pinned to the validated IP.
 
 Exit codes: 0 = no errors, 1 = at least one error-severity issue,
 2 = start URL blocked/unreachable or bad arguments.
