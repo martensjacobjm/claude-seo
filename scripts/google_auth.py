@@ -31,6 +31,9 @@ SCOPES = {
     "gsc_write": "https://www.googleapis.com/auth/webmasters",
     "indexing": "https://www.googleapis.com/auth/indexing",
     "ga4": "https://www.googleapis.com/auth/analytics.readonly",
+    # Google Ads API (Keyword Planner). Source:
+    # https://developers.google.com/google-ads/api/docs/oauth/internals
+    "ads": "https://www.googleapis.com/auth/adwords",
 }
 
 # Which services need which auth type
@@ -41,12 +44,14 @@ SERVICE_AUTH = {
     "gsc": "oauth_or_sa",
     "indexing": "oauth_or_sa",
     "ga4": "oauth_or_sa",
+    "ads": "oauth_ads",
 }
 
 OAUTH_SCOPES = (
     "https://www.googleapis.com/auth/indexing "
     "https://www.googleapis.com/auth/webmasters "
-    "https://www.googleapis.com/auth/analytics.readonly"
+    "https://www.googleapis.com/auth/analytics.readonly "
+    "https://www.googleapis.com/auth/adwords"
 )
 OAUTH_REDIRECT_URI = "http://localhost:8085"
 
@@ -58,6 +63,7 @@ SERVICE_NAMES = {
     "gsc": "Google Search Console API",
     "indexing": "Google Indexing API v3",
     "ga4": "GA4 Data API v1beta",
+    "ads": "Google Ads API (Keyword Planner)",
 }
 
 
@@ -171,10 +177,45 @@ def _load_oauth_token() -> Optional[dict]:
 
 
 def _save_oauth_token(token_data: dict):
-    """Save OAuth token to TOKEN_PATH."""
+    """Save OAuth token to TOKEN_PATH (owner read/write only)."""
     os.makedirs(os.path.dirname(TOKEN_PATH), exist_ok=True)
-    with open(TOKEN_PATH, "w") as f:
+    fd = os.open(TOKEN_PATH, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+    with os.fdopen(fd, "w") as f:
         json.dump(token_data, f, indent=2)
+    try:
+        os.chmod(TOKEN_PATH, 0o600)
+    except OSError:
+        pass
+
+
+def token_scopes(token_data: Optional[dict] = None) -> Optional[set]:
+    """
+    Scopes granted to the saved OAuth token.
+
+    Google's token endpoint returns the granted scopes as a space-separated
+    "scope" field, which _exchange_code stores. Tokens saved before that field
+    existed return None (unknown).
+    """
+    if token_data is None:
+        token_data = _load_oauth_token()
+    if not token_data or not token_data.get("scope"):
+        return None
+    return set(str(token_data["scope"]).split())
+
+
+def token_has_scope(scope: str, token_data: Optional[dict] = None) -> Optional[bool]:
+    """True/False if the saved OAuth token has `scope`; None if unknown or no token."""
+    scopes = token_scopes(token_data)
+    if scopes is None:
+        return None
+    return scope in scopes
+
+
+ADS_REAUTH_HINT = (
+    "Your saved OAuth token does not include Google Ads access. Re-run: "
+    "python scripts/google_auth.py --auth --creds /path/to/client_secret.json "
+    "(Search Console, Indexing and GA4 keep working with the old token until then)."
+)
 
 
 def _refresh_oauth_token(client: dict, token_data: dict) -> Optional[dict]:
@@ -198,6 +239,8 @@ def _refresh_oauth_token(client: dict, token_data: dict) -> Optional[dict]:
             new_data = json.loads(resp.read())
         token_data["access_token"] = new_data["access_token"]
         token_data["expires_at"] = time.time() + new_data.get("expires_in", 3600)
+        if new_data.get("scope"):
+            token_data["scope"] = new_data["scope"]
         _save_oauth_token(token_data)
         return token_data
     except Exception as e:
@@ -522,6 +565,33 @@ def check_credentials(service: str) -> dict:
                     "Credentials found but no GA4 property ID configured. "
                     f"Set GA4_PROPERTY_ID or add 'ga4_property_id' to {CONFIG_PATH}"
                 )
+    elif SERVICE_AUTH.get(service) == "oauth_ads":
+        # Google Ads needs a developer token, a customer ID and an OAuth user
+        # token that includes the adwords scope.
+        result["method"] = "oauth_token"
+        token_data = _load_oauth_token()
+        missing = []
+        if not config.get("ads_developer_token"):
+            missing.append("'ads_developer_token' (https://ads.google.com/aw/apicenter)")
+        if not config.get("ads_customer_id"):
+            missing.append("'ads_customer_id' (format 123-456-7890)")
+        if not config.get("oauth_client_path"):
+            missing.append("'oauth_client_path' (OAuth client_secret.json)")
+        if not (token_data and token_data.get("refresh_token")):
+            missing.append("an OAuth token: run python scripts/google_auth.py --auth --creds /path/to/client_secret.json")
+        if missing:
+            result["error"] = f"Missing in {CONFIG_PATH}: " + "; ".join(missing)
+        else:
+            has_ads = token_has_scope(SCOPES["ads"], token_data)
+            if has_ads is False:
+                result["error"] = ADS_REAUTH_HINT
+            else:
+                result["available"] = True
+                if has_ads is None:
+                    result["note"] = (
+                        "Token predates scope tracking; if Keyword Planner calls fail with an "
+                        "authentication error, re-run --auth to grant Google Ads access."
+                    )
     else:
         result["error"] = f"Unknown service: {service}"
 
@@ -677,7 +747,7 @@ def main():
         nargs="?",
         const="all",
         metavar="SERVICE",
-        help="Check credentials. Optionally specify service: psi, crux, gsc, indexing, ga4",
+        help="Check credentials. Optionally specify service: psi, crux, gsc, indexing, ga4, ads",
     )
     parser.add_argument(
         "--setup",

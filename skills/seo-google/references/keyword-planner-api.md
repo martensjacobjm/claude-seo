@@ -4,10 +4,10 @@ Gold-standard source for keyword search volume. DataForSEO gets its volume data 
 
 ## Prerequisites (More Complex Than Other Google APIs)
 
-1. **Google Ads Manager Account** -- create at ads.google.com (free to create)
-2. **Developer Token** -- apply at Google Ads API Center (requires Basic access approval)
-3. **OAuth 2.0 credentials** -- reuse existing OAuth client from seo-google config
-4. **For exact volumes**: Run a minimal campaign (~$5-10/day). Without spend, volumes are bucketed ranges ("1K-10K")
+1. **Google Ads account** -- a manager account is optional ([access levels](https://developers.google.com/google-ads/api/docs/api-policy/access-levels))
+2. **Developer Token** with Basic or Standard access -- Test access reaches only test accounts and Explorer access cannot call KeywordPlanIdeaService
+3. **OAuth token with the `https://www.googleapis.com/auth/adwords` scope** ([source](https://developers.google.com/google-ads/api/docs/oauth/internals)). `python scripts/google_auth.py --auth --creds client_secret.json` requests it (since 2026-09-28). Tokens created earlier lack it: re-run `--auth` once. `python scripts/google_auth.py --check ads` shows the status
+4. Config keys in `~/.config/claude-seo/google-api.json`: `ads_developer_token`, `ads_customer_id`, optional `ads_login_customer_id`, and `oauth_client_path`
 
 ## Key Methods
 
@@ -16,7 +16,7 @@ Generate keyword suggestions from seed terms.
 
 **Returns per keyword:**
 - `text`: Keyword string
-- `avg_monthly_searches`: Average monthly volume (exact if spending, bucketed if not)
+- `avg_monthly_searches`: approximate monthly searches averaged over the past 12 months (single integer)
 - `competition`: LOW / MEDIUM / HIGH (for ads, not organic)
 - `competition_index`: 0-100 competition score
 - `low_top_of_page_bid_micros`: ~20th percentile CPC in micros
@@ -59,7 +59,7 @@ Uses `google-ads` library (separate from `google-api-python-client`).
 
 ## Important Notes
 
-- **Volume accuracy**: Without active ad spend, Google returns bucketed ranges ("1K-10K", "10K-100K") instead of exact numbers like "14,800"
+- **Volume accuracy** [H]: coarser numbers for accounts without ad spend are reported for the Keyword Planner UI but not stated in the API reference; treat no-spend values as approximate
 - **Competition score**: Measures advertiser competition for ads, NOT organic ranking difficulty
 - **CPC bids**: Reflect what advertisers pay, useful for estimating keyword commercial value
 - **Location targeting**: Use location IDs (2840 = United States, 2826 = United Kingdom)

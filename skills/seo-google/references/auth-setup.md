@@ -154,6 +154,7 @@ Instead of (or in addition to) the config file:
 | `https://www.googleapis.com/auth/webmasters` | GSC (read/write, needed for sitemap submission) |
 | `https://www.googleapis.com/auth/indexing` | Indexing API |
 | `https://www.googleapis.com/auth/analytics.readonly` | GA4 (read) |
+| `https://www.googleapis.com/auth/adwords` | Google Ads API / Keyword Planner (requested by `--auth` since 2026-09-28; older tokens need one re-run of `--auth`) |
 
 ## Troubleshooting
 
@@ -165,3 +166,4 @@ Instead of (or in addition to) the config file:
 | `404 Not Found` on CrUX | Site has insufficient Chrome traffic. Not a credentials issue. |
 | `429 Rate Limit` | Wait and retry. See rate-limits-quotas.md for per-API limits |
 | `API not enabled` | Enable the specific API in GCP Console > APIs & Services > Library |
+| "does not include Google Ads access" | Token predates the adwords scope. Re-run `python scripts/google_auth.py --auth --creds client_secret.json`; other APIs keep working meanwhile |
