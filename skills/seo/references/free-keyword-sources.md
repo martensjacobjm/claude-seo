@@ -39,8 +39,9 @@ trends.google.com internals or wrappers such as pytrends).
   this query, averaged for the past 12 months" (int64, a single number). Ranges/bucketing for
   low- or no-spend accounts is widely reported for the Keyword Planner UI but is **not**
   stated in the API reference: treat values from a no-spend account as coarse.
-  `scripts/keyword_planner.py` reuses the Claude SEO OAuth token, which is minted without the
-  `https://www.googleapis.com/auth/adwords` scope; Ads calls need a token with that scope.
+  `scripts/keyword_planner.py` reuses the Claude SEO OAuth token. `google_auth.py --auth`
+  requests the `https://www.googleapis.com/auth/adwords` scope since 2026-09-28; tokens made
+  earlier lack it and need one re-run of `--auth` (`google_auth.py --check ads` tells you).
 - **Bing**: SOAP and POX endpoints were retired 2026-08-31; only
   `https://ssl.bing.com/webmaster/api.svc/json/<Method>` remains (same key, same methods,
   DateTime as `/Date(ms)/`). Microsoft documents keyword method names and properties only;

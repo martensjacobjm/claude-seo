@@ -2,8 +2,12 @@
 """
 Google Ads API - Keyword Planner for SEO keyword research.
 
-Gold-standard source for keyword search volume, CPC, and competition data.
-Requires a Google Ads Manager account with a developer token.
+Keyword ideas, search volume, CPC, and competition data from Google Ads.
+Requires a Google Ads account, a developer token with Basic or Standard
+access (Explorer/Test access cannot call KeywordPlanIdeaService), and an
+OAuth token that includes the https://www.googleapis.com/auth/adwords scope.
+Sources: https://developers.google.com/google-ads/api/docs/api-policy/access-levels,
+https://developers.google.com/google-ads/api/docs/oauth/internals
 
 Usage:
     python keyword_planner.py ideas "seo tools" --json
@@ -11,9 +15,9 @@ Usage:
     python keyword_planner.py forecast "seo tools" --json
 
 Prerequisites:
-    - Google Ads Manager account (can be free)
-    - Developer Token (apply at Google Ads API Center)
-    - OAuth credentials or service account
+    - Google Ads account (a manager account is optional)
+    - Developer Token with Basic or Standard access (Google Ads API Center)
+    - OAuth token with the adwords scope: python google_auth.py --auth --creds client_secret.json
     - google-ads Python library: pip install google-ads
     - Config: ~/.config/claude-seo/google-api.json with:
       {
@@ -22,8 +26,9 @@ Prerequisites:
         "ads_login_customer_id": "123-456-7890"
       }
 
-Note: Accounts without active ad spend receive bucketed volume ranges
-(e.g., "1K-10K") instead of exact numbers.
+Note: avg_monthly_searches is an approximate 12-month average (single integer).
+Reports that accounts without ad spend get coarser numbers come from the
+Keyword Planner UI and are not confirmed in the API docs.
 """
 
 import argparse
@@ -40,10 +45,10 @@ except ImportError:
     HAS_GOOGLE_ADS = False
 
 try:
-    from google_auth import load_config
+    from google_auth import load_config, token_has_scope, SCOPES, ADS_REAUTH_HINT
 except ImportError:
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-    from google_auth import load_config
+    from google_auth import load_config, token_has_scope, SCOPES, ADS_REAUTH_HINT
 
 
 def _build_ads_client() -> Optional[object]:
@@ -92,6 +97,9 @@ def _build_ads_client() -> Optional[object]:
         if os.path.exists(token_path):
             with open(token_path) as f:
                 token_data = json.load(f)
+            if token_has_scope(SCOPES["ads"], token_data) is False:
+                print(f"Error: {ADS_REAUTH_HINT}", file=sys.stderr)
+                return None
             if oauth_client_path:
                 with open(os.path.expanduser(oauth_client_path)) as f:
                     client_data = json.load(f)
